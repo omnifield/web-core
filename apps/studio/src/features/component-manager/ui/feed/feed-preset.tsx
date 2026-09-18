@@ -12,13 +12,14 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
-import { componentManagerStoreOf, useComponentName } from "../../model";
+import { useComponent } from "#/entities/component";
+import { useStandStore } from "../../model";
 
 export function FeedPreset() {
-  const store = componentManagerStoreOf(useComponentName());
-  const content = store.use((state) => state.content);
+  const store = useStandStore();
+  const component = useComponent();
   const items = () =>
-    (content() ?? []).map((preset) => ({
+    component.content().map((preset) => ({
       value: preset.name,
       label: preset.label,
       data: preset.state.data,

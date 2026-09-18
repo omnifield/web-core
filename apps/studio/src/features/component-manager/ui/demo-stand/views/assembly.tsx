@@ -1,5 +1,6 @@
 import type { PassportAssembly } from "@web-core/skin/editor";
+import { Json } from "./json";
 
 export function Assembly(props: { assembly: PassportAssembly }) {
-  return <div>{JSON.stringify(props.assembly, null, 2)}</div>;
+  return <Json data={props.assembly} />;
 }

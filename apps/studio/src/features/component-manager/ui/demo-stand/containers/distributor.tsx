@@ -1,30 +1,27 @@
-import { Match, Switch } from "solid-js";
+import { Match, Show, Switch } from "solid-js";
 import type { PassportAssembly } from "@web-core/skin/editor";
 import type { VariantSummary } from "@web-core/skin/presets";
-import { componentManagerStoreOf, useComponentName } from "../../../model";
+import { Typography } from "@web-core/ui";
+import { Loader } from "#/entities/component";
 import type { Cell } from "../../../lib/cell";
 import { groupByTags, noGroup } from "../../../lib/group";
+import { useStand } from "../../../model";
 import { Grid } from "./grid";
 import { Matrix } from "./matrix";
 
 type PrimaryItem = VariantSummary | PassportAssembly;
 
 export function Distributor() {
-  const name = useComponentName();
-  const store = componentManagerStoreOf(name);
+  const { store, component, primaryItems, secondaryItems } = useStand();
   const layoutMode = store.use((state) => state.layoutMode);
-  const axis = store.use((state) => state.axisMode);
   const filter = store.use((state) => state.filterMode);
-  const variants = store.use((state) => state.variants ?? []);
-  const assemblies = store.use((state) => state.editorInfo?.assemblies ?? []);
 
-  const primary = (): readonly PrimaryItem[] =>
-    axis() === "variant" ? variants() : assemblies();
-  const secondary = (): readonly PrimaryItem[] =>
-    axis() === "variant" ? assemblies() : variants();
+  const indexed = () =>
+    primaryItems().map((item: PrimaryItem, index: number) => ({ item, index }));
 
-  const indexed = () => primary().map((item, index) => ({ item, index }));
-
+  // Теги есть только у вариантов — у сборок такого поля нет. Ветка `undefined` здесь уже не
+  // «тихо ничего не сгруппировали»: стор не даёт `filterMode: "tags"` ужиться с осью сборок
+  // (`filterAppliesTo`), так что на этой оси сюда не заходят.
   const entryGroups = () =>
     filter() === "tags"
       ? groupByTags(indexed(), (entry) =>
@@ -38,20 +35,35 @@ export function Distributor() {
       items: group.items.map(
         (entry): Cell => ({
           primary: entry.index,
-          id: String(entry.index),
           group: group.label,
         }),
       ),
     }));
 
+  // Пока списки едут, показывать нечего — но и молчать нельзя: раньше на этом месте был просто
+  // пустой экран, неотличимый от «у компонента нет вариантов». Отказ службы пресетов тем более
+  // называется словами, а не остаётся в консоли отклонённым промисом.
   return (
-    <Switch>
-      <Match when={layoutMode() === "grid"}>
-        <Grid groups={groups()} secondaryItems={secondary()} />
-      </Match>
-      <Match when={layoutMode() === "matrix"}>
-        <Matrix groups={groups()} secondaryItems={secondary()} />
-      </Match>
-    </Switch>
+    <Show
+      when={component.error()}
+      fallback={
+        <Show when={!component.isPending()} fallback={<Loader />}>
+          <Switch>
+            <Match when={layoutMode() === "grid"}>
+              <Grid groups={groups()} secondaryItems={secondaryItems()} />
+            </Match>
+            <Match when={layoutMode() === "matrix"}>
+              <Matrix groups={groups()} secondaryItems={secondaryItems()} />
+            </Match>
+          </Switch>
+        </Show>
+      }
+    >
+      {(error) => (
+        <Typography>
+          Не удалось загрузить компонент: {error().message}
+        </Typography>
+      )}
+    </Show>
   );
 }

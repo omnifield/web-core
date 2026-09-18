@@ -9,14 +9,13 @@ import {
 import { For } from "solid-js";
 import {
   ALL_CELLS,
-  componentManagerStoreOf,
-  useComponentName,
+  useStandStore,
   VIEW_MODES,
   type ViewMode,
 } from "../../../../model";
 
 export function SwitchViewModeGlobal() {
-  const store = componentManagerStoreOf(useComponentName());
+  const store = useStandStore();
   const viewMode = store.use((state) => state.viewMode[ALL_CELLS] ?? "form");
 
   return (

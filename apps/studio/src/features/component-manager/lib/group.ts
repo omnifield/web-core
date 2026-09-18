@@ -20,7 +20,10 @@ export function groupByTags<T>(
 
   for (const item of items) {
     const tags = tagsOf(item);
-    const keys = tags && tags.length > 0 ? tags : [""];
+    // Теги приезжают из пресета произвольным массивом — повтор в нём никем не запрещён. Без
+    // дедупликации повторённый тег кладёт элемент в свой же бакет дважды, и в группе появляются
+    // две ячейки с одной позицией: визуальный дубль, у которого ещё и общий ключ состояния.
+    const keys = tags && tags.length > 0 ? new Set(tags) : new Set([""]);
 
     for (const key of keys) {
       const bucket = buckets.get(key);

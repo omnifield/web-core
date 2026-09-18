@@ -1,8 +1,8 @@
 import { Surface, Typography } from "@web-core/ui";
-import { useComponentName } from "../../../model";
+import { useComponent } from "#/entities/component";
 
 export function Passport() {
-  const name = useComponentName();
+  const { name } = useComponent();
 
   return (
     <Surface data-variant="filled">

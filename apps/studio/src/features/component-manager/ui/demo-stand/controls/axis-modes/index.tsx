@@ -1,8 +1,7 @@
 import { Icon, Toggle, ToggleIndicator, type IconProps } from "@web-core/ui";
 import {
   AXIS_MODES,
-  componentManagerStoreOf,
-  useComponentName,
+  useStandStore,
 } from "../../../../model";
 
 type IconName = IconProps["name"];
@@ -15,7 +14,7 @@ function iconOf<Value extends string>(
 }
 
 export function SwitchAxisMode() {
-  const store = componentManagerStoreOf(useComponentName());
+  const store = useStandStore();
   const axisMode = store.use((state) => state.axisMode);
 
   return (

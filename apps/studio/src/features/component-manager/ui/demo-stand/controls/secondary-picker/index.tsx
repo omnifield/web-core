@@ -11,26 +11,24 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
-import type { Cell } from "../../../../lib/cell";
-import { componentManagerStoreOf, useComponentName } from "../../../../model";
-
 type SecondaryItem = { readonly name: string };
 
-/** Выбор secondary-элемента для `cell`. Один и тот же контрол для grid и matrix — куда именно
- *  пишется выбор (на саму ячейку или на всю её группу), решает стор по `layoutMode`
- *  (`secondaryScopeOf` в `model/store.ts`), контрол этого не знает и знать не должен. */
+/** Выбор secondary-элемента — один и тот же контрол для grid и matrix. Сам он ничего не адресует:
+ *  показывает список, отдаёт выбранную позицию. Кого этот выбор касается — отдельную ячейку (grid)
+ *  или всю обёртку разом (matrix), — знает контейнер, который его ставит, и он же зовёт нужное
+ *  действие стора. Раньше контрол принимал `cell` и в matrix ему подсовывали «любую ячейку из
+ *  группы» (`items[0]`), чтобы стор вывел из неё группу: тип обещал `Cell`, значение могло быть
+ *  `undefined`, а смысл «ячейка» был подложным — адресовали-то группу. */
 export function SwitchSecondaryIndex(props: {
-  cell: Cell;
   items: readonly SecondaryItem[];
+  index: number;
+  onSelect: (index: number) => void;
 }) {
-  const store = componentManagerStoreOf(useComponentName());
-
   const options = () =>
     props.items.map((item, index) => ({ value: String(index), label: item.name }));
 
-  const index = () => store.selectors.secondaryIndex(props.cell);
   const selected = () => {
-    const item = options()[index()];
+    const item = options()[props.index];
     return item === undefined ? [] : [item.value];
   };
 
@@ -41,7 +39,7 @@ export function SwitchSecondaryIndex(props: {
       onValueChange={(details) => {
         const item = details.items[0];
         if (item === undefined) return;
-        store.actions.setSecondaryIndex(Number(item.value), props.cell);
+        props.onSelect(Number(item.value));
       }}
     >
       <SelectControl>

@@ -1,17 +1,17 @@
 import { Match, Show, Switch } from "solid-js";
 import type { Cell } from "../../../lib/cell";
-import { componentManagerStoreOf, useComponentName } from "../../../model";
+import { useStand } from "../../../model";
 import { Assembly } from "./assembly";
 import { Feed } from "./feed";
 import { Form } from "./form";
 import { Style } from "./style";
 
 export function Switcher(props: { cell: Cell }) {
-  const store = componentManagerStoreOf(useComponentName());
+  const { store, variantOf, assemblyOf } = useStand();
 
   const mode = () => store.selectors.viewMode(props.cell);
-  const variant = () => store.selectors.variantAt(props.cell);
-  const assembly = () => store.selectors.assemblyAt(props.cell);
+  const variant = () => variantOf(props.cell);
+  const assembly = () => assemblyOf(props.cell);
 
   return (
     <Switch>
@@ -19,7 +19,9 @@ export function Switcher(props: { cell: Cell }) {
         <Show when={variant()} keyed>
           {(variant) => (
             <Show when={assembly()} keyed>
-              {(assembly) => <Form cell={props.cell} variant={variant.name} assembly={assembly} />}
+              {(assembly) => (
+                <Form cell={props.cell} variant={variant.name} assembly={assembly} />
+              )}
             </Show>
           )}
         </Show>

@@ -27,11 +27,24 @@ export type FilterMode = "none" | "tags";
 export const FILTER_MODES: readonly {
   readonly value: FilterMode;
   readonly icon: IconName;
+  /** Оси, на которых фильтр осмыслен. Теги есть только у вариантов (`VariantSummary.tags`); у
+   *  сборок такого поля нет и не предвидится — это другая сущность, а не недоделка скина.
+   *  Поэтому применимость объявлена здесь, рядом с самим режимом, а не выводится по месту: иначе
+   *  контрол предлагает кнопку, которая на этой оси гарантированно ничего не делает. */
+  readonly axes: readonly AxisMode[];
 }[] = [
-  { value: "none", icon: "folder-open" },
-  { value: "tags", icon: "folder" },
+  { value: "none", icon: "folder-open", axes: ["variant", "assembly"] },
+  { value: "tags", icon: "folder", axes: ["variant"] },
 ];
 export const DEFAULT_FILTER_MODE: FilterMode = "none";
+
+export function filterAppliesTo(
+  filterMode: FilterMode,
+  axisMode: AxisMode,
+): boolean {
+  const mode = FILTER_MODES.find((item) => item.value === filterMode);
+  return mode !== undefined && mode.axes.includes(axisMode);
+}
 
 export type AxisMode = "variant" | "assembly";
 export const AXIS_MODES: readonly {

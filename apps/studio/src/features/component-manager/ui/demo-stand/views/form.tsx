@@ -3,15 +3,14 @@ import type { PassportAssembly } from "@web-core/skin/editor";
 import { toast } from "@web-core/ui";
 import { Renderer } from "#/shared/ui/renderer";
 import type { Cell } from "../../../lib/cell";
-import { componentManagerStoreOf, useComponentName } from "../../../model";
+import { useStand } from "../../../model";
 
 export function Form(props: {
   cell: Cell;
   variant: string;
   assembly: PassportAssembly;
 }) {
-  const component = useComponentName();
-  const store = componentManagerStoreOf(component);
+  const { store, component } = useStand();
 
   function dispatch(event: DispatchedEvent) {
     console.log(event);
@@ -23,7 +22,7 @@ export function Form(props: {
 
   return (
     <Renderer
-      component={component}
+      component={component.name}
       assembly={props.assembly.name}
       variant={props.variant}
       data={store.selectors.feedData(props.cell)}

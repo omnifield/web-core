@@ -2,6 +2,7 @@ import { For } from "solid-js";
 import { Flow, FlowItem, Typography, useCarousel } from "@web-core/ui";
 import type { Cell } from "../../../../lib/cell";
 import type { Group } from "../../../../lib/group";
+import { useStand } from "../../../../model";
 import { ControlNavigation, SwitchSecondaryIndex } from "../../controls";
 import { Axis } from "./axis";
 import { Wrapper } from "./wrapper";
@@ -23,12 +24,14 @@ export function Matrix(props: {
 
 // Одна обёртка на группу, независимая от соседних: горизонтальный carousel листает primary
 // (столько слайдов, сколько элементов в группе — без кросс-продукта с secondary). Secondary —
-// общий на всю обёртку пикер (`SwitchSecondaryIndex`), пишет через любую ячейку группы: стор сам
-// резолвит scope в `cell.group`, так что все слайды меняются синхронно.
+// общий на всю обёртку пикер, который адресует ГРУППУ напрямую: обёртка и есть группа, ячейка ей
+// для этого не нужна. Слайды читают тот же scope (`secondaryIndex(cell)` резолвит его по
+// `layoutMode`), поэтому меняются синхронно.
 function MatrixGroup(props: {
   group: Group<Cell>;
   secondaryItems: readonly SecondaryItem[];
 }) {
+  const { store, secondaryIndexOfGroup } = useStand();
   const primary = useCarousel(() => ({ slideCount: props.group.items.length }));
 
   return (
@@ -36,7 +39,13 @@ function MatrixGroup(props: {
       {props.group.label !== "" && <Typography>{props.group.label}</Typography>}
       <FlowItem>
         <ControlNavigation api={primary} orientation="horizontal" />
-        <SwitchSecondaryIndex cell={props.group.items[0]} items={props.secondaryItems} />
+        <SwitchSecondaryIndex
+          items={props.secondaryItems}
+          index={secondaryIndexOfGroup(props.group.label)}
+          onSelect={(index) =>
+            store.actions.setSecondaryIndexOfGroup(index, props.group.label)
+          }
+        />
       </FlowItem>
       <FlowItem>
         <Axis api={primary} items={props.group.items} orientation="horizontal">

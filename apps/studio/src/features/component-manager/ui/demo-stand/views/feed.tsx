@@ -1,3 +1,5 @@
+import { Json } from "./json";
+
 export function Feed(props: { feedData: unknown }) {
-  return <div>{JSON.stringify(props.feedData, null, 2)}</div>;
+  return <Json data={props.feedData} empty="данные не заданы" />;
 }

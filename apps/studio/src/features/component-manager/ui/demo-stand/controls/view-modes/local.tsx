@@ -13,10 +13,10 @@ import {
 } from "@web-core/ui";
 import { For } from "solid-js";
 import type { Cell } from "../../../../lib/cell";
-import { componentManagerStoreOf, useComponentName, VIEW_MODES } from "../../../../model";
+import { useStandStore, VIEW_MODES } from "../../../../model";
 
 export function SwitchViewModeLocal(props: { cell: Cell }) {
-  const store = componentManagerStoreOf(useComponentName());
+  const store = useStandStore();
   const selected = () => [store.selectors.viewMode(props.cell)];
 
   return (

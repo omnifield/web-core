@@ -8,15 +8,16 @@ import {
   SegmentGroupItemText,
 } from "@web-core/ui";
 import {
-  componentManagerStoreOf,
   FILTER_MODES,
-  useComponentName,
+  filterAppliesTo,
+  useStandStore,
   type FilterMode,
 } from "../../../../model";
 
 export function SwitchFilterMode() {
-  const store = componentManagerStoreOf(useComponentName());
+  const store = useStandStore();
   const filterMode = store.use((state) => state.filterMode);
+  const axisMode = store.use((state) => state.axisMode);
 
   return (
     <SegmentGroup
@@ -29,9 +30,15 @@ export function SwitchFilterMode() {
       }}
     >
       <SegmentGroupIndicator />
+      {/* Неприменимый к текущей оси режим гасим, а не прячем: исчезающая кнопка дёргает
+          раскладку и не объясняет, куда делась, — выключенная говорит «такой режим есть, но не
+          на этой оси». В состоянии его не остаётся: `setAxisMode` сбрасывает сам. */}
       <For each={FILTER_MODES}>
         {(mode) => (
-          <SegmentGroupItem value={mode.value}>
+          <SegmentGroupItem
+            value={mode.value}
+            disabled={!filterAppliesTo(mode.value, axisMode())}
+          >
             <SegmentGroupItemControl />
             <SegmentGroupItemText>
               <Icon name={mode.icon} />

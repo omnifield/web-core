@@ -1,8 +1,7 @@
 import { Icon, Toggle, ToggleIndicator, type IconProps } from "@web-core/ui";
 import {
-  componentManagerStoreOf,
   LAYOUT_MODES,
-  useComponentName,
+  useStandStore,
 } from "../../../../model";
 
 type IconName = IconProps["name"];
@@ -15,7 +14,7 @@ function iconOf<Value extends string>(
 }
 
 export function SwitchLayoutMode() {
-  const store = componentManagerStoreOf(useComponentName());
+  const store = useStandStore();
   const layoutMode = store.use((state) => state.layoutMode);
 
   return (
