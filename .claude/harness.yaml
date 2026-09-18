@@ -32,22 +32,19 @@ models:
 # без овнера — и на этом я один раз поставил задачу несуществующему адресату.
 zones:
   style:
-    paths: [packages/style, packages/style-tools]
-    description: "две папки у одного владельца НА ВРЕМЯ РАЗРЕЗА: `style` — набор значений (шкалы, размерности, роли), `style-tools` — инструменты стилизации, которые из него выделяются. Пока шов режется, обе стороны обязаны быть у одного владельца: разделённое владение посреди разреза — это ровно тот случай, когда один чинит и ломает у другого."
+    paths: [packages/style]
+    description: "набор значений оформления — шкалы, размерности, роли. Здесь же стоял `packages/style-tools` (инструменты стилизации, выделявшиеся из `style` разрезом): папки на диске нет, и путь снят 2026-09-18 — boundary на несуществующую папку не защищает ничего, но выглядит как защита. Разрез возобновится — путь вернуть вместе с папкой."
   ui:
     paths: [packages/ui]
     description: примитивы на Ark/Zag — 1-to-1 DOM, ноль стилей по умолчанию, паспорт компонента
-  shared:
-    paths: [packages/shared]
-    description: "mount()/#root и общий perf-трейсер (createTracer) — то, что зовёт скелет у потребителя. Было packages/runtime; надевание скина уехало в skin-mech (PWEB-221)."
   router:
     paths: [packages/router]
     description: "пакет для роутинга"
   assembly:
-    paths: [packages/assembly, apps/studio]
+    paths: [packages/assembly]
     description: "механика сборки — дерево узлов, реестр из паспортов, правки дерева, проверка вложенности, отрисовка по данным. Средство, а не решение: своего вида не приносит."
   store:
-    paths: [packages/store, apps/studio]
+    paths: [packages/store]
     description: оснастка сборки — подпути /vite, /tsconfig, /vitest
   build:
     paths: [packages/build]
@@ -70,6 +67,12 @@ zones:
   form:
     paths: [packages/form]
     description: "проекция дерево×io-схема→валидность (@web-core/assembly+@web-core/io) — вторая нога механики assembly (та — дерево→рендер, эта — дерево→валидатор), не форма из инпутов. Не рендерит, не владеет состоянием (@tanstack/solid-form отклонён и снесён). Ось валидации на useKitLife — cross-zone в packages/ui, паспорт (packages/skin) не тронут. Заведён 2026-09-12, роль пересмотрена тем же днём. См. packages/form/ROADMAP.yaml."
+  solid:
+    paths: [packages/solid, canons/solidJS]
+    description: "движок связки с Solid (`@web-core/solid`, 🏷️ framework). Зона заведена 2026-09-18: папка с полной тройкой доков жила без владельца, то есть поднять owner-сессию в неё было нельзя вовсе. Рыночный канон по Solid (`canons/solidJS`) отдан сюда же — он про эту же тему."
+  trace:
+    paths: [packages/trace]
+    description: "движок perf-трейсов (`@web-core/trace`, 🏷️ diagnostics) — ядро без фреймворка плюс необязательный Solid-плагин. Зона заведена 2026-09-18: папка была без владельца."
   neurobox:
     paths: [packages/neurobox]
     description: "клиент для бокса нейробокс (менеджер рантаймов агентов, протокол AG-UI — см. корневой NEUROBOX_CLIENT.md) поверх @tanstack/ai-client/@tanstack/ai-solid. Заведён 2026-09-13, детали user обсудил с владельцем напрямую. См. packages/neurobox/ROADMAP.yaml."
@@ -77,31 +80,40 @@ zones:
     paths: [interfaces/feeder]
     description: "первая сущность нового корня interfaces/ (между packages/ и apps/): сводит @web-core/generators+@web-core/io в переиспользуемый UI настройки/загрузки данных для больше чем одного приложения. Заведён 2026-09-14 (фундамент — architect напрямую, зоны без овнера ещё не было); три задуманных режима (зод-схема→дерево, ручки по шаблону версии, файл) не реализованы. См. interfaces/feeder/{README,FAQ}.md и ROADMAP.yaml."
   chat:
-    paths: [interfaces/chat]
+    paths: [interfaces/chat, canons/chat]
     description: "второй кейс корня interfaces/ — назначение не определено, разбирает user с owner-сессией напрямую. Заведён 2026-09-14 (фундамент по тому же приёму, что feeder — architect напрямую). См. interfaces/chat/{README,FAQ}.md и ROADMAP.yaml."
   # Зоны products/ стоят здесь ВРЕМЕННО и уедут отдельными продуктами. В packages/ им нельзя:
   # там база.
   tables:
-    paths: [products/tables]
-    description: таблицы, headless как и кит; фильтры — модуль внутри со своей границей
+    paths: [canons/filter-tables-graphs]
+    description: "таблицы, headless как и кит; фильтры — модуль внутри со своей границей. Кода ещё нет (`products/tables` не заведён, путь снят 2026-09-18) — зона держит пока только свой канон."
   studio:
-    paths: [products/studio, canons/studio]
-    description: витрина первой волны — что умеет производство
+    paths: [canons/studio]
+    description: "витрина первой волны — что умеет производство. `products/studio` не заведён, путь снят 2026-09-18."
   presets:
     paths: [backend/presets]
     description: хранилище пресетов — кладёт и отдаёт JSON, формата фильтра НЕ понимает
   map:
-    paths: [products/map, canons/map]
-    description: карта — 3D-рельеф и города на MapLibre, тайлы файлом без сервера
-  skin-app:
+    paths: [canons/map, canons/solid-map]
+    description: "карта — 3D-рельеф и города на MapLibre, тайлы файлом без сервера. `products/map` не заведён, путь снят 2026-09-18; канон карты на Solid (`canons/solid-map`) отдан сюда же."
+  studio-app:
     paths: [apps/studio]
-    description: "приложение для просмотра и создания компонентов и композиций из них (было apps/skin, переименовано в apps/studio)"
-  skin-mcp:
-    paths: [canons/ui-skin, apps/studio/.mcp]
-    description: "mcp для работы со скинами"
+    description: "приложение для просмотра и создания компонентов и композиций из них. Единственный владелец папки (решение user 2026-09-18: раньше `apps/studio` держали три зоны сразу — assembly, store, skin-app, — границы между ними не было). Вложенный `.mcp/` — чужая зона studio-mcp."
+  studio-mcp:
+    paths: [apps/studio/.mcp]
+    description: "MCP-сервер студии — тулы для агента поверх @web-core/mcp (было skin-mcp). Папка вложена в зону studio-app, владелец у неё свой: более специфичный путь выигрывает. Канон оформления (`canons/ui-skin`) остался зоне skin — делить его напополам значило бы вернуть то пересечение, из-за которого зоны и разводили."
   skin:
     paths: [canons/ui-skin, packages/skin]
     description: "производство оформлений для безголового кита — своя логика, кит остаётся голым. У продукта СВОЙ архитектор: заявки сюда приходят от него, а не ставятся ему."
+  reference:
+    paths: [apps/reference]
+    description: "эталонное приложение — гейт сборки цепочки зон: его работа падать, когда сломан шов между зонами. Приватное, в реестр не едет. Зона заведена 2026-09-18: папка была без владельца."
+  windshift:
+    paths: [products/windshift]
+    description: "self-hosted трекер работы, вендорится целиком отдельным Go-проектом. Тот самый трекер, которым продукт пользуется как источником истины по задачам — но это ЕГО КОД, а не служба: работа по задачам идёт через Windshift MCP. Зона заведена 2026-09-18: папка была без владельца."
+  plugins:
+    paths: [canons/plugins, canons/solid-plugins]
+    description: "рыночный канон по механике плагинов — съёмный слой, который сущность не носит в себе (сбор 2026-08-15, 15 + 7 выписок). Кода под зоной пока нет, владельца у папок не было: зона заведена 2026-09-18, чтобы он появился. Какому механизму фреймворка этот канон принадлежит по существу — вопрос к user."
 
 # Git-доступ по роли — РАМКА, выключить нельзя: architect=full; owner=commit-only (gate);
 # layer=none. Право архитектора даёт маркер `.claude/.main-session-id`.

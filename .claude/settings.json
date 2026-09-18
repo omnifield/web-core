@@ -1,5 +1,9 @@
 {
-  "$comment": "Регистрация harness-хуков. git-gate режет git-запись по роли (Bash/PowerShell); governance режет ПРАВКУ файла вне зоны owner'а (Edit/Write/NotebookEdit); main-session-marker и scope-identity ставят личность сессии на старте. Хук, лежащий в .claude/hooks/ и НЕ названный здесь, не исполняется вовсе и молчит об этом — поэтому список сверяется машиной: node .claude/hooks/harness-doctor.mjs. Эталон списка — EXPECTED_REGISTRATIONS в том же докторе.",
+  "$comment": "Регистрация harness-хуков. git-gate режет git-запись по роли (Bash/PowerShell); governance режет ПРАВКУ файла вне зоны owner'а (Edit/Write/NotebookEdit); main-session-marker и scope-identity ставят личность сессии на старте; statusline держит роль сессии на экране постоянно (баннер уезжает из видимой части после первых ходов). Хук, лежащий в .claude/hooks/ и НЕ названный здесь, не исполняется вовсе и молчит об этом — поэтому список сверяется машиной: node .claude/hooks/harness-doctor.mjs. Эталон списка — EXPECTED_REGISTRATIONS в том же докторе.",
+  "statusLine": {
+    "type": "command",
+    "command": "node .claude/hooks/statusline.mjs"
+  },
   "hooks": {
     "PreToolUse": [
       {

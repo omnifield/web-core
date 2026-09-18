@@ -328,9 +328,15 @@ export function zoneReality(config, cwd = process.cwd()) {
 }
 
 /**
- * Пары зон с пересекающимися путями. НЕ ошибка: `governance` валидность конфига не проверяет
- * и правку пускает, поэтому «одна папка — один владелец» здесь — не защита, а раскладка.
- * Пересечение = машинной границы между этими зонами нет; задумано так — законно (BRAIN2-46 §4).
+ * Пары зон, чьи пути сходятся. ДВА РАЗНЫХ СЛУЧАЯ, и смешивать их нельзя:
+ *
+ * - `kind: "equal"` — пути СОВПАДАЮТ. Машинной границы между такими зонами нет и быть не может:
+ *   `governance` пустит обоих владельцев в один файл, и от взаимного затирания не защищает
+ *   ничто (BRAIN2-46 §4). Это раскладка, а не ошибка конфига, но знать о ней обязаны оба.
+ * - `kind: "nested"` — один путь ЛЕЖИТ ВНУТРИ другого. С 2026-09-18 это штатное делегирование,
+ *   а не дыра: владельцем считается зона с самым длинным совпавшим путём (`outsideOwnership`
+ *   в governance), то есть вложенная папка принадлежит вложенной зоне, и родительская в неё
+ *   не пройдёт. Так разведены `apps/studio` (studio-app) и `apps/studio/.mcp` (studio-mcp).
  */
 export function overlappingZones(config) {
   const owned = [];
@@ -346,8 +352,18 @@ export function overlappingZones(config) {
       const a = owned[i];
       const b = owned[j];
       if (a.zone === b.zone) continue;
-      if (nestedOrEqual(a.p, b.p) || nestedOrEqual(b.p, a.p))
-        pairs.push({ zones: [a.zone, b.zone], paths: [a.p, b.p] });
+      if (a.p === b.p) {
+        pairs.push({ kind: "equal", zones: [a.zone, b.zone], paths: [a.p, b.p] });
+      } else if (nestedOrEqual(a.p, b.p) || nestedOrEqual(b.p, a.p)) {
+        // Внутренняя зона первой — так пара читается как «X вложена в Y».
+        const inner = a.p.length > b.p.length ? a : b;
+        const outer = inner === a ? b : a;
+        pairs.push({
+          kind: "nested",
+          zones: [inner.zone, outer.zone],
+          paths: [inner.p, outer.p],
+        });
+      }
     }
   }
   return pairs;

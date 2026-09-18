@@ -13,6 +13,7 @@
 - ❓ [FAQ](./FAQ.md)
 - 🗺️ [ROADMAP](./ROADMAP.yaml)
 - 🧭 [Getting Started — как запускать и как работать с агентами](./GETTING_STARTED.md)
+- 🤖 [CLAUDE.md — правила работы, которые агент получает автоматически](./CLAUDE.md)
 
 <h2 id="документация">📚 Документация</h2>
 
