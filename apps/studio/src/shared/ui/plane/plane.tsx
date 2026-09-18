@@ -1,10 +1,6 @@
 import { createEffect, For, type JSX, onCleanup, Show } from "solid-js";
 import type { NativeStyle } from "@web-core/skin";
-import {
-  type PlanePosition,
-  snapIndexAt,
-  withinWindow,
-} from "../../../../lib/plane";
+import { type PlanePosition, snapIndexAt, withinWindow } from "./lib/position";
 
 /** Сколько ждать тишины, чтобы считать скролл доехавшим.
  *
@@ -63,6 +59,9 @@ export function Plane<Column, Row>(props: {
     row: Row;
     position: PlanePosition;
   }) => JSX.Element;
+  /** Полосы прокрутки браузера. Выключают, когда положение показывают точками
+   *  (`PlaneIndicator`), чтобы не было двух индикаторов об одном и том же. */
+  scrollbar?: boolean;
   style?: NativeStyle;
 }) {
   let viewport!: HTMLDivElement;
@@ -114,7 +113,11 @@ export function Plane<Column, Row>(props: {
     <div
       ref={viewport}
       onScroll={onScroll}
-      style={{ ...VIEWPORT, ...props.style }}
+      style={{
+        ...VIEWPORT,
+        ...(props.scrollbar === false ? { "scrollbar-width": "none" } : {}),
+        ...props.style,
+      }}
     >
       <div
         style={{

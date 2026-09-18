@@ -1,13 +1,17 @@
 import { batch, createSignal, For } from "solid-js";
-import { layoutGroup, layoutSelf } from "@web-core/skin";
+import { layoutSelf } from "@web-core/skin";
 import { Flow, FlowItem, Typography } from "@web-core/ui";
+import {
+  Plane,
+  PlaneIndicator,
+  type PlanePosition,
+  PlaneRuler,
+  PlaneStack,
+} from "#/shared/ui/plane";
 import { type Cell, cellSize } from "../../../../lib/cell";
 import type { Group } from "../../../../lib/group";
-import type { PlanePosition } from "../../../../lib/plane";
 import { useStand } from "../../../../model";
 import { Switcher } from "../../views";
-import { Plane } from "./plane";
-import { Ruler } from "./ruler";
 
 type SecondaryItem = { readonly name: string };
 
@@ -27,11 +31,10 @@ export function Matrix(props: {
 /**
  * Одна обёртка на группу: плоскость и две линейки по её краям.
  *
- * Горизонталь — primary, вертикаль — secondary, и обе свайпаются: это одна scroll-snap
- * плоскость, а не карусель в карусели. Вложенность здесь пробовали не раз и она не выходит —
- * два скроллера поперёк друг друга делят один жест, и на тач-устройствах внутренний то
- * перехватывает чужую ось, то не активируется вовсе. В одном контейнере разведение осей делает
- * сам браузер (axis locking), и делать нам нечего.
+ * Горизонталь — primary, вертикаль — secondary, и обе свайпаются. Сама механика двухосевой
+ * плоскости здесь не живёт: она общая (`#/shared/ui/plane`, там же разбор, почему один
+ * контейнер, а не карусель в карусели). Здесь — только применение: что показывать в клетке и
+ * откуда брать позицию.
  *
  * Позиции хранятся по-разному, и это не небрежность. Secondary — общий на всю обёртку и живёт
  * в сторе: слайды обязаны листаться синхронно, иначе выходит зигзаг (разбор в README). Primary
@@ -75,36 +78,53 @@ function MatrixGroup(props: {
       {props.group.label !== "" && <Typography>{props.group.label}</Typography>}
 
       <FlowItem style={layoutSelf({ align: "stretch" })}>
-        <Ruler
-          orientation="horizontal"
-          items={columnItems()}
-          index={column()}
-          onSelect={setColumn}
-        />
-      </FlowItem>
+        <PlaneStack>
+          <Plane
+            columns={props.group.items}
+            rows={props.secondaryItems}
+            position={position()}
+            onMove={move}
+            scrollbar={false}
+            style={cellSize(component.editorInfo()?.footprint)}
+          >
+            {(cell) => (
+              <Switcher cell={cell.column} secondary={cell.position.row} />
+            )}
+          </Plane>
 
-      <FlowItem style={layoutSelf({ align: "stretch" })}>
-        <Flow style={layoutGroup({ align: "start" })}>
-          <Ruler
+          <PlaneRuler
+            placement="top"
+            orientation="horizontal"
+            items={columnItems()}
+            index={column()}
+            onSelect={setColumn}
+          />
+          <PlaneRuler
+            placement="left"
             orientation="vertical"
             items={props.secondaryItems}
             index={row()}
             onSelect={selectRow}
           />
-          <FlowItem style={layoutSelf({ grow: true, align: "stretch" })}>
-            <Plane
-              columns={props.group.items}
-              rows={props.secondaryItems}
-              position={position()}
-              onMove={move}
-              style={cellSize(component.editorInfo()?.footprint)}
-            >
-              {(cell) => (
-                <Switcher cell={cell.column} secondary={cell.position.row} />
-              )}
-            </Plane>
-          </FlowItem>
-        </Flow>
+
+          {/* Точки встают там же, где были полосы прокрутки: снизу — горизонтальная ось,
+              справа — вертикальная. Полосы у плоскости выключены, чтобы не показывать одно и
+              то же дважды. */}
+          <PlaneIndicator
+            placement="bottom"
+            orientation="horizontal"
+            items={columnItems()}
+            index={column()}
+            onSelect={setColumn}
+          />
+          <PlaneIndicator
+            placement="right"
+            orientation="vertical"
+            items={props.secondaryItems}
+            index={row()}
+            onSelect={selectRow}
+          />
+        </PlaneStack>
       </FlowItem>
     </Flow>
   );

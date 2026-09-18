@@ -9,10 +9,7 @@
 //    именно N×M живых рендеров роняли браузер. Окно отделяет «рамка есть» от «рендер живой».
 
 import { describe, expect, it } from "vitest";
-import {
-  snapIndexAt,
-  withinWindow,
-} from "#/features/component-manager/lib/plane";
+import { snapIndexAt, withinWindow } from "#/shared/ui/plane";
 
 describe("snapIndexAt — позиция считается от скролла, а не хранится", () => {
   it("целое число вьюпортов даёт ровно свою рамку", () => {
