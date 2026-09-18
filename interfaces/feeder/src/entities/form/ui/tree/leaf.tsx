@@ -2,12 +2,12 @@ import { Match, Switch } from "solid-js";
 import type { FieldDescriptor } from "@web-core/generators/fields";
 import { Typography } from "@web-core/ui";
 
-import type { FieldBinding } from "../../lib/index.js";
+import type { FieldBinding } from "../../lib";
 import {
   BooleanInput,
   EnumInput,
   ScalarInput,
-} from "../kit/index.js";
+} from "../kit";
 
 export function Leaf(props: { field: FieldDescriptor; binding: FieldBinding }) {
   return (

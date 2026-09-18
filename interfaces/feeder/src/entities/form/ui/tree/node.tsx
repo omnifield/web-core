@@ -7,11 +7,11 @@ import {
 import { Flow, FlowItem } from "@web-core/ui";
 import { layoutSelf } from "@web-core/skin";
 
-import { itemBinding, useTree, type FieldBinding } from "../../lib/index.js";
-import { Box } from "../kit/index.js";
-import { Leaf } from "./leaf.jsx";
+import { itemBinding, useTree, type FieldBinding } from "../../lib";
+import { Box } from "../../../../shared/ui";
+import { Leaf } from "./leaf";
 
-export function Node(props: {
+export function FieldNode(props: {
   fields: readonly FieldDescriptor[];
   binding: FieldBinding;
 }) {
@@ -38,13 +38,14 @@ export function Node(props: {
                 <Match when={field.kind === "list"}>
                   <Box
                     label={field.label}
-                    onAdd={add}
-                    indices={indices()}
+                    onAddChild={add}
+                    items={indices()}
+                    itemKey={(index) => String(index)}
                     itemLabel={(index) => `${field.label} #${index + 1}`}
-                    onRemove={removeAt}
+                    onItemRemove={removeAt}
                   >
                     {(index) => (
-                      <Node
+                      <FieldNode
                         fields={elementFields()}
                         binding={itemBinding(binding, items, index)}
                       />

@@ -3,7 +3,7 @@ import { fieldsOf, type FieldDescriptor } from "@web-core/generators/fields";
 import type { z } from "@web-core/io";
 
 import type { FieldBinding } from "../../lib";
-import { Node } from "./node";
+import { FieldNode } from "./node";
 
 export function Tree(props: {
   schema: z.ZodType;
@@ -19,5 +19,5 @@ export function Tree(props: {
     onChange: (value) => props.onChange(value),
   };
 
-  return <Node fields={fields()} binding={binding} />;
+  return <FieldNode fields={fields()} binding={binding} />;
 }

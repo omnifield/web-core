@@ -1,5 +1,6 @@
 export { TreeForm } from "./features/tree-form";
 export { ExternalSchemaLoader } from "./features/external-schema";
+export { SchemaCatalog } from "./features/api-manager";
 
 export {
   applyAdapter,
@@ -24,8 +25,11 @@ export {
 } from "./entities/schema";
 export {
   apiCatalogOf,
+  Endpoints,
   endpointBy,
   endpointKey,
+  groupEndpoints,
+  type EndpointGroup,
   type ApiCatalogState,
   type ApiStatus,
   type EndpointDescriptor,

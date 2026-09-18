@@ -3,6 +3,7 @@ export { endpointDescriptorSchema, manualGroupSchema, type ManualGroupValue } fr
 export { toResult, resolveUrl, appendQuery, type InvokeResult } from "./invoke.js";
 export { descriptorToEndpoint } from "./descriptor.js";
 export { endpointKey } from "./key.js";
+export { groupEndpoints, NO_TAG, type EndpointGroup } from "./group";
 export { groupsStore, type Group } from "./store.js";
 export { apiCatalogOf, endpointBy, type ApiCatalogState, type ApiStatus } from "./catalog.js";
 export * from "./swagger/2.0/index.js";
