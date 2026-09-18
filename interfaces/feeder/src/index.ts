@@ -1,27 +1,27 @@
-// Публичный вход пакета. Наружу — то, чем пользуется приложение: экран настройки API с
-// привязками, витрина (`useFeed`), отдельные кирпичи для нестандартной сборки и типы, которые
-// приложение обязано уметь назвать (потребитель, привязка).
-
 export { TreeForm } from "./features/tree-form";
-export { ApiList, ApiManagerProvider, useApiCatalog, useApiId } from "./features/api-manager";
-export { invokeEndpoint } from "./features/invoke-endpoint";
-
-export { BindEndpoint, BindingEditor } from "./widgets/binding";
-export { Mapping, type MappingChange } from "./widgets/mapping";
-export { feedBindingOf, feedOf, useFeed } from "./widgets/feed";
+export { ExternalSchemaLoader } from "./features/external-schema";
 
 export {
-  applyBinding,
-  bindingBy,
-  bindingKey,
-  bindingStoreOf,
+  applyAdapter,
+  adapterBy,
+  sourceKey,
+  adapterStoreOf,
   isFed,
   noFeed,
-  type Binding,
-  type BindingsState,
-  type BindingSource,
+  type Adapter,
+  type AdaptersState,
+  type FeedSource,
   type Consumer,
-} from "./entities/binding";
+} from "./entities/adapter";
+export {
+  SchemaCard,
+  SchemaInfo,
+  SchemaLoader,
+  Schemas,
+  schemasStore,
+  type Schema,
+  type SchemasState,
+} from "./entities/schema";
 export {
   apiCatalogOf,
   endpointBy,

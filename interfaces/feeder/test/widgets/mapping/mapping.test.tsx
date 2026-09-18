@@ -42,7 +42,6 @@ describe("Mapping", () => {
   it("на каждое поле потребителя — свой выбор пути из записи ответа", () => {
     const host = mount({ root: "/data/items", onChange: () => {} });
 
-    // Первый select — «где записи», дальше по одному на поле потребителя.
     expect(selects(host)).toHaveLength(3);
     const options = [...selects(host)[1].options].map((option) => option.value);
     expect(options).toEqual(["", "/id", "/name"]);
@@ -89,7 +88,6 @@ describe("Mapping", () => {
 
     pick(selects(host)[0], "");
 
-    // В «весь ответ» пути записи другие (`/data/items/0/id`), старое правило применять некуда.
     expect(onChange).toHaveBeenCalledWith({ root: "", rules: [] });
   });
 

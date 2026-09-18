@@ -17,8 +17,6 @@ function paramTypeToZod(type: EndpointParam["type"]): z.ZodType {
   }
 }
 
-/** Превращает вручную заполненный дескриптор в тот же `OpenapiEndpoint`, что и распознавание
- *  свагера — дальше по пайплайну (карточка, вызов) разницы в происхождении уже нет. */
 export function descriptorToEndpoint(
   descriptor: EndpointDescriptor,
 ): OpenapiEndpoint {

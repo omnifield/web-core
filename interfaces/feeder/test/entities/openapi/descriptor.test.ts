@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { descriptorToEndpoint } from "../../../src/entities/openapi/descriptor.js";
+import { descriptorToEndpoint } from "../../../src/entities/openapi/models/descriptor.js";
 import { endpointDescriptorSchema, manualGroupSchema, type EndpointDescriptor } from "../../../src/entities/openapi/models/index.js";
 
 describe("endpointDescriptorSchema / manualGroupSchema", () => {

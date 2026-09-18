@@ -73,7 +73,6 @@ describe("BindEndpoint", () => {
     pick(selects(host)[0], "Table");
 
     expect(host.textContent).toContain("нужен настоящий ответ");
-    // Привязка уже есть, но без адаптера.
     expect(isFed(bindingStoreOf("Table").get().bindings[0])).toBe(false);
   });
 
@@ -85,7 +84,6 @@ describe("BindEndpoint", () => {
     check(host);
     await vi.waitFor(() => expect(host.textContent).toContain("Ответ: 200"));
 
-    // Появились селекты сведения: «где записи» + по одному на поле потребителя.
     await vi.waitFor(() => expect(selects(host).length).toBeGreaterThan(1));
     pick(selects(host)[1], "/data/items");
     await vi.waitFor(() =>

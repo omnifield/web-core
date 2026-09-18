@@ -1,7 +1,5 @@
 import { z } from "@web-core/io";
 
-/** Узел JSON-Schema-подобной схемы Swagger 2.0 (`definitions`, тело параметра `in: "body"`) —
- *  ровно те ключи, что нужны для сборки zod, не полный JSON Schema. */
 export interface SchemaNode {
   readonly $ref?: string;
   readonly type?: string;
@@ -24,8 +22,6 @@ function resolve(
 
     const cached = cache.get(name);
     if (cached) return cached;
-    // Цикл ($ref, который сейчас же сам и разрешаем) — откладываем через z.lazy, к моменту
-    // реального вызова колбэка `cache` уже наполнен (см. resolve ниже, `cache.set` после рекурсии).
     if (inProgress.has(name)) return z.lazy(() => cache.get(name) ?? z.unknown());
 
     const result = resolve(target, definitions, cache, new Set([...inProgress, name]));
@@ -61,9 +57,6 @@ function resolve(
   }
 }
 
-/** JSON-Schema-подобный узел (Swagger 2.0 `definitions`/тело параметра) → zod, с разрешением
- *  `$ref` по `definitions` и защитой от циклов (`z.lazy`). Неизвестные/непредставимые узлы —
- *  `z.unknown()`, не исключение: одно неподдержанное поле не должно ронять всю ручку. */
 export function schemaNodeToZod(node: SchemaNode, definitions: Readonly<Record<string, SchemaNode>>): z.ZodType {
   return resolve(node, definitions, new Map(), new Set());
 }

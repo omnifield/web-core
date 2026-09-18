@@ -12,7 +12,6 @@ interface Swagger2Parameter {
   readonly type?: string;
   readonly items?: SchemaNode;
   readonly enum?: readonly unknown[];
-  /** Только у `in: "body"` — тело параметра описано отдельной JSON-Schema-подобной схемой. */
   readonly schema?: SchemaNode;
 }
 
@@ -21,8 +20,6 @@ interface Swagger2Operation {
   readonly parameters?: readonly Swagger2Parameter[];
 }
 
-// Swagger 2.0 — `yaml`'s parse() читает JSON тоже (JSON — валидный YAML 1.2), одного парсера
-// достаточно на оба формата файла, юзер может принести что угодно из двух.
 interface Swagger2Document {
   readonly swagger?: string;
   readonly host?: string;
@@ -48,8 +45,6 @@ function baseUrlOf(doc: Swagger2Document): string {
   return `${scheme}://${doc.host ?? ""}${doc.basePath ?? ""}`;
 }
 
-// header/formData — не в первой версии: header почти всегда служебный (авторизация), formData
-// требует multipart-обвязки, которой мод 2 сегодня не занимается (см. ROADMAP.yaml).
 function fieldsOfOperation(
   operation: Swagger2Operation,
   definitions: Readonly<Record<string, SchemaNode>>,
@@ -89,8 +84,6 @@ function scalarParamToZod(param: Swagger2Parameter, definitions: Readonly<Record
   }
 }
 
-// Только методы, которые понимает движок (`HTTP_METHODS`) — HEAD/OPTIONS и что угодно ещё
-// у Swagger'а молча пропускаются: форма ручки такие методы не поддерживает вообще.
 export const swagger2Template: MappingTemplate<OpenapiEndpoint, readonly OpenapiEndpoint[]> = {
   name: "swagger-2.0",
 

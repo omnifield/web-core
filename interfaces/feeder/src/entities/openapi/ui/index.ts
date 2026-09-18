@@ -1,2 +1,2 @@
-export * from "./endpoint.js";
-export * from "./create-group.js";
+export { Configuration } from "./configuration";
+export { Endpoint } from "./endpoint";

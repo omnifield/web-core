@@ -23,7 +23,6 @@ function stubFetch(body: unknown, init: ResponseInit = {}) {
   return fetchMock;
 }
 
-/** Готовый бэк: каталог с ручкой + компонент, привязанный к ней со сведёнными полями. */
 function setup(component: string, apiId: string) {
   const catalog = apiCatalogOf(apiId);
   catalog.actions.addEndpoint({

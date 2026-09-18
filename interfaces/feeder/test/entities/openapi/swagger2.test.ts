@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { run } from "@web-core/generators/mapping";
 import { describe, expect, it } from "vitest";
 
-import { swagger2Template } from "../../../src/entities/openapi/swagger2.js";
+import { swagger2Template } from "../../../src/entities/openapi/models/swagger/2.0/swagger2.js";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
 const petstore = readFileSync(join(fixtureDir, "fixtures/petstore.yaml"), "utf-8");
@@ -74,7 +74,6 @@ describe("run(raw, [swagger2Template])", () => {
     };
     expect(addPet.schema.parse(value)).toEqual(value);
 
-    // required: ["name"] у Pet — без имени body невалиден
     expect(() => addPet.schema.parse({ body: { category: { id: 1, name: "dogs" } } })).toThrow();
   });
 });

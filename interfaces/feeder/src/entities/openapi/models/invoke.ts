@@ -14,8 +14,6 @@ export function toResult(response: Response, body: unknown): InvokeResult {
   };
 }
 
-/** `{petId}` в шаблоне url — путь, остальные ключи (кроме `body`) — query. Шаблон свагера сам
- *  несёт эту разницу именем плейсхолдера, отдельно её нести в схеме не нужно. */
 export function resolveUrl(template: string, params: Readonly<Record<string, unknown>>): { url: string; query: Record<string, unknown> } {
   let url = template;
   const query: Record<string, unknown> = {};

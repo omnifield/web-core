@@ -7,10 +7,6 @@ import {
 
 import type { FieldBinding } from "./binding";
 
-/** Механика одного `list`-поля — элементы (`items`/`indices`, читает `binding.value()`),
- *  их собственная схема (`elementFields`, `field.element`) и действия над списком (`add`/
- *  `removeAt`). Общая между узлом (кнопка «Добавить» у лейбла) и обвязкой списка (аккордеон
- *  элементов, «Убрать» на каждый) — та же самая пара `field`+`binding`, тот же список. */
 export function useTree(field: FieldDescriptor, binding: FieldBinding) {
   const elementFields = createMemo(() =>
     field.element ? fieldsOfElement(field.element) : [],

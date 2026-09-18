@@ -10,23 +10,12 @@ import type { EndpointDescriptor, OpenapiEndpoint } from "./types.js";
 export type ApiStatus = "idle" | "loading" | "ready" | "failed";
 
 export interface ApiCatalogState {
-  /** Исходный документ схемы, как его дал юзер — держим, чтобы отличить «ещё не грузили» от
-   *  «загрузили и не распозналось», и чтобы отсечь ответ устаревшей загрузки (см. `loadSchema`). */
   readonly raw?: string;
   readonly endpoints: readonly OpenapiEndpoint[];
   readonly status: ApiStatus;
   readonly error?: string;
 }
 
-/**
- * Каталог ручек ОДНОГО бэка — структурная модель («что за набор ручек и откуда он взялся»), а не
- * действие интерфейса: живёт в `entities` и поэтому одинаково доступен и экрану настройки, и
- * сборке, которая кормит компонент на витрине.
- *
- * Семья, а не общий стор: бэков у юзера сколько угодно, они живы ОДНОВРЕМЕННО (на экране
- * настроек виден список всех) и не должны видеть ручки друг друга. Перечень самих бэков — это
- * `groupsStore` рядом; здесь — состав каждого.
- */
 export const apiCatalogOf = createActionStoreFamily<
   ApiCatalogState,
   {
@@ -34,7 +23,6 @@ export const apiCatalogOf = createActionStoreFamily<
     addEndpoint(descriptor: EndpointDescriptor): void;
     removeEndpoint(id: string): void;
   },
-  // Ключ семьи — айди API.
   string
 >(
   { endpoints: [], status: "idle" },
@@ -50,8 +38,6 @@ export const apiCatalogOf = createActionStoreFamily<
 
       try {
         const endpoints = await run(raw, [swagger2Template]);
-        // Пока шло распознавание, юзер мог залить другой документ — тогда этот ответ уже не про
-        // текущее состояние стора и должен быть выброшен, а не записан поверх свежего.
         if (get().raw !== raw) return;
 
         setState(
@@ -94,9 +80,6 @@ export const apiCatalogOf = createActionStoreFamily<
   }),
 );
 
-/** Ручка по айди — обычная функция над состоянием, а не селектор стора: параметризованные
- *  селекторы `createActionStore` (те, что с аргументом после `state`) не проходят типизацию
- *  своего же пакета. Завести обратно в стор, когда это починят. */
 export function endpointBy(state: ApiCatalogState, id: string): OpenapiEndpoint | undefined {
   return state.endpoints.find((endpoint) => endpointKey(endpoint) === id);
 }
