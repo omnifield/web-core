@@ -239,6 +239,197 @@ categories:
           универсальный мод, не привязанный к происхождению данных (уточнение 2026-09-15, находка
           user — мод 2 без способа скормить результат потребителю был бесполезен).
 
+  - category: Привязка ручки к компоненту (пересборка 2026-09-18)
+    items:
+      - id: rebuild-context
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Пересборка пакета: прежние публичные виджеты сняты, каркас собирается заново"
+        description: |
+          Означает: `OpenapiEditor`/`OpenapiList`/`Mapping a,b`/`Tree`-как-экспорт снесены user до
+          начала этой работы («там был бардак, теперь переписываем»); доки и `test/` на момент
+          старта описывали уже несуществующий код. Уцелело и переиспользуется: распознавание
+          Swagger 2.0 (`swagger2Template`), схема A (`EndpointDescriptor`+`descriptorToEndpoint`),
+          примитивы вызова (`resolveUrl`/`appendQuery`/`toResult`), движок дерева (переехал в
+          `entities/form`, наружу — `TreeForm`). Новый скоуп задан user: «настроил апи → привязал
+          ручку к компоненту → на другой странице дёрнул привязанное», стык привязки и есть
+          адаптер.
+
+      - id: binding-is-adapter
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Привязка и адаптер — одна запись `Binding`, не две сущности"
+        description: |
+          Означает: `Binding { source: {apiId, endpointId, value?}, root, rules, extra? }` — «что
+          дёрнуть», «где в ответе записи» (L3 `@web-core/io`), «как одна запись ложится на вход
+          потребителя» (L2, `FieldRule[]`). `rules: []` — законное состояние «привязано, но не
+          сведено» (`isFed`), а не поломка. Второй реестр «адаптеров» потребовал бы синхронизации
+          с первым, рассинхрон давал бы молча пустой компонент. Привязка — чистый JSON (на ручку
+          ссылается строкой), поэтому сохраняется потребителем и поднимается `hydrate`.
+
+      - id: keys-chosen-by-reader
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Ключи семей: каталог — по `apiId`, привязки — по имени компонента"
+        description: |
+          Означает: `apiCatalogOf(apiId)` и `bindingStoreOf(component)` на
+          `createActionStoreFamily` (`@web-core/store`), приём взят у `componentManagerStoreOf`
+          в `apps/studio`. Ключ привязок выбран стороной, которая ЧИТАЕТ: на витрине компонент
+          знает только себя. Это же доказывает, почему адаптер не может жить на ручке — одна
+          ручка кормит и таблицу, и листбокс, а правила у них разные. Айди ручки —
+          `endpointKey` = `метод + url`: привязка обязана пережить перезалив документа, а
+          перераспознавание даёт новый массив объектов.
+
+      - id: api-catalog
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`entities/openapi`: каталог ручек одного бэка (`apiCatalogOf`)"
+        description: |
+          Означает: `{ raw?, endpoints, status, error }`, действия `loadSchema` (через
+          `run(raw,[swagger2Template])`), `addEndpoint(descriptor)`, `removeEndpoint(id)`.
+          Загрузка прикрыта гардом от гонки (ответ устаревшей загрузки выбрасывается по сверке
+          `raw`), нераспознанный документ — статус `failed` с текстом, не исключение. Сначала
+          стор лежал в `features/api-manager` (калька со студии) — опущен в `entities` решением
+          user 2026-09-18: набор ручек одного бэка это структура, и читать её нужно и экрану
+          настройки, и витрине, а фиче нельзя импортировать другую фичу. Тесты — 5.
+
+      - id: api-manager-provider
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`features/api-manager`: провайдер текущего API и `ApiList`"
+        description: |
+          Означает: `ApiManagerProvider api={id}` + `useApiId`/`useApiCatalog` — интерфейсный
+          вопрос «с каким API работаем», без владения структурой. Документ пропом НЕ засевается
+          (в отличие от студийного `ComponentManagerProvider`, где состояние выводится из самого
+          ключа): здесь юзер приносит документ после монтирования, засев был бы одноразовым.
+          `ApiList` рендерит состав и его состояния, а что монтируется на строку — функция-ребёнок
+          от того, кто собирает экран. Тесты — 4.
+
+      - id: binding-entity
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`entities/binding`: тип, стор и применение привязки"
+        description: |
+          Означает: `bindingKey`/`isFed`, `bindingStoreOf(component)` (`bind`/`unbind`/`setRoot`/
+          `setRules`/`setExtra`/`hydrate`), `applyBinding(response, binding)` поверх
+          `collectRowsReport`/`collectFieldRuleReport` из `@web-core/io`. Своего кода — только
+          развилка «набор записей или одна запись» (`GET /users` отдаёт массив, `GET /user/{id}`
+          объект, оба законная еда, а `collectRowsReport` ждёт именно массив) и именные отказы
+          вместо молчаливых нуля записей. Повторный `bind` той же ручки = смена параметров
+          вызова, сведённые правила не сносятся. Тесты — 13.
+
+      - id: invoke-endpoint-rebuilt
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`features/invoke-endpoint`: один вызов настроенной ручки"
+        description: |
+          Означает: `invokeEndpoint(endpoint, value)` поверх `rawRestRequest`
+          (`@web-core/query/rest`) и уцелевших примитивов `resolveUrl`/`appendQuery`/`toResult`.
+          Не-2xx — валидный `InvokeResult` (инструмент постмановского рода показывает 404/500 со
+          статусом и телом), сорванный транспорт — исключение (ответа не было вовсе, притворяться
+          нельзя). Тесты — 5, на моке `fetch`.
+
+      - id: feed-widget
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`widgets/feed`: витрина — `useFeed`/`feedOf`/`feedBindingOf`"
+        description: |
+          Означает: сборка «взять ручку из каталога → вызвать → применить привязку». Слой
+          `widgets`, потому что это сборка entities и фичи вызова, а фича не имеет права звать
+          другую фичу. Исход ВСЕГДА один `RowsResult` — успех, «ручки нет в каталоге», 500,
+          оборванная сеть; исключение наружу не выходит. Привязки нет — ресурс не стреляет, в
+          сеть не ходим. Берётся первая СВЕДЁННАЯ привязка, иначе первая вообще — чтобы
+          недоделанная объяснила себя, а не притворилась отсутствием еды. Тесты — 8, включая
+          сквозной (каталог → привязка → мок `fetch` → записи в форме компонента).
+
+      - id: mapping-ui-rebuilt
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`entities/mapping` + `widgets/mapping`: UI сведения с новым контрактом"
+        description: |
+          Означает: `isSchema`/`describeVariant`/`rowSetsOf`/`recordPathsOf` (тонкая обёртка над
+          `@web-core/io`) и `Mapping { source, target, root?, rules?, onChange }` — вместо
+          снесённого `a`/`b`. Пути показываются ЗАПИСИ, а не ответа (правила применяются к
+          записи). Смена «где записи» уносит правила, чей `from` больше не существует: иначе на
+          витрине это выглядело бы как беда данных, хотя это беда настройки. `target` — проп, а
+          не io-схема, вытянутая внутри движка: сведение обязано работать и для потребителя не из
+          кита. Нативный `<select>` (`FieldSelect`) — Ark-UI `Select` не открывается в jsdom.
+          Тесты — 7 (entities) + 5 (DOM).
+
+      - id: binding-screen
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`widgets/binding`: экран настройки целиком + публичный API пакета"
+        description: |
+          Означает: `BindEndpoint` (параметры через `TreeForm` → «Проверить» живым вызовом →
+          выбор потребителя → `Mapping`, пишущий `setRoot`/`setRules`) и `BindingEditor`
+          (провайдер + список + карточка, `raw` грузится эффектом, потребители пропом). Сведение
+          возможно только ПОСЛЕ настоящего вызова: схемы ответа у движка нет (Swagger 2.0 здесь
+          разбирается на параметры), и экран говорит это прямо. `src/index.ts` выставил наружу
+          весь путь: `BindingEditor`/`BindEndpoint`, `Mapping`, `useFeed`/`feedOf`,
+          `ApiManagerProvider`/`ApiList`, `TreeForm`, `invokeEndpoint`, сторы и типы. Тесты — 4
+          DOM, включая сквозной «Проверить → свести → правило в сторе привязок».
+
+      - id: dead-tests-left
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: "8 тест-файлов от снесённого кода — починить пути или снести"
+        description: |
+          Означает: `test/` пережил снос хуже кода. Пять файлов покрывают ЖИВОЙ код, который
+          переехал (`entities/tree/*` → `entities/form/lib`, `openapi/{descriptor,swagger2}` →
+          `models/`, `widgets/tree` → `entities/form/ui/tree`) — чинятся правкой импортов и
+          возвращают покрытие. Три мертвы по-настоящему (`widgets/openapi/{editor,list}`,
+          `entities/mapping/apply`) — сносить. Текущий `vitest run` даёт 51 зелёный тест и 8
+          красных файлов на импортах.
+
+      - id: store-parametrized-selectors
+        type: decision
+        status: Backlog
+        priority: Low
+        milestone: null
+        name: "Параметризованные селекторы `@web-core/store` не проходят свою же типизацию"
+        description: |
+          Означает: `SelectorsShape<T>` (`(state, ...args: never[]) => unknown`) не принимает
+          `(state, id: string)`, а при трёх явных аргументах типа перегрузка
+          `createActionStoreFamily` уводит селекторы в параметр ключа `K`; рантайм их
+          поддерживает (`fn.length > 1`), `dist/*.d.ts` пакета вдобавок отстал от `src`. Чужая
+          зона — находка отдана наверх. В feeder временно обычные функции над состоянием
+          (`endpointBy`, `bindingBy`); вернуть в стор, когда починят.
+
+      - id: live-browser-check
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: "Живая проверка цикла в браузере (`apps/studio`)"
+        description: |
+          Означает: текущая сборка проверена только vitest+jsdom (включая сквозной DOM-тест
+          экрана). Живьём не гонялась: подключить `BindingEditor`+`useFeed` на страницу
+          `apps/studio/src/pages/lab`, свести поля руками и увидеть, как витрина обновляется —
+          см. `EXAMPLES.md`, кейс 12.
+
   - category: Документация
     items:
       - id: readme-faq-roadmap-first-draft
@@ -255,6 +446,24 @@ categories:
           (группа/genus/почему openapi не сливается физически) и разбор, какие кирпичи `io`/
           `generators` уже закрывают режимы 2/3.
 
+      - id: docs-rewritten-after-rebuild
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "README/FAQ/EXAMPLES переписаны под фактический код после пересборки"
+        description: |
+          Означает: доки описывали снесённый API (`OpenapiEditor`/`OpenapiList`/`Mapping a,b`/
+          `Tree` как экспорт) — переписаны от кода. README: анатомия по слоям, контракты, точный
+          состав тестов (51 зелёный + 8 красных файлов от снесённого, названы явно). FAQ: шапка
+          отделяет историческую часть от актуальной, добавлен раздел «Привязка компонента к ручке»
+          — 12 решений пересборки (почему привязка и адаптер одна запись, почему ключ по имени
+          компонента, почему айди ручки метод+url, почему каталог в entities, почему feed —
+          виджет, почему не-2xx по-разному у вызова и у кормления, почему сведение требует
+          пробного вызова, почему селекторы стора временно функции). EXAMPLES: 12 кейсов от
+          словаря до отладочной таблицы «на витрине пусто — где смотреть», весь код сверен с
+          экспортами пакета.
+
       - id: examples-md
         type: feature
         status: Done
@@ -269,6 +478,32 @@ categories:
           README.md урезан до пары базовых сниппетов со ссылкой сюда.
 
 log:
+  - id: binding-and-adapter-built
+    type: plan
+    date: 2026-09-18
+    summary: >
+      Шесть итераций подряд по ТЗ user, каждая принята по ходу: (1) каркас `features/api-manager`
+      и семья сторов по `apiId` + `endpointKey`; (2) `entities/binding` — привязка как единая
+      запись вместе с адаптером; (3) восстановленный `features/invoke-endpoint`; (4) перенос
+      каталога ручек в `entities/openapi` и `widgets/feed` (`useFeed`) — цикл замкнулся сквозным
+      тестом; (5) `entities/mapping` + `widgets/mapping` — UI сведения; (6) `widgets/binding` —
+      экран целиком и публичный API пакета.
+
+      Ключевое решение, заданное вопросом user «есть идеи как красиво обыграть»: стык привязки И
+      ЕСТЬ адаптер — одна запись `Binding` вместо «ссылка на ручку» + отдельный реестр правил.
+      Отсюда всё остальное: ключ привязок по имени компонента (читатель на витрине знает только
+      себя; одна ручка кормит несколько компонентов разными правилами), айди ручки метод+url
+      (переживает перезалив документа), привязка как чистый JSON (сохраняется потребителем).
+
+      Развилка по слоям вынесена user'у отдельно и решена им в пользу «более правильного»
+      варианта: каталог ручек опущен из фичи в `entities/openapi`, в `features/api-manager`
+      осталось интерфейсное. `feedOf` при этом всё равно виджет — сборка фичи вызова и сущностей.
+
+      Итог: 51 зелёный тест, `build`/`lint` чистые, пакет выставляет наружу весь путь
+      «настроить → привязать → свести → дёрнуть на витрине». Живого браузера не было. Доки
+      (README/FAQ/EXAMPLES) переписаны под фактический код в том же заходе — старые описывали
+      снесённый API.
+
   - id: mode-openapi-groups-done
     type: plan
     date: 2026-09-17
