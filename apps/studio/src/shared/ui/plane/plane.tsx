@@ -96,18 +96,32 @@ export function Plane<Column, Row>(props: {
     if (settle !== undefined) clearTimeout(settle);
   });
 
+  /** Первая посадка уже состоялась: дальше позицию меняет пользователь, и доезд плавный.
+   *  До неё плоскость обязана просто СТОЯТЬ в заданной позиции — см. эффект ниже. */
+  let landed = false;
+
   // Позицию сменили снаружи — линейкой или другим контролом. Доезжаем сами; если уже стоим
   // где надо (позиция приехала от собственного `report`), не трогаем ничего.
+  //
+  // Первый заход — без анимации. Начальная позиция это не переход откуда-то: плоскости незачем
+  // показывать путь из угла (0, 0), в котором она не была — свайп при монтировании читается как
+  // «что-то уехало само». Посадкой считается только заход с уже измеренным вьюпортом: пока
+  // размеры нулевые (плоскость ещё не разложена), ехать некуда и запоминать нечего — иначе
+  // настоящая первая установка позиции досталась бы «плавной» ветке.
   createEffect(() => {
-    const left = props.position.column * viewport.clientWidth;
-    const top = props.position.row * viewport.clientHeight;
+    const width = viewport.clientWidth;
+    const height = viewport.clientHeight;
+    const left = props.position.column * width;
+    const top = props.position.row * height;
+    const behavior = landed ? "smooth" : "instant";
+    if (width > 0 && height > 0) landed = true;
     if (
       Math.abs(viewport.scrollLeft - left) < 1 &&
       Math.abs(viewport.scrollTop - top) < 1
     ) {
       return;
     }
-    viewport.scrollTo({ left, top, behavior: "smooth" });
+    viewport.scrollTo({ left, top, behavior });
   });
 
   const live = (column: number, row: number) =>
