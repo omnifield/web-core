@@ -59,19 +59,22 @@ export function useStand() {
         store.selectors.storedSecondaryIndexOfGroup(group),
       ),
 
-    variantOf: (cell: Cell) =>
+    // `secondary` можно назвать явно: плоскость матрицы рисует окно вокруг текущей позиции, и
+    // соседние строки окна — это по определению НЕ текущий выбор. Без явного аргумента они
+    // показывали бы одно и то же, и вертикальный свайп открывал бы копию вместо соседа.
+    variantOf: (cell: Cell, secondary?: number) =>
       variantIn(
         axes(),
         axisMode(),
         cell,
-        store.selectors.storedSecondaryIndex(cell),
+        secondary ?? store.selectors.storedSecondaryIndex(cell),
       ),
-    assemblyOf: (cell: Cell) =>
+    assemblyOf: (cell: Cell, secondary?: number) =>
       assemblyIn(
         axes(),
         axisMode(),
         cell,
-        store.selectors.storedSecondaryIndex(cell),
+        secondary ?? store.selectors.storedSecondaryIndex(cell),
       ),
   };
 }

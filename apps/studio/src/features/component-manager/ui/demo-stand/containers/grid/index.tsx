@@ -1,5 +1,5 @@
 import { For } from "solid-js";
-import { Flow, Grid as UiGrid, GridCell, Typography } from "@web-core/ui";
+import { Flow, GridCell, Typography, Grid as UiGrid } from "@web-core/ui";
 import type { Cell } from "../../../../lib/cell";
 import type { Group } from "../../../../lib/group";
 import { CellWrapper } from "./cell-wrapper";
@@ -19,7 +19,10 @@ export function Grid(props: {
             <For each={group.items}>
               {(cell) => (
                 <GridCell>
-                  <CellWrapper cell={cell} secondaryItems={props.secondaryItems} />
+                  <CellWrapper
+                    cell={cell}
+                    secondaryItems={props.secondaryItems}
+                  />
                 </GridCell>
               )}
             </For>

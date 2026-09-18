@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
+
 type SecondaryItem = { readonly name: string };
 
 /** Выбор secondary-элемента — один и тот же контрол для grid и matrix. Сам он ничего не адресует:
@@ -25,7 +26,10 @@ export function SwitchSecondaryIndex(props: {
   onSelect: (index: number) => void;
 }) {
   const options = () =>
-    props.items.map((item, index) => ({ value: String(index), label: item.name }));
+    props.items.map((item, index) => ({
+      value: String(index),
+      label: item.name,
+    }));
 
   const selected = () => {
     const item = options()[props.index];

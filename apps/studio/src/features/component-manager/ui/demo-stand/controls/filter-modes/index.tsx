@@ -9,9 +9,9 @@ import {
 } from "@web-core/ui";
 import {
   FILTER_MODES,
+  type FilterMode,
   filterAppliesTo,
   useStandStore,
-  type FilterMode,
 } from "../../../../model";
 
 export function SwitchFilterMode() {

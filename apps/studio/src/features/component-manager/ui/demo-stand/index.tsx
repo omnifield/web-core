@@ -1,6 +1,8 @@
-export { Distributor } from "./containers";
 export { Passport } from "./cards";
-export { SwitchAxisMode } from "./controls";
-export { SwitchFilterMode } from "./controls";
-export { SwitchLayoutMode } from "./controls";
-export { SwitchViewModeGlobal as SwitchViewMode } from "./controls";
+export { Distributor } from "./containers";
+export {
+  SwitchAxisMode,
+  SwitchFilterMode,
+  SwitchLayoutMode,
+  SwitchViewModeGlobal as SwitchViewMode,
+} from "./controls";

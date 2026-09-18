@@ -1,3 +1,4 @@
+export type { AxisMode, FilterMode, LayoutMode, ViewMode } from "./modes";
 export {
   AXIS_MODES,
   DEFAULT_AXIS_MODE,
@@ -8,6 +9,5 @@ export {
   LAYOUT_MODES,
   VIEW_MODES,
 } from "./modes";
-export type { AxisMode, FilterMode, LayoutMode, ViewMode } from "./modes";
 export { useStand, useStandStore } from "./stand";
 export { ALL_CELLS, componentManagerStoreOf } from "./store";

@@ -1,3 +1,4 @@
+import { For } from "solid-js";
 import {
   Icon,
   SegmentGroup,
@@ -6,7 +7,6 @@ import {
   SegmentGroupItemControl,
   SegmentGroupItemText,
 } from "@web-core/ui";
-import { For } from "solid-js";
 import {
   ALL_CELLS,
   useStandStore,

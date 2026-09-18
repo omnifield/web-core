@@ -6,12 +6,12 @@ import { Feed } from "./feed";
 import { Form } from "./form";
 import { Style } from "./style";
 
-export function Switcher(props: { cell: Cell }) {
+export function Switcher(props: { cell: Cell; secondary?: number }) {
   const { store, variantOf, assemblyOf } = useStand();
 
   const mode = () => store.selectors.viewMode(props.cell);
-  const variant = () => variantOf(props.cell);
-  const assembly = () => assemblyOf(props.cell);
+  const variant = () => variantOf(props.cell, props.secondary);
+  const assembly = () => assemblyOf(props.cell, props.secondary);
 
   return (
     <Switch>
@@ -20,7 +20,11 @@ export function Switcher(props: { cell: Cell }) {
           {(variant) => (
             <Show when={assembly()} keyed>
               {(assembly) => (
-                <Form cell={props.cell} variant={variant.name} assembly={assembly} />
+                <Form
+                  cell={props.cell}
+                  variant={variant.name}
+                  assembly={assembly}
+                />
               )}
             </Show>
           )}

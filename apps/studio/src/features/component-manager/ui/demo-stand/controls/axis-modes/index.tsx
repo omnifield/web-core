@@ -1,8 +1,5 @@
-import { Icon, Toggle, ToggleIndicator, type IconProps } from "@web-core/ui";
-import {
-  AXIS_MODES,
-  useStandStore,
-} from "../../../../model";
+import { Icon, type IconProps, Toggle, ToggleIndicator } from "@web-core/ui";
+import { AXIS_MODES, useStandStore } from "../../../../model";
 
 type IconName = IconProps["name"];
 

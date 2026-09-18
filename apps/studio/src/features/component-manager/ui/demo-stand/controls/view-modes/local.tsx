@@ -1,3 +1,4 @@
+import { For } from "solid-js";
 import {
   Icon,
   Select,
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
-import { For } from "solid-js";
 import type { Cell } from "../../../../lib/cell";
 import { useStandStore, VIEW_MODES } from "../../../../model";
 
