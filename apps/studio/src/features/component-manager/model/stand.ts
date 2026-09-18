@@ -7,7 +7,7 @@ import {
   variantIn,
 } from "../lib/axes";
 import type { Cell } from "../lib/cell";
-import { componentManagerStoreOf } from "./store";
+import { componentManagerStoreOf, type Feed } from "./store";
 
 /**
  * Единственное место, где состояние стенда (стор фичи) встречается с данными компонента
@@ -33,10 +33,25 @@ export function useStand() {
 
   const axisMode = store.use((state) => state.axisMode);
 
+  /** Ссылка на источник → сами данные. Пресет читается из кэша запросов по имени: тело живёт
+   *  там, стенд держит только выбор. Пресет мог уехать (сменился компонент, кэш ещё едет) —
+   *  тогда кормить нечем, и это `undefined`, а не «пустой объект»: отсутствие данных и данные
+   *  без полей выглядят в показе по-разному. */
+  function dataOf(feed: Feed | undefined): unknown {
+    if (feed === undefined) return undefined;
+    if (feed.kind === "manual") return feed.data;
+    return component.content().find((preset) => preset.name === feed.name)
+      ?.state.data;
+  }
+
   return {
     component,
     store,
     axes,
+
+    /** Чем накормлена ячейка и чем накормлен стенд целиком — уже данными, а не ссылкой. */
+    feedDataOf: (cell: Cell) => dataOf(store.selectors.feed(cell)),
+    standFeedData: () => dataOf(store.selectors.standFeed()),
 
     /** Списки в порядке «сначала primary»: кто из них primary, знает только стенд. */
     primaryItems: () =>

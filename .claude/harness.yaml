@@ -18,7 +18,7 @@ architects: 1
 # снапшот замораживает сессии на конкретной сборке и требует ручной правки в каждом репозитории.
 models:
   architect: claude-opus-5
-  owner: claude-opus-4-8
+  owner: claude-opus-5
   layer: claude-haiku-4-5
 
 # ЗОНЫ: scope (leaf-имя) → paths[] + назначение. owner-<zone> правит только свои папки —

@@ -10,7 +10,7 @@ export function Form(props: {
   variant: string;
   assembly: PassportAssembly;
 }) {
-  const { store, component } = useStand();
+  const { component, feedDataOf } = useStand();
 
   function dispatch(event: DispatchedEvent) {
     console.log(event);
@@ -25,7 +25,7 @@ export function Form(props: {
       component={component.name}
       assembly={props.assembly.name}
       variant={props.variant}
-      data={store.selectors.feedData(props.cell)}
+      data={feedDataOf(props.cell)}
       dispatch={dispatch}
     />
   );

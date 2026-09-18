@@ -7,7 +7,7 @@ import { Form } from "./form";
 import { Style } from "./style";
 
 export function Switcher(props: { cell: Cell; secondary?: number }) {
-  const { store, variantOf, assemblyOf } = useStand();
+  const { store, variantOf, assemblyOf, feedDataOf } = useStand();
 
   const mode = () => store.selectors.viewMode(props.cell);
   const variant = () => variantOf(props.cell, props.secondary);
@@ -36,7 +36,7 @@ export function Switcher(props: { cell: Cell; secondary?: number }) {
         </Show>
       </Match>
       <Match when={mode() === "feed"}>
-        <Feed feedData={store.selectors.feedData(props.cell)} />
+        <Feed feedData={feedDataOf(props.cell)} />
       </Match>
       <Match when={mode() === "style"}>
         <Style styleData={undefined} />

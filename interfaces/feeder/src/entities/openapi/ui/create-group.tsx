@@ -3,7 +3,6 @@ import { layoutGroup } from "@web-core/skin";
 import { createSignal } from "solid-js";
 
 import { groupsStore } from "../models/store";
-import { Button } from "../../../shared/ui";
 
 /** Форма завести новую группу — имя + айди схемы, пишет прямо в `groupsStore` (не наружу пропом,
  *  сама сущность владеет списком групп). */
@@ -34,7 +33,7 @@ export function CreateGroup() {
           onInput={(event) => setSchemaId(event.currentTarget.value)}
         />
       </Field>
-      <Button onClick={submit}>ADD</Button>
+      {/* <Button onClick={submit}>ADD</Button> */}
     </Flow>
   );
 }

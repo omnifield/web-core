@@ -22,7 +22,6 @@ export function NavigationTabs(props: {
       value={props.value}
       defaultValue={props.defaultValue ?? keys()[0]}
       onValueChange={props.onValueChange}
-      unmountOnExit
     >
       <TabsList>
         <For each={keys()}>

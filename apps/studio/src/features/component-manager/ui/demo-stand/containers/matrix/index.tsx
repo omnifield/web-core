@@ -1,6 +1,6 @@
 import { batch, createSignal, For } from "solid-js";
 import { layoutSelf } from "@web-core/skin";
-import { Flow, FlowItem, Typography } from "@web-core/ui";
+import { Flow, FlowItem, Surface, Typography } from "@web-core/ui";
 import {
   Plane,
   PlaneIndicator,
@@ -20,11 +20,13 @@ export function Matrix(props: {
   secondaryItems: readonly SecondaryItem[];
 }) {
   return (
-    <For each={props.groups}>
-      {(group) => (
-        <MatrixGroup group={group} secondaryItems={props.secondaryItems} />
-      )}
-    </For>
+    <Flow data-variant="column">
+      <For each={props.groups}>
+        {(group) => (
+          <MatrixGroup group={group} secondaryItems={props.secondaryItems} />
+        )}
+      </For>
+    </Flow>
   );
 }
 
@@ -74,58 +76,62 @@ function MatrixGroup(props: {
   }
 
   return (
-    <Flow data-variant="column">
-      {props.group.label !== "" && <Typography>{props.group.label}</Typography>}
+    <Surface>
+      <Flow data-variant="column">
+        {props.group.label !== "" && (
+          <Typography>{props.group.label}</Typography>
+        )}
 
-      <FlowItem style={layoutSelf({ align: "stretch" })}>
-        <PlaneStack>
-          <Plane
-            columns={props.group.items}
-            rows={props.secondaryItems}
-            position={position()}
-            onMove={move}
-            scrollbar={false}
-            style={cellSize(component.editorInfo()?.footprint)}
-          >
-            {(cell) => (
-              <Switcher cell={cell.column} secondary={cell.position.row} />
-            )}
-          </Plane>
+        <FlowItem style={layoutSelf({ align: "stretch" })}>
+          <PlaneStack>
+            <Plane
+              columns={props.group.items}
+              rows={props.secondaryItems}
+              position={position()}
+              onMove={move}
+              scrollbar={false}
+              style={cellSize(component.editorInfo()?.footprint)}
+            >
+              {(cell) => (
+                <Switcher cell={cell.column} secondary={cell.position.row} />
+              )}
+            </Plane>
 
-          <PlaneRuler
-            placement="top"
-            orientation="horizontal"
-            items={columnItems()}
-            index={column()}
-            onSelect={setColumn}
-          />
-          <PlaneRuler
-            placement="left"
-            orientation="vertical"
-            items={props.secondaryItems}
-            index={row()}
-            onSelect={selectRow}
-          />
+            <PlaneRuler
+              placement="top"
+              orientation="horizontal"
+              items={columnItems()}
+              index={column()}
+              onSelect={setColumn}
+            />
+            <PlaneRuler
+              placement="left"
+              orientation="vertical"
+              items={props.secondaryItems}
+              index={row()}
+              onSelect={selectRow}
+            />
 
-          {/* Точки встают там же, где были полосы прокрутки: снизу — горизонтальная ось,
+            {/* Точки встают там же, где были полосы прокрутки: снизу — горизонтальная ось,
               справа — вертикальная. Полосы у плоскости выключены, чтобы не показывать одно и
               то же дважды. */}
-          <PlaneIndicator
-            placement="bottom"
-            orientation="horizontal"
-            items={columnItems()}
-            index={column()}
-            onSelect={setColumn}
-          />
-          <PlaneIndicator
-            placement="right"
-            orientation="vertical"
-            items={props.secondaryItems}
-            index={row()}
-            onSelect={selectRow}
-          />
-        </PlaneStack>
-      </FlowItem>
-    </Flow>
+            <PlaneIndicator
+              placement="bottom"
+              orientation="horizontal"
+              items={columnItems()}
+              index={column()}
+              onSelect={setColumn}
+            />
+            <PlaneIndicator
+              placement="right"
+              orientation="vertical"
+              items={props.secondaryItems}
+              index={row()}
+              onSelect={selectRow}
+            />
+          </PlaneStack>
+        </FlowItem>
+      </Flow>
+    </Surface>
   );
 }

@@ -1,5 +1,9 @@
 import { createMemo } from "solid-js";
-import { blankElement, fieldsOfElement, type FieldDescriptor } from "@web-core/generators/fields";
+import {
+  blankElement,
+  fieldsOfElement,
+  type FieldDescriptor,
+} from "@web-core/generators/fields";
 
 import type { FieldBinding } from "./binding";
 
@@ -8,13 +12,17 @@ import type { FieldBinding } from "./binding";
  *  `removeAt`). Общая между узлом (кнопка «Добавить» у лейбла) и обвязкой списка (аккордеон
  *  элементов, «Убрать» на каждый) — та же самая пара `field`+`binding`, тот же список. */
 export function useTree(field: FieldDescriptor, binding: FieldBinding) {
-  const elementFields = createMemo(() => (field.element ? fieldsOfElement(field.element) : []));
-  const items = createMemo(() => (Array.isArray(binding.value()) ? (binding.value() as unknown[]) : []));
+  const elementFields = createMemo(() =>
+    field.element ? fieldsOfElement(field.element) : [],
+  );
+  const items = createMemo(() =>
+    Array.isArray(binding.value()) ? (binding.value() as unknown[]) : [],
+  );
   const indices = createMemo(() => items().map((_, index) => index));
 
   function add() {
     if (!field.element) return;
-    binding.onChange([...items(), blankElement(field.element)]);
+    binding.onChange([blankElement(field.element), ...items()]);
   }
 
   function removeAt(index: number) {

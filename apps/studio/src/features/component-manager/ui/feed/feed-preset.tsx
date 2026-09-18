@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For } from "solid-js";
+import { createEffect, For } from "solid-js";
 import {
   Select,
   SelectContent,
@@ -15,31 +15,44 @@ import {
 import { useComponent } from "#/entities/component";
 import { useStandStore } from "../../model";
 
+/**
+ * Выбор пресета данных для всего стенда.
+ *
+ * В контрол уходят только имя и подпись — тело пресета через него НЕ течёт. Тело живёт в кэше
+ * запросов, и всё, что стенд о нём помнит, — выбранное имя (разбор у типа `Feed` в
+ * `model/store.ts`). Собственного состояния выбора у контрола тоже нет: выбранное он читает из
+ * стора и туда же пишет, так что расходиться нечему.
+ */
 export function FeedPreset() {
   const store = useStandStore();
   const component = useComponent();
+
   const items = () =>
     component.content().map((preset) => ({
       value: preset.name,
       label: preset.label,
-      data: preset.state.data,
     }));
 
-  const [presetName, setPresetName] = createSignal<string>();
+  const presetName = () => {
+    const feed = store.selectors.standFeed();
+    return feed?.kind === "preset" ? feed.name : undefined;
+  };
   const selected = () => {
     const name = presetName();
     return name === undefined ? [] : [name];
   };
 
+  // Стенд должен быть накормлен с первого показа, иначе компонент выходит пустым. Первый пресет
+  // ставится и тогда, когда выбранного имени в списке нет: список — пресеты ТЕКУЩЕГО компонента,
+  // а стор переживает уход со страницы. Ручной корм не трогаем: он не выбирается именем, и
+  // подменять его пресетом — значит терять то, что человек набрал.
   createEffect(() => {
     const list = items();
     if (list.length === 0) return;
+    if (store.selectors.standFeed()?.kind === "manual") return;
+    if (list.some((item) => item.value === presetName())) return;
 
-    const current = presetName();
-    if (list.some((item) => item.value === current)) return;
-
-    setPresetName(list[0].value);
-    store.actions.setFeedData(list[0].data);
+    store.actions.setFeedPreset(list[0].value);
   });
 
   return (
@@ -49,8 +62,7 @@ export function FeedPreset() {
       onValueChange={(details) => {
         const item = details.items[0];
         if (item === undefined) return;
-        setPresetName(item.value);
-        store.actions.setFeedData(item.data);
+        store.actions.setFeedPreset(item.value);
       }}
     >
       <SelectLabel>Пресет</SelectLabel>
