@@ -1,6 +1,6 @@
 export { TreeForm } from "./features/tree-form";
 export { ExternalSchemaLoader } from "./features/external-schema";
-export { SchemaCatalog } from "./features/api-manager";
+export { invokeEndpoint, SchemaCatalog, useInvoke, type Invocation } from "./features/api-manager";
 
 export {
   applyAdapter,
@@ -24,14 +24,11 @@ export {
   type SchemasState,
 } from "./entities/schema";
 export {
-  apiCatalogOf,
   Endpoints,
-  endpointBy,
+  parseEndpoints,
   endpointKey,
   groupEndpoints,
   type EndpointGroup,
-  type ApiCatalogState,
-  type ApiStatus,
   type EndpointDescriptor,
   type EndpointParam,
   type HttpMethod,

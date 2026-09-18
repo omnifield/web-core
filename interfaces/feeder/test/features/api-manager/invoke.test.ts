@@ -2,7 +2,7 @@ import { z } from "@web-core/io";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { OpenapiEndpoint } from "../../../src/entities/openapi";
-import { invokeEndpoint } from "../../../src/features/invoke-endpoint";
+import { invokeEndpoint } from "../../../src/features/api-manager";
 
 function endpoint(patch: Partial<OpenapiEndpoint> = {}): OpenapiEndpoint {
   return {

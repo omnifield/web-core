@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Tree } from "../../../src/entities/form/ui/tree/root.js";
+import { Tree } from "../../../src/entities/form/ui/tree";
 
 const schema = z.object({
   name: z.string(),

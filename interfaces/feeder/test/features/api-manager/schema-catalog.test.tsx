@@ -1,8 +1,18 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { render } from "solid-js/web";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { schemasStore } from "../../../src/entities/schema";
 import { SchemaCatalog } from "../../../src/features/api-manager";
+
+const fixtureDir = dirname(fileURLToPath(import.meta.url));
+const petstore = readFileSync(
+  join(fixtureDir, "../../entities/openapi/fixtures/petstore.yaml"),
+  "utf-8",
+);
 
 let dispose: (() => void) | undefined;
 
@@ -62,5 +72,37 @@ describe("SchemaCatalog", () => {
     expect(schemasStore.get().schemas.map((schema) => schema.id)).toEqual([second]);
     expect(host.textContent).not.toContain("Первая");
     expect(host.textContent).toContain("Вторая");
+  });
+
+  it("узел схемы разворачивается в её ручки — состав считается из оригинала", async () => {
+    schemasStore.actions.add("Петстор", petstore);
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("pet"));
+    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
+  });
+
+  it("нераспознанный документ говорит об этом на своём узле", async () => {
+    schemasStore.actions.add("Кривая", "это не сваггер");
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Схема не распозналась"));
+    expect(host.textContent).toContain("Кривая");
+  });
+
+  it("правка оригинала пересобирает состав — копии ручек нигде нет", async () => {
+    const id = schemasStore.actions.add("Петстор", "это не сваггер");
+
+    const host = mount();
+    await vi.waitFor(() => expect(host.textContent).toContain("Схема не распозналась"));
+
+    schemasStore.actions.replace(id, petstore);
+
+    await vi.waitFor(() =>
+      expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus"),
+    );
+    expect(host.textContent).not.toContain("Схема не распозналась");
   });
 });
