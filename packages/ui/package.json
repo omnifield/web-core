@@ -114,6 +114,7 @@
     "@zag-js/toc": "^1.43.1",
     "@zag-js/dialog": "^1.43.1",
     "@zag-js/menu": "^1.43.1",
+    "@zag-js/navigation-menu": "^1.43.1",
     "@zag-js/slider": "^1.43.1",
     "@zag-js/timer": "^1.43.1",
     "@zag-js/toast": "^1.43.1",
