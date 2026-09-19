@@ -3,6 +3,7 @@ import type { Accessor, JSX } from "@web-core/solid";
 import { Box } from "../../../shared/ui";
 import {
   groupEndpoints,
+  type ConfigTarget,
   type EndpointDescriptor,
   type EndpointGroup,
   type SchemaDocument,
@@ -14,9 +15,7 @@ export function Endpoints(props: {
   onAddGroup?: () => void;
   onRemove?: () => void;
   onAddEndpoint?: (group: EndpointGroup) => void;
-  onConfig?: (
-    item: SchemaDocument | EndpointGroup | EndpointDescriptor,
-  ) => void;
+  onConfig?: (target: ConfigTarget) => void;
   onRemoveGroup?: (group: EndpointGroup) => void;
   onRemoveEndpoint?: (endpoint: EndpointDescriptor) => void;
   children?: (endpoint: Accessor<EndpointDescriptor>) => JSX.Element;
@@ -27,7 +26,12 @@ export function Endpoints(props: {
       onConfig={
         props.onConfig === undefined
           ? undefined
-          : (group) => props.onConfig?.(group ?? props.document)
+          : (group) =>
+              props.onConfig?.(
+                group === undefined
+                  ? { kind: "schema", item: props.document }
+                  : { kind: "group", item: group },
+              )
       }
       onAddChild={props.onAddGroup}
       onRemove={props.onRemove}
@@ -49,11 +53,16 @@ export function Endpoints(props: {
         <Box
           items={group().endpoints}
           itemKey={(endpoint) => endpoint.id}
-          itemLabel={(endpoint) => `${endpoint.method} ${endpoint.url}`}
+          itemLabel={(endpoint) => `${endpoint.method}`}
           onConfig={
             props.onConfig === undefined
               ? undefined
-              : (endpoint) => props.onConfig?.(endpoint ?? props.document)
+              : (endpoint) =>
+                  props.onConfig?.(
+                    endpoint === undefined
+                      ? { kind: "schema", item: props.document }
+                      : { kind: "endpoint", item: endpoint },
+                  )
           }
           onItemRemove={props.onRemoveEndpoint}
         >

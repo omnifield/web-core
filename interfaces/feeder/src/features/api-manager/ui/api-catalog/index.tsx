@@ -9,13 +9,11 @@ import {
   removeEndpoint,
   removeGroup,
   type EndpointDescriptor,
-  type EndpointGroup,
   type InvokeResult,
-  type SchemaDocument,
 } from "../../../../entities/openapi";
 import { Presets, presetsStore } from "../../../../entities/preset";
 import { Endpoint } from "../endpoint";
-import { ConfigDialog } from "./config-dialog";
+import { ConfigDialog, type ConfigSubject } from "./config-dialog";
 
 export interface ApiCatalogResult {
   readonly presetId: string;
@@ -26,8 +24,7 @@ export interface ApiCatalogResult {
 export function ApiCatalog(props: {
   onResult?: (event: ApiCatalogResult) => void;
 }) {
-  const [config, setConfig] =
-    createSignal<SchemaDocument | EndpointGroup | EndpointDescriptor>();
+  const [config, setConfig] = createSignal<ConfigSubject>();
 
   return (
     <>
@@ -45,7 +42,7 @@ export function ApiCatalog(props: {
             onAddEndpoint={(group) =>
               edit((draft) => addEndpoint(draft, group.id))
             }
-            onConfig={(item) => setConfig(() => item)}
+            onConfig={(target) => setConfig({ preset: preset(), target })}
             onRemove={() => presetsStore.actions.remove(preset().id)}
             onRemoveGroup={(group) =>
               edit((draft) => removeGroup(draft, group.id))
@@ -71,7 +68,7 @@ export function ApiCatalog(props: {
         )}
       </Presets>
 
-      <ConfigDialog item={config()} onClose={() => setConfig(undefined)} />
+      <ConfigDialog subject={config()} onClose={() => setConfig(undefined)} />
     </>
   );
 }

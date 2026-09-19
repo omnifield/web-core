@@ -54,6 +54,19 @@ function settings(host: HTMLElement): HTMLButtonElement[] {
   return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Настроить"]')];
 }
 
+function dialog(): HTMLElement | undefined {
+  const parts = [
+    ...document.querySelectorAll<HTMLElement>('[data-scope="dialog"][data-part="content"]'),
+  ];
+  return parts.at(-1);
+}
+
+function saves(): HTMLButtonElement[] {
+  return [...document.querySelectorAll("button")].filter((button) =>
+    button.textContent?.includes("Сохранить"),
+  );
+}
+
 function endpointsOf(id: string): readonly EndpointDescriptor[] {
   const content = presetsStore.get().presets.find((preset) => preset.id === id)?.content;
   return asSchemaDocument(content)?.endpoints ?? [];
@@ -110,23 +123,28 @@ describe("ApiCatalog", () => {
   });
 
   it("узел разворачивается в ручки пресета — без повторного разбора", async () => {
-    presetsStore.actions.add("api", "Петстор", await parseSchema(petstore));
+    const id = presetsStore.actions.add("api", "Петстор", await parseSchema(petstore));
 
     const host = mount();
 
     expect(host.textContent).toContain("pet");
-    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
+    expect(settings(host)).toHaveLength(
+      1 + groupsOf(id).length + endpointsOf(id).length,
+    );
   });
 
   it("подмена содержимого пересобирает состав — копий ручек нет", async () => {
     const id = presetsStore.actions.add("api", "Петстор", { endpoints: [], defs: {} });
 
     const host = mount();
-    expect(host.textContent).not.toContain("findByStatus");
+    expect(settings(host)).toHaveLength(1);
 
     presetsStore.actions.replace(id, await parseSchema(petstore));
 
-    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
+    expect(host.textContent).toContain("pet");
+    expect(settings(host)).toHaveLength(
+      1 + groupsOf(id).length + endpointsOf(id).length,
+    );
   });
 
   it("своя запись с битым содержимым названа вслух, а не показана пустой", () => {
@@ -228,31 +246,31 @@ describe("ApiCatalog", () => {
     expect(settings(host)).toHaveLength(3);
   });
 
-  it("«Настроить» открывает диалог и отдаёт в него ТОТ узел, на котором нажали", () => {
+  it("«Настроить» на ручке открывает форму её конфига, а не форму соседа", () => {
     presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
-    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
 
     const host = mount();
     settings(host)[2]?.click();
 
-    expect(log).toHaveBeenLastCalledWith(
-      "config-dialog: узел",
-      expect.objectContaining({ id: "users" }),
-    );
+    const form = dialog();
+    expect(form?.textContent).toContain("method");
+    expect(form?.textContent).toContain("url");
+    expect(form?.textContent).toContain("params");
+    expect(saves()).toHaveLength(1);
+  });
 
-    settings(host)[1]?.click();
-    expect(log).toHaveBeenLastCalledWith(
-      "config-dialog: узел",
-      expect.objectContaining({ id: "g-все", name: "все" }),
-    );
+  it("«Настроить» на схеме и на группе открывает форму имени", () => {
+    presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
+
+    const host = mount();
 
     settings(host)[0]?.click();
-    expect(log).toHaveBeenLastCalledWith(
-      "config-dialog: узел",
-      expect.objectContaining({ groups: [{ id: "g-все", name: "все" }] }),
-    );
+    expect(dialog()?.textContent).toContain("name");
+    expect(dialog()?.textContent).not.toContain("url");
 
-    log.mockRestore();
+    saves()[0]?.click();
+    settings(host)[1]?.click();
+    expect(dialog()?.textContent).toContain("name");
   });
 
   it("ответ ручки уходит наружу диспатчем, а не оседает в каталоге", async () => {

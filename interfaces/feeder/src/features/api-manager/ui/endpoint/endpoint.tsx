@@ -23,7 +23,11 @@ export function Endpoint(props: {
   return (
     <Flow data-variant="column">
       <FlowItem style={layoutSelf({ align: "stretch" })}>
-        <Config schema={endpoint().schema} value={value()} onChange={setValue} />
+        <Config
+          schema={endpoint().schema}
+          value={value()}
+          onChange={setValue}
+        />
       </FlowItem>
 
       <FlowItem style={layoutSelf({ align: "stretch" })}>

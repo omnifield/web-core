@@ -2,11 +2,13 @@ import type { z } from "@web-core/io";
 
 import type { SchemaNode } from "./json-schema";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+export const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"] as const;
 
-export const HTTP_METHODS: readonly HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE"];
+export type HttpMethod = (typeof HTTP_METHODS)[number];
 
-export type ParamIn = "query" | "path" | "body";
+export const PARAM_IN = ["query", "path", "body"] as const;
+
+export type ParamIn = (typeof PARAM_IN)[number];
 
 export interface EndpointParam {
   readonly name: string;

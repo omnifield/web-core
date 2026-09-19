@@ -135,6 +135,25 @@ export function MyCatalog() {
 механика делает за потребителя. `Endpoints` при этом берёт документ целиком, а не список ручек:
 реестр групп лежит в нём, и без него пустую группу нечем показать.
 
+Кнопка «Настроить» на узлах — от одного колбэка `onConfig`, и в него приезжает пойманный узел с
+ярлыком вида:
+
+```tsx
+<Endpoints
+  document={document()}
+  onConfig={(target) => {
+    if (target.kind === "endpoint") setForm(endpointConfigOf(target.item));
+    if (target.kind === "group") setForm(groupConfigOf(target.item));
+    if (target.kind === "schema") setForm(presetConfigOf(preset()));
+  }}
+/>
+```
+
+Зод под эту форму — `ENDPOINT_CONFIG` / `GROUP_CONFIG` / `PRESET_CONFIG`; обратно в документ
+правку кладут `applyEndpointConfig`/`applyGroupConfig` черновиком, а имя записи —
+`presetsStore.actions.rename`. Готовому экрану это подключать не нужно: `ApiCatalog` держит диалог
+настройки сам.
+
 Одно обязательное: `children` и у `Presets`, и у `Endpoints` получает **аксессоры**, поэтому
 `preset()`/`endpoint()`, а не `preset`/`endpoint` — разбор в `FAQ.md`, «Списки и тождество узла».
 

@@ -105,7 +105,9 @@ describe("Endpoints — узел переживает правку состав�
 
   it("правка урла не трогает узел — тождество держит айди, а не метод с урлом", () => {
     const [document, setDocument] = createSignal(petstore);
-    const host = mount(() => <Endpoints document={document()} />);
+    const host = mount(() => (
+      <Endpoints document={document()}>{(one) => <span>{one().url}</span>}</Endpoints>
+    ));
 
     const kept = node(host, "e-pet");
 
@@ -118,6 +120,6 @@ describe("Endpoints — узел переживает правку состав�
     });
 
     expect(node(host, "e-pet")).toBe(kept);
-    expect(kept.textContent).toContain("GET https://back/pets");
+    expect(kept.textContent).toContain("https://back/pets");
   });
 });

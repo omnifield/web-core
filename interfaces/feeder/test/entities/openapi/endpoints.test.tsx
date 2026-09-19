@@ -44,12 +44,16 @@ function buttons(host: HTMLElement, label: string): HTMLButtonElement[] {
 
 describe("Endpoints", () => {
   it("состав не плоский: группы на одном уровне, ручки под ними", () => {
-    const host = mount(() => <Endpoints label="Петстор" document={petstore} />);
+    const host = mount(() => (
+      <Endpoints label="Петстор" document={petstore}>
+        {(one) => <span>{one().url}</span>}
+      </Endpoints>
+    ));
 
     expect(host.textContent).toContain("Петстор");
     expect(host.textContent).toContain("pet");
     expect(host.textContent).toContain("store");
-    expect(host.textContent).toContain("GET https://back/pet/findByStatus");
+    expect(host.textContent).toContain("https://back/pet/findByStatus");
   });
 
   it("«добавить ручку» приходит с группой, в которую добавляют", () => {
