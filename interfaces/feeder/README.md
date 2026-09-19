@@ -23,34 +23,18 @@
 же слоя, ещё не заведён.
 
 🍽️ Feeder отвечает на один вопрос целиком: **откуда компонент берёт данные и как чужой ответ
-становится его формой**. Это три экрана одной истории:
+становится его формой**. Сегодня собрана первая половина этого пути:
 
-1. **настроить API** — загрузить Swagger 2.0 или завести ручки руками, получить каталог ручек;
-2. **привязать ручку к компоненту** и свести поля — «ручка `GET /users` кормит `Table` вот так»;
-3. **на витрине дёрнуть привязанное** — компонент называет себя и получает данные уже в своей
-   форме, про API не зная ничего.
+1. **принять описание API** — загрузить документ Swagger 2.0 или завести ручки руками, получить
+   именованный пресет;
+2. **показать и поправить состав** — теги, ручки, параметры;
+3. **дёрнуть ручку** — форма параметров по схеме, живой HTTP-вызов, ответ на экране.
 
-Ключевое решение, на котором стоит вся механика: **сущность — адаптер**, переиспользуемая запись
-«вот такой ответ ложится вот на такой вход». У одного адаптера много поставщиков и много
-потребителей, он ничего не знает ни про конкретную ручку, ни про имя компонента. Привязка
-(«кого чем кормим») — тонкая ссылка рядом, своей механики у неё нет — разбор в
-[FAQ.md](./FAQ.md), раздел «Адаптер и привязка».
+Вторая половина — адаптер, шов между поставщиком данных и их потребителем — пока существует как
+решённая модель и заготовка `entities/adapter`: форма записи в коде ещё старая. Разбор — `FAQ.md`,
+раздел «Адаптер»; состояние — `ROADMAP.yaml`, `adapter-split-not-done`.
 
-⚠️ **Статус на 2026-09-18, вторая правка тем же днём.** Пакет пережил снос и пересборку, и она НЕ
-закончена: прежние публичные виджеты (`OpenapiEditor`, `OpenapiList`, `Mapping a/b`, `Tree` как
-экспорт) снесены, а `widgets/binding`, `widgets/feed`, `widgets/mapping`, `features/api-manager`,
-`features/invoke-endpoint` сняты и ещё не собраны заново. **Разделы ниже описывают этот снятый API
-и на сегодня ему не соответствуют** — что живо на самом деле, видно в `src/index.ts` и
-`ROADMAP.yaml`; README будет переписан, когда каркас встанет обратно (`ROADMAP.yaml`,
-`readme-after-rebuild`). Сегодня наружу отдаются `TreeForm`, `ExternalSchemaLoader` и модели
-`entities/adapter`+`entities/openapi`.
-
-Из того, что уже переехало: `entities/binding` переименован в `entities/adapter`
-(`Binding`→`Adapter`, `applyBinding`→`applyAdapter`, `bindingStoreOf`→`adapterStoreOf`). Слово
-`binding` в пакете осталось за `entities/form`, где так называется привязка инпута к полю формы.
-
-🧪 Живого браузера на текущей сборке не было — проверка только vitest+jsdom, включая сквозной DOM-тест
-экрана настройки (от «Проверить» до записи правил в стор привязок).
+🧪 Живого браузера на текущей сборке не было — проверка только vitest+jsdom.
 
 <h2 id="анатомия">🧩 Анатомия</h2>
 
@@ -58,172 +42,148 @@
 
 | Часть | Экспортирует | Про что |
 | --- | --- | --- |
-| Экран настройки | `BindingEditor`, `BindEndpoint` | схема → ручки → привязка → сведение |
-| Каталог ручек | `ApiManagerProvider`, `ApiList`, `useApiId`, `useApiCatalog`, `apiCatalogOf`, `endpointBy`, `endpointKey` | состав одного API |
-| Привязка (адаптер) | `bindingStoreOf`, `bindingBy`, `bindingKey`, `isFed`, `applyBinding`, `noFeed` | стык «ручка ↔ компонент» |
-| Сведение | `Mapping`, `MappingChange` | поля источника → поля потребителя |
-| Витрина | `useFeed`, `feedOf`, `feedBindingOf` | компонент забирает свою еду |
-| Вызов | `invokeEndpoint` | один HTTP-вызов настроенной ручки |
-| Дерево по схеме | `TreeForm` | форма по произвольной zod-схеме |
-| Типы | `Binding`, `BindingSource`, `Consumer`, `OpenapiEndpoint`, `EndpointDescriptor`, `EndpointParam`, `HttpMethod`, `InvokeResult`, `ApiCatalogState`, `ApiStatus`, `BindingsState` | |
+| Загрузка | `ExternalSchemaLoader` | принять документ файлом или вставкой, разобрать, положить пресетом |
+| Каталог | `SchemaCatalog`, `Endpoints` | состав API: теги → ручки → параметры |
+| Вызов | `EndpointCall`, `useInvoke`, `invokeEndpoint` | форма параметров, один HTTP-вызов, ответ |
+| Склад | `presetsStore`, `Presets`, `PresetCard`, `PresetInfo`, `PresetLoader` | именованные пользовательские записи |
+| Модель API | `parseSchema`, `asSchemaDocument`, `endpointOf`, `endpointKey`, `groupEndpoints`, `schemaNodeToZod` | наш формат документа и работа с ним |
+| Форма | `TreeForm` | дерево по произвольной зод-схеме |
+| Адаптер | `applyAdapter`, `adapterStoreOf`, `adapterBy`, `sourceKey`, `isFed`, `noFeed` | заготовка шва, UI ещё нет |
+| Типы | `Preset`, `PresetsState`, `SchemaDocument`, `SchemaNode`, `EndpointDescriptor`, `EndpointParam`, `EndpointGroup`, `HttpMethod`, `ParamIn`, `OpenapiEndpoint`, `InvokeResult`, `Invocation`, `Adapter`, `AdaptersState`, `FeedSource`, `Consumer` | |
 
-📦 Внутри — адаптированный FSD, переосмысленный под движок (правила слоёв — [`src/DBP.md`](./src/DBP.md)
-и `DBP.md` в корне каждого слоя):
+📦 Внутри — адаптированный FSD, переосмысленный под движок (правила слоёв — [`src/DBP.md`](./src/DBP.md)):
 
-- `entities/openapi` — форма ручки (`OpenapiEndpoint`), распознавание Swagger 2.0
-  (`swagger2Template` поверх `@web-core/generators/mapping`), схема A под ручной ввод
-  (`EndpointDescriptor` + `descriptorToEndpoint`), айди ручки (`endpointKey`), **каталог ручек
-  одного бэка** (`apiCatalogOf`);
-- `entities/binding` — сам стык: тип `Binding`, его айди и признак «сведено» (`bindingKey`/`isFed`),
-  применение к ответу (`applyBinding` поверх `@web-core/io`), семья сторов привязок по имени
-  компонента (`bindingStoreOf`);
-- `entities/mapping` — описание «варианта» (сырые данные или zod-схема) одной формой:
-  `isSchema`/`describeVariant`/`rowSetsOf`/`recordPathsOf`, тонкая обёртка над `@web-core/io`;
+- `entities/preset` — склад: `Preset { id, name, content }`, стор и UI карточек. Про содержимое
+  `content` не знает ничего;
+- `entities/openapi` — наш формат API: `SchemaDocument { endpoints, defs }`, распознавание
+  Swagger 2.0 (`swagger2Template` поверх `@web-core/generators/mapping`), JSON Schema → zod
+  (`schemaNodeToZod`), группировка по тегам, правки состава, примитивы вызова;
 - `entities/form` — движок дерева по зод-схеме (`Tree`, `useTree`, `itemBinding`, kit инпутов);
-- `features/api-manager` — «с каким API мы сейчас работаем»: провайдер, `useApiId`/`useApiCatalog`,
-  `ApiList`;
-- `features/invoke-endpoint` — один HTTP-вызов поверх `@web-core/query/rest`;
+- `entities/adapter` — заготовка шва «поставщик → потребитель»: тип, стор, `applyAdapter` поверх
+  `@web-core/io`. Ни один экран его сегодня не зовёт;
+- `features/external-schema` — экран загрузки документа;
+- `features/api-manager` — каталог пресетов-схем и вызов ручки;
 - `features/tree-form` — `TreeForm`, интерфейсная обёртка над `entities/form`;
-- `widgets/binding` — сборка экрана настройки (`BindingEditor`, `BindEndpoint`);
-- `widgets/mapping` — UI сведения (`Mapping`);
-- `widgets/feed` — сборка «дёрнуть привязанное и отдать компоненту» (`useFeed`/`feedOf`).
+- `shared/ui/box` — общий аккордеон-узел со своими действиями, на нём стоят и каталог, и списки
+  формы.
 
-Почему каталог ручек лежит в `entities`, а не в фиче: набор ручек одного бэка — это структура, а не
-действие интерфейса, и читать её нужно и экрану настройки, и витрине. Почему `feedOf` — виджет:
-он собирает `entities` и фичу вызова вместе, а фича не имеет права звать другую фичу.
+Почему склад не знает про ручки, а `entities/openapi` — про склад: это два независимых предмета,
+и сводит их фича. Разбор — `FAQ.md`, «Пресет как склад».
 
 <h2 id="использование">🚀 Использование</h2>
 
-✅ Экран настройки — один компонент:
+✅ Экран настройки API — два компонента:
 
 ```tsx
-import { BindingEditor, type Consumer } from "@web-core/feeder";
-import { z } from "@web-core/io";
+import { ExternalSchemaLoader, SchemaCatalog } from "@web-core/feeder";
 
-const consumers: Consumer[] = [
-  { name: "Table", input: z.object({ title: z.string(), done: z.boolean() }) },
-];
-
-<BindingEditor api="main" raw={swaggerText} consumers={consumers} />;
+<>
+  <ExternalSchemaLoader />
+  <SchemaCatalog />
+</>;
 ```
 
-✅ Витрина — компонент называет себя:
+Связывать их не нужно — оба ходят в модульный стор пресетов.
 
-```tsx
-import { useFeed } from "@web-core/feeder";
-
-const { feed, refetch } = useFeed("Table");
-// feed()?.rows   — записи уже в форме входа компонента
-// feed()?.error  — если еды нет, здесь сказано почему
-// feed()?.report — что не легло и на скольких записях
-```
-
-✅ Каталог без сваггера — ручки заводятся руками:
+✅ Пресет без загрузчика:
 
 ```ts
-apiCatalogOf("main").actions.addEndpoint({
-  method: "GET",
-  url: "https://my.back/users/{id}",
-  params: [{ name: "id", type: "number", required: true }],
-});
+import { parseSchema, presetsStore } from "@web-core/feeder";
+
+presetsStore.actions.add("petstore", await parseSchema(rawSwaggerText));
 ```
 
-Все сценарии по шагам — [`EXAMPLES.md`](./EXAMPLES.md): свой экран вместо `BindingEditor`, одна
-ручка на два компонента, сохранение привязок на бэк, headless-вызов без UI, таблица «на витрине
-пусто — где смотреть».
+✅ Вызов ручки кодом:
+
+```ts
+import { endpointOf, invokeEndpoint } from "@web-core/feeder";
+
+const result = await invokeEndpoint(endpointOf(descriptor, document.defs), { id: 7 });
+```
+
+✅ Форма по любой зод-схеме:
+
+```tsx
+import { TreeForm } from "@web-core/feeder";
+
+<TreeForm schema={schema} value={value()} onChange={setValue} />;
+```
+
+Все сценарии по шагам — [`EXAMPLES.md`](./EXAMPLES.md): свой экран вместо `SchemaCatalog`, точечная
+правка состава, сохранение пресетов наружу, форма параметров своими руками, таблица «документ не
+распознался — где смотреть».
 
 <h2 id="настройки">🎚️ Настройки</h2>
 
-🔧 `BindingEditor` — `api: string` (айди бэка, ключ каталога), `consumers: Consumer[]` (имя
-компонента + форма его входа: zod-схема или сэмпл), `raw?: string` (документ Swagger 2.0;
-перезалив доезжает — грузится эффектом, а не один раз при монтировании).
+🔧 `ExternalSchemaLoader` и `SchemaCatalog` — **без пропов**: оба работают с общим стором пресетов.
 
-`BindEndpoint` — `apiId`, `endpoint: OpenapiEndpoint`, `consumers`.
+`Endpoints` — `endpoints: EndpointDescriptor[]`, необязательный `label` (заголовок верхней секции)
+и набор колбэков: `onAddTag`, `onRemove`, `onAddEndpoint(tag)`, `onRemoveTag(tag)`,
+`onRemoveEndpoint(endpoint)`. Кнопки появляются **от самого колбэка** — не передали, кнопки нет.
+`children` — что монтируется внутрь ручки; принимает **аксессор**, не значение.
 
-`Mapping` — `source`/`target` (каждый: сырые данные ИЛИ `z.ZodType`), `root?`/`rules?` (текущее
-состояние адаптера), `onChange`.
+`Presets` / `PresetCard` — `children` тоже аксессорный, по той же причине.
 
-`ApiList` — `children?: (endpoint) => JSX.Element`: что монтируется на строку, решает тот, кто
-собирает экран.
+`EndpointCall` — `endpoint: EndpointDescriptor`, `defs`, необязательный `onResult`.
+
+`PresetLoader` — `onLoad(raw)`, необязательные `onPick(fileName)` и `disabled`.
+`PresetInfo` — `name` / `onName`.
 
 `TreeForm` — `schema: z.ZodType`, `value`, `onChange`.
 
-Чего у движка **нет**: форматов кроме Swagger 2.0; `headers`/`enum`/`array` в `EndpointParam`;
-трансформаций (`steps`) и `onFail` в UI сведения (сам `@web-core/io` их умеет); авторизации и общих
-заголовков у вызова; хранения между сессиями.
+Чего у движка **нет**: форматов кроме Swagger 2.0; заголовков и авторизации у вызова; UI сведения
+полей; хранения между сессиями.
 
 <h2 id="состояния">🎛️ Состояния</h2>
 
-🚦 Пакет держит **два** состояния в сторах и всё остальное — контролируемым снаружи.
+🚦 Пакет держит одно живое состояние в сторе, остальное контролируется снаружи.
 
-Сторы (семьи `@web-core/store`, модульные синглтоны — один ключ даёт один и тот же стор на любой
-странице):
+- `presetsStore` — `{ presets: Preset[] }`, модульный синглтон (`createActionStore`
+  из `@web-core/store`). Действия: `add(name, content) → id`, `remove(id)`, `rename(id, name)`,
+  `replace(id, content)`, `edit<T>(id, recipe)` (immer-черновик содержимого), `hydrate(presets)`.
+  Селектор `presetBy(id)`. Айди — uuid при создании, и он не зависит ни от имени, ни от
+  содержимого;
+- `adapterStoreOf(key)` — семья сторов адаптеров, заготовка: живого потребителя нет.
 
-- `apiCatalogOf(apiId)` — `{ raw?, endpoints, status, error }`, статусы `idle`/`loading`/`ready`/
-  `failed`. Загрузка схемы прикрыта гардом от гонки: пока идёт распознавание, юзер может залить
-  другой документ — ответ устаревшей загрузки выбрасывается, а не пишется поверх свежего.
-  Нераспознанный документ — `failed` со текстом, не исключение;
-- `bindingStoreOf(component)` — `{ bindings }`. Ключ — **имя компонента**, потому что читатель на
-  витрине знает только себя; правила у `Table` и `ListBox` на одну и ту же ручку разные, поэтому
-  жить на ручке они не могут. `hydrate(bindings)` поднимает сохранённое снаружи.
-
-Контролируемое снаружи: `Mapping` (`root`/`rules` пропами, наружу течёт на каждый пик), `TreeForm`
-(`value`/`onChange`). Локальное состояние сборки: `BindEndpoint` держит значение параметров,
-результат пробного вызова и выбранного потребителя — до того, как они станут привязкой.
-
-`useFeed` — `createResource` поверх привязки: привязки нет — ресурс не стреляет вообще.
+Локальное состояние сборки: `EndpointCall` держит значение параметров и результат вызова,
+`ExternalSchemaLoader` — имя будущего пресета и текст ошибки разбора.
 
 <h2 id="io">🔌 IO</h2>
 
-↔️ **Каталог.** Вход — `loadSchema(raw)` (Swagger 2.0, жёсткое совпадение) либо
-`addEndpoint(descriptor)`. Выход — `endpoints: OpenapiEndpoint[]`, у каждой zod-схема **параметров**
-(не ответа: Swagger здесь разбирается на параметры). Айди ручки — `` `${method} ${url}` ``, стабилен
-между перезаливами документа, потому что на него ссылается привязка.
+↔️ **Загрузка.** Вход — сырой текст документа. `parseSchema(raw)` прогоняет его через шаблоны
+(сегодня один, Swagger 2.0, совпадение жёсткое) и отдаёт `SchemaDocument`. Нераспознанный документ
+— исключение, экран показывает его текстом.
 
-↔️ **Привязка.** `Binding { source: { apiId, endpointId, value? }, root, rules, extra? }` — чистый
-JSON, сериализуется и поднимается через `hydrate`. `rules: readonly FieldRule[]` — те же правила,
-что у `@web-core/io`; `root` — JSON Pointer до набора записей (`""` — сам ответ).
+↔️ **Документ.** `SchemaDocument { endpoints, defs }`; ручка — `{ method, url, tag?, params }`, где
+`params[].schema` — JSON Schema, а `defs` держит общие типы (`$ref` остаются ссылками, циклы не
+разворачиваются). Чистый JSON: сериализуется и уезжает на склад как есть. Зод строится из формата
+при отрисовке (`endpointOf`) и нигде не хранится.
 
-↔️ **Сведение.** `Mapping` отдаёт `MappingChange { root, rules }` на каждый пик. Смена `root`
-уносит правила, чей `from` больше не существует.
+↔️ **Склад.** `Preset { id, name, content }`, `content` непрозрачен. `hydrate` заменяет состав
+целиком.
 
 ↔️ **Вызов.** `invokeEndpoint(endpoint, value)` → `InvokeResult { status, ok, headers, body }`.
-Значение — имена параметров плюс необязательный `body`; имя, встреченное в `{плейсхолдере}` url,
-уходит в путь, остальные — в квери. **Не-2xx — валидный результат**, а сорванный транспорт —
-исключение: ответа не было вовсе.
-
-↔️ **Витрина.** `feedOf(binding)`/`useFeed(component)` → `RowsResult { rows, report, error }` из
-`@web-core/io` — одна и та же форма на все исходы: успех, «ручки нет в каталоге», 500, оборванная
-сеть. Исключение наружу не выходит.
+Имя, встреченное в `{плейсхолдере}` url, уходит в путь; ключ `body` — в JSON-тело; остальное — в
+query. **Не-2xx — валидный результат**, а сорванный транспорт — исключение: ответа не было вовсе.
+`useInvoke` это исключение ловит и кладёт текст в `failure()`.
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
-🧪 Vitest + jsdom. **51 тест на текущем коде, все зелёные:**
+🧪 Vitest + jsdom. **111 тестов, все зелёные:**
 
-- `entities/openapi/catalog` (5) — распознавание petstore, `failed`-путь, ручной ввод, «тот же
-  метод+url заменяет, а не двоит», изоляция двух API;
-- `entities/binding` (13) — `applyBinding` на наборе записей, на одиночном объекте, все именные
-  отказы; стор: «привязано, но не сведено», повторный `bind` не сносит правила, одна ручка на два
-  компонента, `hydrate`;
-- `entities/mapping` (7) — распознавание варианта, одинаковая форма у схемы и сэмпла, пути записи;
-- `features/api-manager` (4) — провайдер отдаёт айди вниз, `useApiCatalog` даёт каталог этого API,
-  вне провайдера — явная ошибка;
-- `features/invoke-endpoint` (5) — мок `fetch`: путь/квери/тело, 404 как результат, TypeError как
-  исключение;
-- `widgets/mapping` (5) — настоящий DOM: состав опций, пик → правило наружу, «не сведено» убирает
-  только своё, смена набора чистит осиротевшие;
-- `widgets/feed` (8) — сквозь все слои: каталог → привязка → мок `fetch` → записи в форме
-  компонента; плюс все виды беды;
-- `widgets/binding` (4) — DOM экрана: «Проверить» → сведение → правило в сторе привязок.
+- `entities/openapi` — распознавание petstore, JSON Schema → zod (вложенные `$ref`, циклы через
+  `z.lazy`), дескриптор → ручка, группировка по тегам, правки состава, живучесть узлов состава;
+- `entities/preset` — стор (добавить/убрать/переименовать/заменить/править черновиком/поднять),
+  список и карточка в настоящем DOM, загрузчик;
+- `entities/form` — `itemBinding`/`useTree` чистой логикой и `Tree` смонтированным по-настоящему;
+- `entities/adapter` — `applyAdapter` на наборе записей и на одиночном объекте, все именные отказы,
+  стор;
+- `features/api-manager` — вызов на моке `fetch` (путь/квери/тело, 404 как результат, TypeError как
+  исключение), `useInvoke`, каталог схем в DOM;
+- `features/external-schema` — сквозной путь «вставили документ → в сторе лежит разобранный пресет»;
+- `shared` — `Box`: кнопки от колбэков, действие отдаёт элемент, верхняя секция от `label`.
 
-⚠️ В `test/` лежат **8 файлов от снесённого кода**, они падают на импортах и в число выше не входят.
-Пять из них покрывают код, который жив, но переехал (`entities/tree/*` → `entities/form/lib`,
-`openapi/{descriptor,swagger2}` → `models/`, `widgets/tree` → `entities/form/ui/tree`) — их стоит
-починить правкой путей. Три мертвы по-настоящему (`widgets/openapi/{editor,list}`,
-`entities/mapping/apply`).
-
-`build`/`lint` зелёные. Единственная ошибка `typecheck` — в незакоммиченной правке
-`entities/openapi/ui/create-group.tsx` (кнопка закомментирована, `submit` не используется).
+`lint` и `typecheck` зелёные.
 
 Ark-UI/Zag/Kobalte внутри `@web-core/ui` отдают сырой `.jsx` по `solid`-condition — vitest грузит
 его напрямую через Node и падает; лечится `test.server.deps.inline` в `vitest.config.ts`.
@@ -232,19 +192,18 @@ Ark-UI/Zag/Kobalte внутри `@web-core/ui` отдают сырой `.jsx` п
 
 🧩 Три приёма, которые стоит понять, чтобы не спорить с движком:
 
-**Адаптер — это содержимое привязки, а не сущность рядом.** «Привязать `GET /users` к `Table`» и
-«разложить ответ по полям `Table`» — не два действия с двумя реестрами, а одна запись в двух
-состояниях: `rules: []` → «привязано, не сведено», `isFed` → кормит. Второй реестр потребовал бы
-синхронизации с первым, а рассинхрон дал бы молчаливо пустой компонент.
+**Чужой формат разбирается один раз, на входе.** После импорта нет ни Swagger 2.0, ни любого
+другого — есть наш документ. Иначе каждая манипуляция начиналась бы с вопроса «а что это за формат
+и как его читать», и так на сто форматов вперёд. Поэтому сырьё не хранится, а правка ручки не
+упирается в сериализацию чужой спеки.
 
-**Ключ выбирает читатель.** Привязки ключуются именем компонента, потому что на витрине компонент
-знает только себя. Это же доказывает, почему правила не могут жить на ручке: одна ручка кормит и
-таблицу, и листбокс, а раскладывается в них по-разному.
+**Склад не знает, что на нём лежит.** `Preset` — имя плюс непрозрачное содержимое. Сегодня
+содержимое одно (документ API), завтра будет адаптер — и складу от этого не придётся меняться.
 
-**Форму ответа знает только сам ответ.** Swagger 2.0 здесь разбирается на параметры, схемы ответа у
-движка нет — поэтому сводить поля можно только после настоящего вызова, и экран говорит это прямо,
-вместо того чтобы показать пустой список полей. Отсюда же кнопка «Проверить» в сценарии настройки.
+**Тождество узла — по ключу, а не по ссылке.** Состояние живёт в DOM (открытость аккордеона, фокус,
+ввод), а иммутабельный стор отдаёт новый объект на каждую правку. Поэтому списки перебираются
+`<Key by>`, а тела списков принимают аксессор, а не значение: узел остаётся тем же, меняется то,
+что он показывает. Разбор — `FAQ.md`, «Списки и тождество узла».
 
-Вся механика описания форм и применения правил — в `@web-core/io` (`describeSample`/`describeSchema`/
-`discoverRowSets`/`collectRowsReport`/`FieldRule`). Feeder не пишет своего движка сведения: он даёт
-интерфейс и решает, что и в каком порядке спросить у человека.
+Вся механика описания форм и применения правил — в `@web-core/io`. Feeder не пишет своего движка
+сведения: он даёт интерфейс и решает, что и в каком порядке спросить у человека.

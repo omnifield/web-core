@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 import {
   blankElement,
   fieldsOfElement,
@@ -8,9 +8,7 @@ import {
 import type { FieldBinding } from "./binding";
 
 export function useTree(field: FieldDescriptor, binding: FieldBinding) {
-  const elementFields = createMemo(() =>
-    field.element ? fieldsOfElement(field.element) : [],
-  );
+  const elementFields = field.element ? fieldsOfElement(field.element) : [];
   const items = createMemo(() =>
     Array.isArray(binding.value()) ? (binding.value() as unknown[]) : [],
   );

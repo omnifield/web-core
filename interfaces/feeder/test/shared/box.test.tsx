@@ -1,4 +1,4 @@
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Box } from "../../src/shared/ui";
@@ -35,7 +35,7 @@ describe("Box", () => {
   it("без колбэков кнопок нет вообще — ни плюса, ни корзины", () => {
     const host = mount(() => (
       <Box items={rows} itemKey={(row) => row.id} itemLabel={(row) => row.title}>
-        {(row) => <span>{row.id}</span>}
+        {(row) => <span>{row().id}</span>}
       </Box>
     ));
 
@@ -51,7 +51,7 @@ describe("Box", () => {
         itemLabel={(row) => row.title}
         onItemAddChild={vi.fn()}
       >
-        {(row) => <span>{row.id}</span>}
+        {(row) => <span>{row().id}</span>}
       </Box>
     ));
 
@@ -68,7 +68,7 @@ describe("Box", () => {
         itemLabel={(row) => row.title}
         onItemRemove={onItemRemove}
       >
-        {(row) => <span>{row.id}</span>}
+        {(row) => <span>{row().id}</span>}
       </Box>
     ));
 
@@ -80,7 +80,7 @@ describe("Box", () => {
   it("без `label` верхней секции нет — вложенный бокс не плодит лишний заголовок", () => {
     const host = mount(() => (
       <Box items={rows} itemKey={(row) => row.id} itemLabel={(row) => row.title}>
-        {(row) => <span>{row.id}</span>}
+        {(row) => <span>{row().id}</span>}
       </Box>
     ));
 
@@ -100,7 +100,7 @@ describe("Box", () => {
         itemKey={(row) => row.id}
         itemLabel={(row) => row.title}
       >
-        {(row) => <span>{row.id}</span>}
+        {(row) => <span>{row().id}</span>}
       </Box>
     ));
 

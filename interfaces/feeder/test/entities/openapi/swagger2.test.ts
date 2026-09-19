@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { run } from "@web-core/generators/mapping";
 import { describe, expect, it } from "vitest";
 
-import { swagger2Template } from "../../../src/entities/openapi/models/swagger/2.0/swagger2.js";
+import { endpointOf, swagger2Template } from "../../../src/entities/openapi";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
 const petstore = readFileSync(join(fixtureDir, "fixtures/petstore.yaml"), "utf-8");
@@ -30,7 +30,8 @@ describe("run(raw, [swagger2Template])", () => {
   });
 
   it("собирает все три ручки с методом/url/тегом", async () => {
-    const endpoints = await run(petstore, [swagger2Template]);
+    const document = await run(petstore, [swagger2Template]);
+    const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
 
     expect(endpoints).toHaveLength(3);
     expect(endpoints.map((endpoint) => `${endpoint.method} ${endpoint.url}`)).toEqual(
@@ -44,7 +45,8 @@ describe("run(raw, [swagger2Template])", () => {
   });
 
   it("query-параметр массив+enum — обязательный, элементы только из enum", async () => {
-    const endpoints = await run(petstore, [swagger2Template]);
+    const document = await run(petstore, [swagger2Template]);
+    const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
     const findByStatus = endpoints.find((endpoint) => endpoint.url.endsWith("/findByStatus"))!;
 
     expect(findByStatus.schema.parse({ status: ["available", "sold"] })).toEqual({ status: ["available", "sold"] });
@@ -53,7 +55,8 @@ describe("run(raw, [swagger2Template])", () => {
   });
 
   it("path-параметр integer — обязательное число", async () => {
-    const endpoints = await run(petstore, [swagger2Template]);
+    const document = await run(petstore, [swagger2Template]);
+    const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
     const getById = endpoints.find((endpoint) => endpoint.url.endsWith("/{petId}"))!;
 
     expect(getById.schema.parse({ petId: 42 })).toEqual({ petId: 42 });
@@ -61,7 +64,8 @@ describe("run(raw, [swagger2Template])", () => {
   });
 
   it("body-параметр с вложенным $ref (Category) и массивом $ref (Tag[]) резолвится целиком", async () => {
-    const endpoints = await run(petstore, [swagger2Template]);
+    const document = await run(petstore, [swagger2Template]);
+    const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
     const addPet = endpoints.find((endpoint) => endpoint.method === "POST")!;
 
     const value = {

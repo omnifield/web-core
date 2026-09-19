@@ -1,30 +1,41 @@
-import { Flow, FlowItem } from "@web-core/ui";
-import { createSignal } from "solid-js";
+import { Flow, FlowItem, Typography } from "@web-core/ui";
+import { createSignal, Show } from "@web-core/solid";
 
-import { SchemaInfo, SchemaLoader, schemasStore } from "../../../entities/schema";
+import { parseSchema } from "../../../entities/openapi";
+import { PresetInfo, PresetLoader, presetsStore } from "../../../entities/preset";
 
 export function ExternalSchemaLoader() {
   const [name, setName] = createSignal("");
+  const [failure, setFailure] = createSignal<string>();
 
   const title = () => name().trim();
+
+  async function save(raw: string) {
+    setFailure(undefined);
+
+    try {
+      presetsStore.actions.add(title(), await parseSchema(raw));
+      setName("");
+    } catch (error) {
+      setFailure(error instanceof Error ? error.message : String(error));
+    }
+  }
 
   return (
     <Flow data-variant="column">
       <FlowItem>
-        <SchemaInfo name={name()} onName={setName} />
+        <PresetInfo name={name()} onName={setName} />
       </FlowItem>
       <FlowItem>
-        <SchemaLoader
-          disabled={title() === ""}
-          onPick={(fileName) => {
-            if (title() === "") setName(fileName);
-          }}
-          onLoad={(raw) => {
-            schemasStore.actions.add(title(), raw);
-            setName("");
-          }}
-        />
+        <PresetLoader disabled={title() === ""} onLoad={(raw) => void save(raw)} />
       </FlowItem>
+      <Show when={failure()}>
+        {(message) => (
+          <FlowItem>
+            <Typography>Схема не распозналась: {message()}</Typography>
+          </FlowItem>
+        )}
+      </Show>
     </Flow>
   );
 }

@@ -6,7 +6,7 @@ import {
   AccordionItem,
   Surface,
 } from "@web-core/ui";
-import { Show, type JSX } from "solid-js";
+import { Show, type JSX } from "@web-core/solid";
 
 export function Node(props: {
   value: string;

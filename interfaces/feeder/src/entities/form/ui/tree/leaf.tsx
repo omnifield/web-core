@@ -1,4 +1,4 @@
-import { Match, Switch } from "solid-js";
+import { Match, Switch } from "@web-core/solid";
 import type { FieldDescriptor } from "@web-core/generators/fields";
 import { Typography } from "@web-core/ui";
 

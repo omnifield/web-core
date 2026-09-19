@@ -1,16 +1,16 @@
-import type { OpenapiEndpoint } from "./types";
+import type { EndpointDescriptor } from "./types";
 
-export const NO_TAG = "Без тега";
+export const NO_TAG = "unknown";
 
 export interface EndpointGroup {
   readonly tag: string;
-  readonly endpoints: readonly OpenapiEndpoint[];
+  readonly endpoints: readonly EndpointDescriptor[];
 }
 
 export function groupEndpoints(
-  endpoints: readonly OpenapiEndpoint[],
+  endpoints: readonly EndpointDescriptor[],
 ): readonly EndpointGroup[] {
-  const byTag = new Map<string, OpenapiEndpoint[]>();
+  const byTag = new Map<string, EndpointDescriptor[]>();
 
   for (const endpoint of endpoints) {
     const tag = endpoint.tag ?? NO_TAG;

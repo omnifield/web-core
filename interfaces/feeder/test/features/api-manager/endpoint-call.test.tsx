@@ -1,8 +1,7 @@
-import { z } from "@web-core/io";
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { OpenapiEndpoint } from "../../../src/entities/openapi";
+import type { EndpointDescriptor, InvokeResult } from "../../../src/entities/openapi";
 import { EndpointCall } from "../../../src/features/api-manager";
 
 let dispose: (() => void) | undefined;
@@ -13,11 +12,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function endpoint(patch: Partial<OpenapiEndpoint> = {}): OpenapiEndpoint {
+function endpoint(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
   return {
     method: "GET",
     url: "https://back/v2/users",
-    schema: z.object({ limit: z.string() }),
+    params: [{ name: "limit", in: "query", required: true, schema: { type: "string" } }],
     ...patch,
   };
 }
@@ -36,10 +35,13 @@ function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
   });
 }
 
-function mount(item: OpenapiEndpoint): HTMLDivElement {
+function mount(
+  item: EndpointDescriptor,
+  onResult?: (result: InvokeResult) => void,
+): HTMLDivElement {
   const host = document.createElement("div");
   document.body.append(host);
-  dispose = render(() => <EndpointCall endpoint={item} />, host);
+  dispose = render(() => <EndpointCall endpoint={item} defs={{}} onResult={onResult} />, host);
   return host;
 }
 
@@ -74,24 +76,41 @@ describe("EndpointCall", () => {
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain("limit=10");
   });
 
-  it("ответ показывается со статусом и телом", async () => {
+  it("ответ уходит наружу, а не показывается на месте", async () => {
     stubFetch(async () => jsonResponse([{ id: 1, name: "Аня" }]));
-    const host = mount(endpoint());
+    const onResult = vi.fn();
+    const host = mount(endpoint(), onResult);
 
     check(host).click();
 
-    await vi.waitFor(() => expect(host.textContent).toContain("Ответ: 200"));
-    expect(host.textContent).toContain("Аня");
+    await vi.waitFor(() => expect(onResult).toHaveBeenCalled());
+    expect(onResult.mock.calls[0]?.[0]).toMatchObject({ status: 200, ok: true });
+    expect(host.textContent).not.toContain("Аня");
   });
 
-  it("не-2xx показывается как ответ, а не как несостоявшийся вызов", async () => {
+  it("не-2xx тоже ответ — уходит наружу, а не в отказ", async () => {
     stubFetch(async () => jsonResponse({ message: "нет такого" }, { status: 404 }));
-    const host = mount(endpoint());
+    const onResult = vi.fn();
+    const host = mount(endpoint(), onResult);
 
     check(host).click();
 
-    await vi.waitFor(() => expect(host.textContent).toContain("Ответ: 404"));
+    await vi.waitFor(() => expect(onResult).toHaveBeenCalled());
+    expect(onResult.mock.calls[0]?.[0]).toMatchObject({ status: 404, ok: false });
     expect(host.textContent).not.toContain("Вызов не дошёл");
+  });
+
+  it("сорванный вызов наружу не уходит — ответа не было", async () => {
+    stubFetch(async () => {
+      throw new Error("сети нет");
+    });
+    const onResult = vi.fn();
+    const host = mount(endpoint(), onResult);
+
+    check(host).click();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Вызов не дошёл"));
+    expect(onResult).not.toHaveBeenCalled();
   });
 
   it("сорванный транспорт назван словами", async () => {

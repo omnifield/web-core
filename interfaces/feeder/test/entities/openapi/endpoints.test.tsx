@@ -1,5 +1,5 @@
 import { z } from "@web-core/io";
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Endpoints, type OpenapiEndpoint } from "../../../src/entities/openapi";
@@ -88,7 +88,7 @@ describe("Endpoints", () => {
   it("что внутри ручки — решает тот, кто монтирует состав", () => {
     const host = mount(() => (
       <Endpoints endpoints={petstore}>
-        {(item) => <span>параметры {item.url}</span>}
+        {(item) => <span>параметры {item().url}</span>}
       </Endpoints>
     ));
 

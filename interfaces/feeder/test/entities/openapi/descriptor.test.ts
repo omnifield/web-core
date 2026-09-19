@@ -1,60 +1,77 @@
 import { describe, expect, it } from "vitest";
 
-import { descriptorToEndpoint } from "../../../src/entities/openapi/models/descriptor.js";
-import { endpointDescriptorSchema, manualGroupSchema, type EndpointDescriptor } from "../../../src/entities/openapi/models/index.js";
+import { endpointOf, type EndpointDescriptor } from "../../../src/entities/openapi";
 
-describe("endpointDescriptorSchema / manualGroupSchema", () => {
-  it("дескриптор без параметров валиден", () => {
-    const descriptor: EndpointDescriptor = { method: "GET", url: "https://api/ping", params: [] };
-    expect(endpointDescriptorSchema.parse(descriptor)).toEqual(descriptor);
+function descriptor(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
+  return {
+    method: "GET",
+    url: "https://back/users",
+    params: [],
+    ...patch,
+  };
+}
+
+describe("endpointOf", () => {
+  it("обязательный параметр остаётся обязательным в форме", () => {
+    const endpoint = endpointOf(
+      descriptor({
+        params: [{ name: "limit", in: "query", required: true, schema: { type: "string" } }],
+      }),
+    );
+
+    expect(endpoint.schema.safeParse({}).success).toBe(false);
+    expect(endpoint.schema.safeParse({ limit: "10" }).success).toBe(true);
   });
 
-  it("группа-юзер — обёртка { endpoints } нужна Tree (объектный корень)", () => {
-    const value = { endpoints: [{ method: "GET", url: "https://api/ping", params: [] }] };
-    expect(manualGroupSchema.parse(value)).toEqual(value);
-  });
-});
+  it("необязательный параметр можно не заполнять", () => {
+    const endpoint = endpointOf(
+      descriptor({
+        params: [{ name: "limit", in: "query", required: false, schema: { type: "number" } }],
+      }),
+    );
 
-describe("descriptorToEndpoint", () => {
-  it("обязательный string-параметр — попадает в схему как обязательный", () => {
-    const descriptor: EndpointDescriptor = {
-      method: "GET",
-      url: "https://api/pets/{petId}",
-      params: [{ name: "petId", type: "string", required: true }],
-    };
-    const endpoint = descriptorToEndpoint(descriptor);
-
-    expect(endpoint.method).toBe("GET");
-    expect(endpoint.url).toBe("https://api/pets/{petId}");
-    expect(endpoint.schema.parse({ petId: "42" })).toEqual({ petId: "42" });
-    expect(() => endpoint.schema.parse({})).toThrow();
+    expect(endpoint.schema.safeParse({}).success).toBe(true);
+    expect(endpoint.schema.safeParse({ limit: "не число" }).success).toBe(false);
   });
 
-  it("необязательный number-параметр — optional в схеме", () => {
-    const descriptor: EndpointDescriptor = {
-      method: "GET",
-      url: "https://api/pets",
-      params: [{ name: "limit", type: "number", required: false }],
-    };
-    const endpoint = descriptorToEndpoint(descriptor);
+  it("параметр `in: body` ложится в форму под именем body, а не под своим", () => {
+    const endpoint = endpointOf(
+      descriptor({
+        method: "POST",
+        params: [
+          {
+            name: "payload",
+            in: "body",
+            required: true,
+            schema: { type: "object", properties: { id: { type: "number" } }, required: ["id"] },
+          },
+        ],
+      }),
+    );
 
-    expect(endpoint.schema.parse({})).toEqual({});
-    expect(endpoint.schema.parse({ limit: 10 })).toEqual({ limit: 10 });
-    expect(() => endpoint.schema.parse({ limit: "10" })).toThrow();
+    expect(endpoint.schema.safeParse({ body: { id: 1 } }).success).toBe(true);
+    expect(endpoint.schema.safeParse({ payload: { id: 1 } }).success).toBe(false);
   });
 
-  it("boolean-параметр и параметр body — та же схема, что и распознавание из свагера", () => {
-    const descriptor: EndpointDescriptor = {
-      method: "POST",
-      url: "https://api/pets",
-      params: [
-        { name: "notify", type: "boolean", required: false },
-        { name: "body", type: "string", required: true },
-      ],
-    };
-    const endpoint = descriptorToEndpoint(descriptor);
+  it("ссылка на общий тип разворачивается по `defs`", () => {
+    const endpoint = endpointOf(
+      descriptor({
+        params: [
+          { name: "pet", in: "body", required: true, schema: { $ref: "#/definitions/Pet" } },
+        ],
+      }),
+      { Pet: { type: "object", properties: { name: { type: "string" } }, required: ["name"] } },
+    );
 
-    expect(endpoint.schema.parse({ notify: true, body: "{}" })).toEqual({ notify: true, body: "{}" });
-    expect(() => endpoint.schema.parse({ notify: true })).toThrow();
+    expect(endpoint.schema.safeParse({ body: { name: "Шарик" } }).success).toBe(true);
+    expect(endpoint.schema.safeParse({ body: {} }).success).toBe(false);
+  });
+
+  it("метод, адрес и тег переносятся как есть", () => {
+    const endpoint = endpointOf(descriptor({ method: "DELETE", tag: "pet" }));
+
+    expect(endpoint.method).toBe("DELETE");
+    expect(endpoint.url).toBe("https://back/users");
+    expect(endpoint.tag).toBe("pet");
   });
 });

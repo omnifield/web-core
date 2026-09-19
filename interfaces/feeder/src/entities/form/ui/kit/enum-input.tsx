@@ -1,4 +1,4 @@
-import { createMemo, For } from "solid-js";
+import { createMemo, For } from "@web-core/solid";
 import type { FieldDescriptor } from "@web-core/generators/fields";
 import {
   Select,

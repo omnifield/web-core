@@ -1,5 +1,5 @@
 import { z } from "@web-core/io";
-import { createRoot } from "solid-js";
+import { createRoot } from "@web-core/solid";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { OpenapiEndpoint } from "../../../src/entities/openapi";

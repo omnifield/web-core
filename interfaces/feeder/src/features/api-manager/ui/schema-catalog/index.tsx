@@ -1,19 +1,22 @@
+import { Key } from "@web-core/solid/keyed";
 import { Flow, Typography } from "@web-core/ui";
-import { For, Show } from "solid-js";
+import { Show } from "@web-core/solid";
 
-import { schemasStore } from "../../../../entities/schema";
-import { SchemaNode } from "./schema-node";
+import { presetsStore } from "../../../../entities/preset";
+import { PresetNode } from "./preset-node";
 
 export function SchemaCatalog() {
-  const state = schemasStore.use();
+  const state = presetsStore.use();
 
   return (
     <Flow data-variant="column">
       <Show
-        when={state().schemas.length > 0}
+        when={state().presets.length > 0}
         fallback={<Typography>Схем пока нет — загрузите документ</Typography>}
       >
-        <For each={state().schemas}>{(schema) => <SchemaNode schema={schema} />}</For>
+        <Key each={state().presets} by="id">
+          {(preset) => <PresetNode preset={preset()} />}
+        </Key>
       </Show>
     </Flow>
   );

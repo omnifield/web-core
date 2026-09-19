@@ -237,6 +237,9 @@ importers:
       '@web-core/skin':
         specifier: workspace:*
         version: link:../../packages/skin
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../../packages/solid
       '@web-core/store':
         specifier: workspace:*
         version: link:../../packages/store
@@ -762,16 +765,29 @@ importers:
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/solid:
+    dependencies:
+      '@solid-primitives/keyed':
+        specifier: ^1.5.3
+        version: 1.5.3(solid-js@1.9.14)
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.3
+      jsdom:
+        specifier: ^30.0.1
+        version: 30.0.1
       solid-js:
         specifier: ^1.9.14
         version: 1.9.14
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      vite:
+        specifier: ^8.2.1
+        version: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
+      vite-plugin-solid:
+        specifier: ^2.11.14
+        version: 2.11.14(solid-js@1.9.14)(supports-color@8.1.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))

@@ -1,6 +1,12 @@
 export { TreeForm } from "./features/tree-form";
 export { ExternalSchemaLoader } from "./features/external-schema";
-export { invokeEndpoint, SchemaCatalog, useInvoke, type Invocation } from "./features/api-manager";
+export {
+  EndpointCall,
+  invokeEndpoint,
+  SchemaCatalog,
+  useInvoke,
+  type Invocation,
+} from "./features/api-manager";
 
 export {
   applyAdapter,
@@ -15,23 +21,29 @@ export {
   type Consumer,
 } from "./entities/adapter";
 export {
-  SchemaCard,
-  SchemaInfo,
-  SchemaLoader,
-  Schemas,
-  schemasStore,
-  type Schema,
-  type SchemasState,
-} from "./entities/schema";
+  PresetCard,
+  PresetInfo,
+  PresetLoader,
+  Presets,
+  presetsStore,
+  type Preset,
+  type PresetsState,
+} from "./entities/preset";
 export {
-  Endpoints,
-  parseEndpoints,
+  asSchemaDocument,
   endpointKey,
+  endpointOf,
+  Endpoints,
   groupEndpoints,
-  type EndpointGroup,
+  parseSchema,
+  schemaNodeToZod,
   type EndpointDescriptor,
+  type EndpointGroup,
   type EndpointParam,
   type HttpMethod,
   type InvokeResult,
   type OpenapiEndpoint,
+  type ParamIn,
+  type SchemaDocument,
+  type SchemaNode,
 } from "./entities/openapi";

@@ -33,7 +33,7 @@ export function Control() {
     <Flow data-variant="column">
       <Grid data-variant="gallery" style={switchGrid}>
         <GridCell style={wholeRow}>
-          <SwitchViewMode />
+          <SwitchViewMode scope="global" />
         </GridCell>
         <GridCell style={wholeRow}>
           <SwitchFilterMode />

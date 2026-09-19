@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { render } from "solid-js/web";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "@web-core/solid/web";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { schemasStore } from "../../../src/entities/schema";
+import { parseSchema } from "../../../src/entities/openapi";
+import { presetsStore } from "../../../src/entities/preset";
 import { SchemaCatalog } from "../../../src/features/api-manager";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
@@ -17,7 +18,7 @@ const petstore = readFileSync(
 let dispose: (() => void) | undefined;
 
 beforeEach(() => {
-  schemasStore.actions.hydrate([]);
+  presetsStore.actions.hydrate([]);
 });
 
 afterEach(() => {
@@ -36,6 +37,14 @@ function trash(host: HTMLElement): HTMLButtonElement[] {
   return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Убрать"]')];
 }
 
+function plus(host: HTMLElement): HTMLButtonElement[] {
+  return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Добавить"]')];
+}
+
+function contentOf(): { endpoints: { url: string; tag?: string }[] } {
+  return presetsStore.get().presets[0]?.content as { endpoints: { url: string; tag?: string }[] };
+}
+
 describe("SchemaCatalog", () => {
   it("пустой каталог объясняет себя словами, а не пустотой", () => {
     const host = mount();
@@ -43,66 +52,52 @@ describe("SchemaCatalog", () => {
     expect(host.textContent).toContain("Схем пока нет");
   });
 
-  it("каждая загруженная схема — свой узел с её именем", () => {
-    schemasStore.actions.add("Петстор", "a");
-    schemasStore.actions.add("Свой бэк", "b");
+  it("каждый пресет — свой узел с его именем", async () => {
+    presetsStore.actions.add("Петстор", await parseSchema(petstore));
+    presetsStore.actions.add("Свой бэк", await parseSchema(petstore));
 
     const host = mount();
 
     expect(host.textContent).toContain("Петстор");
     expect(host.textContent).toContain("Свой бэк");
-    expect(host.textContent).not.toContain("Схем пока нет");
   });
 
-  it("новая схема доезжает в уже отрисованный каталог", () => {
+  it("узел разворачивается в ручки пресета — без повторного разбора", async () => {
+    presetsStore.actions.add("Петстор", await parseSchema(petstore));
+
     const host = mount();
 
-    schemasStore.actions.add("поздняя", "a");
-
-    expect(host.textContent).toContain("поздняя");
+    expect(host.textContent).toContain("pet");
+    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
   });
 
-  it("корзина на узле убирает ровно свою схему", () => {
-    schemasStore.actions.add("Первая", "a");
-    const second = schemasStore.actions.add("Вторая", "b");
+  it("подмена содержимого пересобирает состав — копий ручек нет", async () => {
+    const id = presetsStore.actions.add("Петстор", { endpoints: [], defs: {} });
+
+    const host = mount();
+    expect(host.textContent).not.toContain("findByStatus");
+
+    presetsStore.actions.replace(id, await parseSchema(petstore));
+
+    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
+  });
+
+  it("пресет не той формы назван вслух, а не показан пустым", () => {
+    presetsStore.actions.add("Чужой", { что: "то совсем другое" });
+
+    const host = mount();
+
+    expect(host.textContent).toContain("Пресет не похож на схему API");
+  });
+
+  it("корзина на узле убирает ровно свой пресет", async () => {
+    presetsStore.actions.add("Первая", await parseSchema(petstore));
+    const second = presetsStore.actions.add("Вторая", await parseSchema(petstore));
 
     const host = mount();
     trash(host)[0]?.click();
 
-    expect(schemasStore.get().schemas.map((schema) => schema.id)).toEqual([second]);
+    expect(presetsStore.get().presets.map((preset) => preset.id)).toEqual([second]);
     expect(host.textContent).not.toContain("Первая");
-    expect(host.textContent).toContain("Вторая");
-  });
-
-  it("узел схемы разворачивается в её ручки — состав считается из оригинала", async () => {
-    schemasStore.actions.add("Петстор", petstore);
-
-    const host = mount();
-
-    await vi.waitFor(() => expect(host.textContent).toContain("pet"));
-    expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
-  });
-
-  it("нераспознанный документ говорит об этом на своём узле", async () => {
-    schemasStore.actions.add("Кривая", "это не сваггер");
-
-    const host = mount();
-
-    await vi.waitFor(() => expect(host.textContent).toContain("Схема не распозналась"));
-    expect(host.textContent).toContain("Кривая");
-  });
-
-  it("правка оригинала пересобирает состав — копии ручек нигде нет", async () => {
-    const id = schemasStore.actions.add("Петстор", "это не сваггер");
-
-    const host = mount();
-    await vi.waitFor(() => expect(host.textContent).toContain("Схема не распозналась"));
-
-    schemasStore.actions.replace(id, petstore);
-
-    await vi.waitFor(() =>
-      expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus"),
-    );
-    expect(host.textContent).not.toContain("Схема не распозналась");
   });
 });

@@ -1,6 +1,6 @@
 import { fieldsOf, type FieldDescriptor } from "@web-core/generators/fields";
 import { z } from "@web-core/io";
-import { createRoot, createSignal } from "solid-js";
+import { createRoot, createSignal } from "@web-core/solid";
 import { describe, expect, it } from "vitest";
 
 import type { FieldBinding } from "../../../src/entities/form/lib/binding.js";
@@ -26,7 +26,7 @@ describe("useTree", () => {
     createRoot((dispose) => {
       const { elementFields } = useTree(listField(), signalBinding([]));
 
-      expect(elementFields().map((field) => field.path)).toEqual(
+      expect(elementFields.map((field) => field.path)).toEqual(
         expect.arrayContaining([["value"], ["label"]]),
       );
       dispose();
@@ -54,7 +54,7 @@ describe("useTree", () => {
     });
   });
 
-  it("add — дописывает пустой элемент в конец через onChange", () => {
+  it("add — ставит пустой элемент первым, заполнять начинают сверху", () => {
     createRoot((dispose) => {
       const binding = signalBinding([{ value: "a", label: "A" }]);
       const { add } = useTree(listField(), binding);
@@ -62,8 +62,8 @@ describe("useTree", () => {
       add();
 
       expect(binding.value()).toEqual([
-        { value: "a", label: "A" },
         { value: "", label: "" },
+        { value: "a", label: "A" },
       ]);
       dispose();
     });

@@ -1,26 +1,24 @@
-import { createMemo, type JSX } from "solid-js";
+import type { Accessor, JSX } from "@web-core/solid";
 
 import { Box } from "../../../shared/ui";
-import { endpointKey, groupEndpoints, type OpenapiEndpoint } from "../models";
+import { endpointKey, groupEndpoints, type EndpointDescriptor } from "../models";
 
 export function Endpoints(props: {
   label?: string;
-  endpoints: readonly OpenapiEndpoint[];
+  endpoints: readonly EndpointDescriptor[];
   onAddTag?: () => void;
   onRemove?: () => void;
   onAddEndpoint?: (tag: string) => void;
   onRemoveTag?: (tag: string) => void;
-  onRemoveEndpoint?: (endpoint: OpenapiEndpoint) => void;
-  children?: (endpoint: OpenapiEndpoint) => JSX.Element;
+  onRemoveEndpoint?: (endpoint: EndpointDescriptor) => void;
+  children?: (endpoint: Accessor<EndpointDescriptor>) => JSX.Element;
 }) {
-  const groups = createMemo(() => groupEndpoints(props.endpoints));
-
   return (
     <Box
       label={props.label}
       onAddChild={props.onAddTag}
       onRemove={props.onRemove}
-      items={groups()}
+      items={groupEndpoints(props.endpoints)}
       itemKey={(group) => group.tag}
       itemLabel={(group) => group.tag}
       onItemAddChild={
@@ -36,7 +34,7 @@ export function Endpoints(props: {
     >
       {(group) => (
         <Box
-          items={group.endpoints}
+          items={group().endpoints}
           itemKey={endpointKey}
           itemLabel={(endpoint) => `${endpoint.method} ${endpoint.url}`}
           onItemRemove={props.onRemoveEndpoint}

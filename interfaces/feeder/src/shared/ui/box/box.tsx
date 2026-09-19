@@ -1,5 +1,6 @@
+import { Key } from "@web-core/solid/keyed";
 import { Accordion } from "@web-core/ui";
-import { For, Show, type JSX } from "solid-js";
+import { Show, type Accessor, type JSX } from "@web-core/solid";
 
 import { Node } from "./node";
 
@@ -12,30 +13,30 @@ export function Box<T>(props: {
   itemLabel: (item: T) => string;
   onItemAddChild?: (item: T) => void;
   onItemRemove?: (item: T) => void;
-  children: (item: T) => JSX.Element;
+  children: (item: Accessor<T>) => JSX.Element;
 }) {
   const nodes = () => (
     <Accordion collapsible multiple data-variant="cards">
-      <For each={props.items}>
+      <Key each={props.items} by={props.itemKey}>
         {(item) => (
           <Node
-            value={props.itemKey(item)}
-            label={props.itemLabel(item)}
+            value={props.itemKey(item())}
+            label={props.itemLabel(item())}
             onAddChild={
               props.onItemAddChild === undefined
                 ? undefined
-                : () => props.onItemAddChild?.(item)
+                : () => props.onItemAddChild?.(item())
             }
             onRemove={
               props.onItemRemove === undefined
                 ? undefined
-                : () => props.onItemRemove?.(item)
+                : () => props.onItemRemove?.(item())
             }
           >
             {props.children(item)}
           </Node>
         )}
-      </For>
+      </Key>
     </Accordion>
   );
 

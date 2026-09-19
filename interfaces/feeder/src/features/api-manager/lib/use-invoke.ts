@@ -1,4 +1,4 @@
-import { createSignal, type Accessor } from "solid-js";
+import { createSignal, type Accessor } from "@web-core/solid";
 
 import type { InvokeResult, OpenapiEndpoint } from "../../../entities/openapi";
 import { invokeEndpoint } from "./invoke";

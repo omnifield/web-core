@@ -1,4 +1,4 @@
-import { For, Match, Switch } from "solid-js";
+import { For, Match, Switch } from "@web-core/solid";
 import {
   valueAt,
   withValue,
@@ -46,8 +46,8 @@ export function FieldNode(props: {
                   >
                     {(index) => (
                       <FieldNode
-                        fields={elementFields()}
-                        binding={itemBinding(binding, items, index)}
+                        fields={elementFields}
+                        binding={itemBinding(binding, items, index())}
                       />
                     )}
                   </Box>

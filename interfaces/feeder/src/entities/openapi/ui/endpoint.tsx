@@ -1,5 +1,5 @@
 import { Flow, Typography } from "@web-core/ui";
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 
 import type { OpenapiEndpoint } from "../models";
 

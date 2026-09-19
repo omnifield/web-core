@@ -4,5 +4,6 @@ export {
   SwitchAxisMode,
   SwitchFilterMode,
   SwitchLayoutMode,
-  SwitchViewModeGlobal as SwitchViewMode,
+  SwitchViewMode,
+  type SwitchViewModeProps,
 } from "./controls";

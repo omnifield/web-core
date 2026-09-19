@@ -3,6 +3,9 @@
 # что у packages/io, packages/store, packages/assembly, packages/router (categories → items,
 # log — журнал решений); без milestones — у пакета нет освоенной поставки с датами релиза, только
 # сделанное и открытое.
+#
+# Записи про снесённый код здесь НЕ хранятся — даже ради истории. Пакет пережил пересборку, и
+# журнал, описывающий несуществующие виджеты, читается как описание живого кода и врёт.
 
 categories:
   - category: Фундамент слоя interfaces
@@ -14,38 +17,21 @@ categories:
         milestone: null
         name: "`interfaces/*` в `pnpm-workspace.yaml`"
         description: |
-          Означает: новый корень воркспейса зарегистрирован рядом с `packages/*`/`products/*`/
-          `apps/*` — pnpm видит пакеты внутри `interfaces/` без вложенного воркспейса (pnpm
-          вложенные не поддерживает, см. комментарий в файле).
+          Означает: корень воркспейса зарегистрирован рядом с `packages/*`/`products/*`/`apps/*` —
+          pnpm видит пакеты внутри `interfaces/` без вложенного воркспейса (вложенные pnpm не
+          поддерживает, см. комментарий в файле).
 
       - id: feeder-package-scaffold
         type: feature
         status: Done
         priority: High
         milestone: null
-        name: "`interfaces/feeder` — скелет пакета по образцу `packages/form`"
+        name: "`interfaces/feeder` — скелет пакета"
         description: |
-          Означает: `package.json` (`@web-core/feeder`, `vite build`, `solid-js` peer,
-          `@web-core/generators`+`@web-core/io` dependencies), `tsconfig.json`, `eslint.config.js`
-          (пресет `@web-core/lint`), `vite.config.ts` (`defineLibraryConfig`, один вход `index`,
-          `solid: true`) — build/typecheck/lint прогнаны, все зелёные.
+          Означает: `package.json` (`@web-core/feeder`, `vite build`, `solid-js` peer),
+          `tsconfig.json`, `eslint.config.js` (пресет `@web-core/lint`), `vite.config.ts`
+          (`defineLibraryConfig`, один вход `index`, `solid: true`), `vitest.config.ts`.
 
-      - id: feeder-placeholder-wired
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`FeederPlaceholder` подключён в `apps/skin/src/pages/lab`"
-        description: |
-          Означает: `apps/skin` получил зависимость `@web-core/feeder: workspace:*`, пустая
-          dev-страница `pages/lab` (`return ""` раньше) рендерит плейсхолдер. Проверено живым
-          dev-сервером Vite (`curl` по `@fs`-резолву `interfaces/feeder/src/index.ts` и по
-          скомпилированному `pages/lab/index.tsx` — цепочка резолвится и транспилируется без
-          ошибок); визуальная проверка в Chrome не сделана — профиль браузера MCP занят другой
-          параллельной сессией, убивать чужой процесс не стали.
-
-  - category: Архитектура пакета
-    items:
       - id: fsd-layers-adapted
         type: decision
         status: Done
@@ -53,356 +39,373 @@ categories:
         milestone: null
         name: "Адаптированный FSD: entities/features/widgets не в бизнес-смысле, без app/pages"
         description: |
-          Означает: `entities` — структурная модель движка (узел дерева, правило маппинга), не
-          бизнес-сущность; `features` — фичи интерфейса (отредактировать значение, выбрать цель
-          маппинга), не бизнес-операция; `widgets` — сборка entities+features в UI мода. `app`/
-          `pages` не заведены — пакет не приложение с роутингом, вход наружу — экспорты (мод =
-          export). Разметка под мод 1: `entities/tree` (`lib/binding.ts`+`lib/use-tree.ts`),
-          `features/edit-value` (`ui/kit/*`), `widgets/tree` (`ui/tree/*`) — перенос из
-          `apps/skin/entities/feeder`. Разбор — FAQ.md.
+          Означает: `entities` — структурная модель движка (склад пресетов, документ API, дерево
+          формы, адаптер), не бизнес-сущность; `features` — фичи интерфейса (загрузить документ,
+          показать каталог, дёрнуть ручку), не бизнес-операция; `widgets` — сборка entities и
+          features в готовый экран. `app`/`pages` не заведены: пакет не приложение с роутингом,
+          вход наружу — экспорты, не маршруты. Разбор — FAQ.md.
 
-  - category: Режимы наполнения
+  - category: Модель API
     items:
-      - id: mode-typed-tree
+      - id: swagger2-recognized
         type: feature
         status: Done
         priority: High
         milestone: null
-        name: "Мод 1 — зод-схема → дерево с ручным редактированием"
+        name: "Распознавание Swagger 2.0 в наш формат документа"
         description: |
-          Означает: перенос `apps/skin/entities/feeder` (`ui/tree`, `ui/kit`, `lib/binding`,
-          `lib/use-tree`) в `interfaces/feeder` под разметку `entities/tree`/`features/edit-value`/
-          `widgets/tree`, оторванный от `componentStore.use(kit).io.schema` — `Tree` полностью
-          контролируемый (`schema`/`value`/`onChange` пропами), сам ничего не хранит. Принят user,
-          подключён живым потребителем (`apps/skin/src/pages/index.tsx`), проверен вручную в
-          браузере (правка скаляра, add/remove элемента списка).
+          Означает: `swagger2Template` — свой `MappingTemplate` на механизме
+          `@web-core/generators/mapping`, совпадение жёсткое (`isEntry` смотрит на `swagger: "2.0"`).
+          `parseSchema(raw)` прогоняет документ через список шаблонов; не подошёл ни один —
+          исключение с перечислением, что пробовали. Тесты — урезанный настоящий petstore,
+          включая вложенные `$ref` и защиту от циклов через `z.lazy`.
 
-      - id: mode-typed-tree-tests
+      - id: our-endpoint-format
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Наш формат ручки — данные, не зод"
+        description: |
+          Означает: `SchemaDocument { endpoints, defs }`, ручка —
+          `{ method, url, tag?, params: [{ name, in, required, schema }] }`, где `schema`
+          параметра — JSON Schema, а `defs` держит общие типы документа (`$ref` остаются
+          ссылками, циклы не разворачиваются). Плоский `{имя, тип, обязателен}` отвергнут: он
+          беднее того, что мы уже читаем из свагера (тело-объект, енумы, массивы, вложенность),
+          и терял бы это прямо на импорте.
+
+          Зод строится из формата при отрисовке (`endpointOf`/`schemaNodeToZod`) и нигде не
+          хранится — он не сериализуется и на бэк не уедет.
+
+      - id: no-raw-kept
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Сырьё не храним — чужой формат разбирается один раз на входе"
+        description: |
+          Означает: если хранить сырьё, то КАЖДАЯ манипуляция обязана сначала выяснить, что это за
+          формат и как его читать, — и так на сто форматов вперёд. Поэтому чужой документ
+          распознаётся ОДИН раз, при загрузке, и дальше не существует: после импорта нет ни
+          Swagger 2.0, ни любого другого — есть наш документ.
+
+          Следствие, ради которого всё и затевалось: правка ручки не упирается в сериализацию
+          чужого формата, и флоу один — и для загруженных схем, и для заведённых руками. Решение
+          user 2026-09-19.
+
+      - id: endpoint-identity-is-derived
+        type: decision
+        status: Open
+        priority: High
+        milestone: null
+        name: "У ручки и тега нет собственного айди — опознаются содержимым"
+        description: |
+          Означает: сегодня ручка опознаётся `endpointKey` = `метод + url`, а тег — собственным
+          именем, и группы вообще не существуют как записи (`groupEndpoints` собирает их заново
+          на каждое чтение). Это производные ключи: юзер правит урл или имя тега — и для любого
+          списка это уже другая сущность.
+
+          Прежнее обоснование («ключ обязан пережить перезалив документа») умерло вместе со
+          сценарием: перезаливать нечего, каждая загрузка создаёт новый пресет. Правильный ключ —
+          выданный при создании, как `id` у пресета. Найдено 2026-09-19, в код не заведено.
+
+  - category: Пресет как склад
+    items:
+      - id: preset-is-neutral-storage
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "`entities/preset` — нейтральный склад, openapi его потребитель"
+        description: |
+          Означает: сущность — именованная пользовательская запись, которая уедет в
+          `backend/presets`: `Preset { id, name, content }`, где `content` для склада НЕПРОЗРАЧЕН.
+
+          Разрез — склад и потребитель, оба друг о друге не знают: складу неважно, кто и что в
+          него завёз, потребителю неважно, на каком складе лежит его формат. Поэтому
+          `entities/preset` не знает про ручки, `entities/openapi` не знает про склад, и ни один
+          не импортирует другой — сводит фича. Слово «схема» отвергнуто: оно занято смыслом
+          «описание формы», а у склада завтра будут другие потребители. Решение user 2026-09-19.
+
+      - id: preset-store-and-ui
         type: feature
         status: Done
         priority: High
         milestone: null
-        name: "Тесты мода 1 — entities/tree (логика) + widgets/tree (реальный DOM-рендер)"
+        name: "Склад: стор, карточки, загрузчик документа"
         description: |
-          Означает: vitest+jsdom. `entities/tree` — `itemBinding`/`useTree` чистой логикой (8
-          тестов, `createRoot`, реальная схема через `fieldsOf`). `widgets/tree` — `Tree`
-          смонтирован по-настоящему через `solid-js/web` (не мок): скаляр пишет по пути, «Добавить»
-          дописывает пустой элемент, у каждого айтема своя кнопка «Убрать» (3 теста). Потребовалось
-          `test.server.deps.inline` в `vitest.config.ts` — Ark-UI/Zag/Kobalte внутри `@web-core/ui`
-          отдают сырой `.jsx`, vitest иначе грузит их напрямую через Node и падает. Разбор — FAQ.md.
+          Означает: `presetsStore` (`add`/`remove`/`rename`/`replace`/`edit`/`hydrate`, селектор
+          `presetBy`), айди — uuid при создании и ни от чего не производный. UI склада —
+          `Presets`/`PresetCard`/`PresetInfo`/`PresetLoader`, экран загрузки —
+          `ExternalSchemaLoader` (файл или вставка → `parseSchema` → пресет).
 
-      - id: mode-openapi-recognize
-        type: feature
+      - id: single-line-input-ate-newlines
+        type: bug
         status: Done
         priority: High
         milestone: null
-        name: "Мод 2 — entities/openapi: распознавание свагера 2.0 + zod-схема на ручку"
+        name: "Однострочный `<input>` молча резал вставленный документ"
         description: |
-          Означает: свой `MappingTemplate` (механизм `@web-core/generators/mapping`, тот же
-          `run(raw, templates)`) под Swagger 2.0 — жёсткое совпадение (`isEntry` смотрит на
-          `swagger: "2.0"`), самодостаточный (не переиспользует apps/skin-шный
-          `entities/openapi/model/import/swagger2.ts`, тот завязан на свои `Endpoint`/`HttpMethod`
-          и не строит схему тела). На каждую операцию — `method`/`url`/`tag` + `z.ZodType` из её
-          `parameters`/тела (JSON Schema → zod, тот же класс работы, что `@web-core/generators/
-          fields`, но на вход другой формат). Тесты — реальный (урезанный) petstore-документ, 8
-          шт, включая вложенные `$ref` (Pet→Category/Tag) и защиту от циклов через `z.lazy`.
+          Означает: поле под документ было `FieldInput`, а однострочный `<input>` по спеке
+          вырезает переносы строк при нормализации значения — вставленный YAML превращался в одну
+          строку и переставал разбираться. Тихо: ни ошибки, ни следа, документ просто «не
+          распознавался». Найдено тестом на живой вставке petstore. Чинится `FieldTextarea` в одну
+          строку — вид тот же, текст цел.
 
-      - id: mode-openapi-invoke
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 2 — features/invoke-endpoint: реальный HTTP-вызов"
-        description: |
-          Означает: `rawRestRequest` из `@web-core/query/rest` (новая dependency пакета) —
-          выполнить ручку с собранными параметрами, вернуть `{ status, ok, headers, body }`.
-          Path-плейсхолдеры (`{petId}`) подставляются по имени ключа `value`, остальное — query
-          (массивы — повторяющимися парами), `body` — JSON. Решение user: сеть — на стороне
-          feeder, не потребителя (в отличие от apps/skin-шного `model/endpoint/call.ts`, который
-          остаётся отдельным, не трогается). Тесты — мок `fetch`, 5 шт.
-
-      - id: mode-openapi-widget
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 2 — widgets/openapi: два вида, OpenapiEditor + OpenapiList"
-        description: |
-          Означает: по находке user поверх исходного плана — не один виджет, а два под разные
-          экраны. `OpenapiEditor` — полный: список ручек из распознанного документа, конфигурация
-          параметров каждой переиспользует `Node`/`Leaf` из `widgets/tree` (локальный `binding` на
-          карточку, не наружу на каждую правку). `OpenapiList` — компактный: принимает уже
-          настроенные `{ endpoint, value }[]`, никакого UI полей, только «Вызвать» на каждую.
-          Публичный `onChange` у обоих — `OpenapiInvocation` (`{ endpoint, value, response }`,
-          `value` добавлен по итогам ревью user — без него `OpenapiList` нечем было бы кормить),
-          стреляет на сам вызов, не на правку поля. Тесты — реальный DOM-рендер (`solid-js/web`),
-          6 шт (3+3).
-
-      - id: mode-mapping-entities
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 4 — entities/mapping: describeVariant + applyMapping поверх @web-core/io"
-        description: |
-          Означает: `describeVariant(unknown)` — распознаёт по `instanceof z.ZodType`, зовёт
-          `describeSchema` или `describeSample` из `@web-core/io`, обе отдают одну форму
-          (`PathType[]`). `applyMapping(source, rules)` — тонкая обёртка над `applyFieldRules`
-          (не `collectFieldRuleReport` — один инстанс, не пачка строк), источник не объект
-          считается пустым, не падает. Вся механика — в `io`, отсюда только типизация «двух
-          вариантов». Тесты — 6 шт.
-
-      - id: mode-mapping-widget
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 4 — widgets/mapping: Mapping + FieldPicker"
-        description: |
-          Означает: `Mapping(a, b, onChange)` — на каждый путь варианта Б (`describeVariant(b)`)
-          свой `FieldPicker` (нативный `<select>` из путей А — Ark-UI `Select` не открывается в
-          jsdom, разбор — FAQ.md). Живой, как мод 1 (`onChange` на каждый пик, не по кнопке) —
-          несёт `{ rules: FieldRule[], result: MappingResult }`, `rules` для переиспользования на
-          новых данных той же формы (сохранение — на стороне потребителя, бэк, по словам user),
-          `result.row` — уже применённое сведение. v1 — только 1:1 (путь→путь), без UI под
-          `steps`/`onFail`. Тесты — реальный DOM-рендер, 5 шт.
-
-      - id: mode-openapi-manual-descriptor
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 2 — entities/openapi: EndpointDescriptor (схема A) + descriptorToEndpoint"
-        description: |
-          Означает: второй способ получить `OpenapiEndpoint[]` — не распознаванием чужого
-          документа (swagger2Template), а вручную заполненными дескрипторами. `EndpointDescriptor`
-          (`method`/`url`/`params: EndpointParam[]`, `EndpointParam` — `name`/`type: "string"|
-          "number"|"boolean"`/`required`) — своя, урезанная схема A по сравнению со
-          `Swagger2Parameter`: без `in` (query/path определяется тем же приёмом, что уже применяет
-          `invokeEndpoint` — по совпадению имени с `{плейсхолдером}` url), без `enum`/вложенных
-          объектов/`headers` (`invokeEndpoint` их сегодня не поддерживает — заводить под них
-          дескриптор значило бы строить мёртвую функциональность, отложено явной просьбой user
-          «пока базовых настроек хватит»). `endpointDescriptorSchema`+`manualGroupSchema` (обёртка
-          `{ endpoints }` — `Tree` рендерит только объектный корень) — те же zod-схемы, что рисует
-          `Tree`. `descriptorToEndpoint` — адаптер в `OpenapiEndpoint`, тем же приёмом, что
-          `scalarParamToZod` у свагера, дальше по пайплайну (карточка, вызов) разницы в
-          происхождении уже нет. Тесты — 7 шт (`test/entities/openapi/descriptor.test.ts`).
-
-      - id: mode-openapi-groups
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "Мод 2 — widgets/openapi: OpenapiEditor группами (схема read-only / юзер редактируемая)"
-        description: |
-          Означает: `OpenapiEditor` больше не принимает один `raw: string` — принимает
-          `groups: OpenapiGroup[]` (`SchemaGroup { raw }` | `ManualGroup { endpoints:
-          EndpointDescriptor[] }`, у обеих `id`+`name` от юзера) + `onGroupsChange`. Группы НЕ
-          сливаются в общий список ручек — рендерятся отдельными секциями, каждая подписана; у
-          юзера может быть сколько угодно бэков со свагером и сколько угодно без него, находка
-          user поверх исходного плана (обсуждение, см. FAQ.md). Группа-схема — read-only состав
-          (`SchemaGroupView`, бывшее тело всего `OpenapiEditor` до групп, вынесено как есть):
-          «обновить» значит заменить `raw` целиком снаружи, не редактировать ручку поштучно.
-          Группа-юзер (`ManualGroupEditor`) — `Tree` (мод 1) поверх `manualGroupSchema` для
-          структуры (add/remove/edit ручки и параметра — готовая механика списков мода 1, ничего
-          нового не изобреталось) плюс `EndpointCard` на каждый дескриптор (та же карточка
-          конфигурации значений+вызова, что у группы-схемы — мод 2 не знает, откуда взялся
-          `OpenapiEndpoint`). Добавление/удаление самой группы — тоже внутри `OpenapiEditor`
-          (имя+выбор вида+кнопка), не отдельная забота потребителя, тем же приёмом, что и списки
-          мода 1. Тесты — 11 шт (`test/widgets/openapi/editor.test.tsx`, было 3). Живого браузера
-          не было — vitest+jsdom, тот же precedent, что и у первой версии мода 2.
-
-      - id: mode-file-upload
+      - id: paste-from-clipboard
         type: feature
         status: Backlog
         priority: Medium
         milestone: null
-        name: "Мод 3 — загрузка файла"
+        name: "Вставка кнопкой вместо поля ввода"
         description: |
-          Означает: интерфейс инпут-загрузчика; структура содержимого файла неизвестна заранее.
-          Объём сузился после мода 4 — сам UI сведения уже есть (`Mapping`), моду 3 остаётся
-          только «файл → сэмпл» и передать результат в готовый `Mapping` как вариант А, не
-          изобретать сведение заново.
+          Означает: поле под документ существует только чтобы принять вставку — юзер в него ничего
+          не печатает. Вместо него кнопка «Вставить», читающая буфер напрямую. Компонент делает
+          владелец `packages/ui`, зона переедет на него, когда он появится (решение user
+          2026-09-19); до тех пор — текстареа.
 
-      - id: mapping-ui
-        type: feature
-        status: Done
-        priority: Medium
-        milestone: null
-        name: "UI сведения «корм → потребитель» поверх `@web-core/io`"
-        description: |
-          Означает: экран сопоставления путей — `describeSample`/`describeSchema` (плоский список
-          путей+типов чужих данных и целевой схемы) и `FieldRule[]`+`applyFieldRules`/
-          `collectFieldRuleReport` (движок «куда что положить» с отчётом) уже существуют в
-          `packages/io`, headless. Материализовалось как мод 4 (`Mapping`, `mode-mapping-widget`)
-          — не «только для мода 3», как думали раньше (уточнение 2026-09-14), а отдельный
-          универсальный мод, не привязанный к происхождению данных (уточнение 2026-09-15, находка
-          user — мод 2 без способа скормить результат потребителю был бесполезен).
+          Сверку по поддержке буфера в браузерах НЕ проводили: до неё не дошли. Провести её обязан
+          тот, кто будет делать компонент — доступ к чтению буфера исторически разный у браузеров
+          и требует разрешения.
 
-  - category: Привязка ручки к компоненту (пересборка 2026-09-18)
+  - category: Каталог и вызов
     items:
-      - id: rebuild-context
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Пересборка пакета: прежние публичные виджеты сняты, каркас собирается заново"
-        description: |
-          Означает: `OpenapiEditor`/`OpenapiList`/`Mapping a,b`/`Tree`-как-экспорт снесены user до
-          начала этой работы («там был бардак, теперь переписываем»); доки и `test/` на момент
-          старта описывали уже несуществующий код. Уцелело и переиспользуется: распознавание
-          Swagger 2.0 (`swagger2Template`), схема A (`EndpointDescriptor`+`descriptorToEndpoint`),
-          примитивы вызова (`resolveUrl`/`appendQuery`/`toResult`), движок дерева (переехал в
-          `entities/form`, наружу — `TreeForm`). Новый скоуп задан user: «настроил апи → привязал
-          ручку к компоненту → на другой странице дёрнул привязанное», стык привязки и есть
-          адаптер.
-
-      - id: binding-is-adapter
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Привязка и адаптер — одна запись `Binding`, не две сущности"
-        description: |
-          Означает: `Binding { source: {apiId, endpointId, value?}, root, rules, extra? }` — «что
-          дёрнуть», «где в ответе записи» (L3 `@web-core/io`), «как одна запись ложится на вход
-          потребителя» (L2, `FieldRule[]`). `rules: []` — законное состояние «привязано, но не
-          сведено» (`isFed`), а не поломка. Второй реестр «адаптеров» потребовал бы синхронизации
-          с первым, рассинхрон давал бы молча пустой компонент. Привязка — чистый JSON (на ручку
-          ссылается строкой), поэтому сохраняется потребителем и поднимается `hydrate`.
-
-      - id: keys-chosen-by-reader
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Ключи семей: каталог — по `apiId`, привязки — по имени компонента"
-        description: |
-          Означает: `apiCatalogOf(apiId)` и `bindingStoreOf(component)` на
-          `createActionStoreFamily` (`@web-core/store`), приём взят у `componentManagerStoreOf`
-          в `apps/studio`. Ключ привязок выбран стороной, которая ЧИТАЕТ: на витрине компонент
-          знает только себя. Это же доказывает, почему адаптер не может жить на ручке — одна
-          ручка кормит и таблицу, и листбокс, а правила у них разные. Айди ручки —
-          `endpointKey` = `метод + url`: привязка обязана пережить перезалив документа, а
-          перераспознавание даёт новый массив объектов.
-
-      - id: api-catalog
+      - id: catalog-screen
         type: feature
         status: Done
         priority: High
         milestone: null
-        name: "`entities/openapi`: каталог ручек одного бэка (`apiCatalogOf`)"
+        name: "`SchemaCatalog` — состав API: теги → ручки → параметры"
         description: |
-          Означает: `{ raw?, endpoints, status, error }`, действия `loadSchema` (через
-          `run(raw,[swagger2Template])`), `addEndpoint(descriptor)`, `removeEndpoint(id)`.
-          Загрузка прикрыта гардом от гонки (ответ устаревшей загрузки выбрасывается по сверке
-          `raw`), нераспознанный документ — статус `failed` с текстом, не исключение. Сначала
-          стор лежал в `features/api-manager` (калька со студии) — опущен в `entities` решением
-          user 2026-09-18: набор ручек одного бэка это структура, и читать её нужно и экрану
-          настройки, и витрине, а фиче нельзя импортировать другую фичу. Тесты — 5.
+          Означает: каталог читает склад напрямую, пропов не принимает. На каждый пресет, похожий
+          на документ API (`asSchemaDocument`), рисуется состав: группировка по тегам
+          (`groupEndpoints`, ручки без тега — в группу `unknown`), под ручкой — форма параметров и
+          вызов. Правки состава идут immer-черновиком через `presetsStore.actions.edit`.
 
-      - id: api-manager-provider
+      - id: endpoint-call
         type: feature
         status: Done
         priority: High
         milestone: null
-        name: "`features/api-manager`: провайдер текущего API и `ApiList`"
+        name: "Вызов ручки: форма параметров по схеме и живой HTTP"
         description: |
-          Означает: `ApiManagerProvider api={id}` + `useApiId`/`useApiCatalog` — интерфейсный
-          вопрос «с каким API работаем», без владения структурой. Документ пропом НЕ засевается
-          (в отличие от студийного `ComponentManagerProvider`, где состояние выводится из самого
-          ключа): здесь юзер приносит документ после монтирования, засев был бы одноразовым.
-          `ApiList` рендерит состав и его состояния, а что монтируется на строку — функция-ребёнок
-          от того, кто собирает экран. Тесты — 4.
+          Означает: `endpointOf(descriptor, defs)` строит зод параметров, `TreeForm` рисует по нему
+          форму, `useInvoke` держит `result`/`failure`/`pending`, `invokeEndpoint` выполняет вызов
+          поверх `rawRestRequest` (`@web-core/query/rest`). Путь/квери/тело раскладываются из
+          одного значения: имя из `{плейсхолдера}` url — в путь, ключ `body` — в JSON-тело,
+          остальное — в квери. Не-2xx — валидный `InvokeResult`; сорванный транспорт — исключение,
+          `useInvoke` кладёт его текст в `failure`.
 
-      - id: binding-entity
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`entities/binding`: тип, стор и применение привязки"
-        description: |
-          Означает: `bindingKey`/`isFed`, `bindingStoreOf(component)` (`bind`/`unbind`/`setRoot`/
-          `setRules`/`setExtra`/`hydrate`), `applyBinding(response, binding)` поверх
-          `collectRowsReport`/`collectFieldRuleReport` из `@web-core/io`. Своего кода — только
-          развилка «набор записей или одна запись» (`GET /users` отдаёт массив, `GET /user/{id}`
-          объект, оба законная еда, а `collectRowsReport` ждёт именно массив) и именные отказы
-          вместо молчаливых нуля записей. Повторный `bind` той же ручки = смена параметров
-          вызова, сведённые правила не сносятся. Тесты — 13.
-
-      - id: invoke-endpoint-rebuilt
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`features/invoke-endpoint`: один вызов настроенной ручки"
-        description: |
-          Означает: `invokeEndpoint(endpoint, value)` поверх `rawRestRequest`
-          (`@web-core/query/rest`) и уцелевших примитивов `resolveUrl`/`appendQuery`/`toResult`.
-          Не-2xx — валидный `InvokeResult` (инструмент постмановского рода показывает 404/500 со
-          статусом и телом), сорванный транспорт — исключение (ответа не было вовсе, притворяться
-          нельзя). Тесты — 5, на моке `fetch`.
-
-      - id: feed-widget
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`widgets/feed`: витрина — `useFeed`/`feedOf`/`feedBindingOf`"
-        description: |
-          Означает: сборка «взять ручку из каталога → вызвать → применить привязку». Слой
-          `widgets`, потому что это сборка entities и фичи вызова, а фича не имеет права звать
-          другую фичу. Исход ВСЕГДА один `RowsResult` — успех, «ручки нет в каталоге», 500,
-          оборванная сеть; исключение наружу не выходит. Привязки нет — ресурс не стреляет, в
-          сеть не ходим. Берётся первая СВЕДЁННАЯ привязка, иначе первая вообще — чтобы
-          недоделанная объяснила себя, а не притворилась отсутствием еды. Тесты — 8, включая
-          сквозной (каталог → привязка → мок `fetch` → записи в форме компонента).
-
-      - id: mapping-ui-rebuilt
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`entities/mapping` + `widgets/mapping`: UI сведения с новым контрактом"
-        description: |
-          Означает: `isSchema`/`describeVariant`/`rowSetsOf`/`recordPathsOf` (тонкая обёртка над
-          `@web-core/io`) и `Mapping { source, target, root?, rules?, onChange }` — вместо
-          снесённого `a`/`b`. Пути показываются ЗАПИСИ, а не ответа (правила применяются к
-          записи). Смена «где записи» уносит правила, чей `from` больше не существует: иначе на
-          витрине это выглядело бы как беда данных, хотя это беда настройки. `target` — проп, а
-          не io-схема, вытянутая внутри движка: сведение обязано работать и для потребителя не из
-          кита. Нативный `<select>` (`FieldSelect`) — Ark-UI `Select` не открывается в jsdom.
-          Тесты — 7 (entities) + 5 (DOM).
-
-      - id: binding-screen
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "`widgets/binding`: экран настройки целиком + публичный API пакета"
-        description: |
-          Означает: `BindEndpoint` (параметры через `TreeForm` → «Проверить» живым вызовом →
-          выбор потребителя → `Mapping`, пишущий `setRoot`/`setRules`) и `BindingEditor`
-          (провайдер + список + карточка, `raw` грузится эффектом, потребители пропом). Сведение
-          возможно только ПОСЛЕ настоящего вызова: схемы ответа у движка нет (Swagger 2.0 здесь
-          разбирается на параметры), и экран говорит это прямо. `src/index.ts` выставил наружу
-          весь путь: `BindingEditor`/`BindEndpoint`, `Mapping`, `useFeed`/`feedOf`,
-          `ApiManagerProvider`/`ApiList`, `TreeForm`, `invokeEndpoint`, сторы и типы. Тесты — 4
-          DOM, включая сквозной «Проверить → свести → правило в сторе привязок».
-
-      - id: dead-tests-left
+      - id: live-browser-check
         type: feature
         status: Backlog
         priority: Medium
         milestone: null
-        name: "8 тест-файлов от снесённого кода — починить пути или снести"
+        name: "Живая проверка в браузере (`apps/studio`)"
         description: |
-          Означает: `test/` пережил снос хуже кода. Пять файлов покрывают ЖИВОЙ код, который
-          переехал (`entities/tree/*` → `entities/form/lib`, `openapi/{descriptor,swagger2}` →
-          `models/`, `widgets/tree` → `entities/form/ui/tree`) — чинятся правкой импортов и
-          возвращают покрытие. Три мертвы по-настоящему (`widgets/openapi/{editor,list}`,
-          `entities/mapping/apply`) — сносить. Текущий `vitest run` даёт 51 зелёный тест и 8
-          красных файлов на импортах.
+          Означает: сборка проверена только vitest+jsdom. Живьём не гонялась: открыть экран API в
+          `apps/studio`, загрузить документ, раскрыть каталог, дёрнуть ручку и увидеть ответ.
+          Отдельно проверить то, чего jsdom не даёт вообще — открытие и закрытие секций аккордеона
+          кликом.
+
+  - category: Адаптер
+    items:
+      - id: adapter-is-the-entity
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Сущность — адаптер, не привязка; `entities/binding` → `entities/adapter`"
+        description: |
+          Означает: «привязка» — глагол, действие, а действия живут в `features`; вещь, которая
+          реально хранится и переиспользуется, — адаптер. Побочно освобождает слово: в
+          `entities/form` `binding` уже занят привязкой инпута к полю формы. Переименование
+          сделано целиком и разом, алиасов не оставлено. Решение user 2026-09-18.
+
+      - id: adapter-is-a-preset
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Адаптер — шов между поставщиком и потребителем, хранится пресетом"
+        description: |
+          Означает: работа адаптера — принять данные и отдать их в нужной форме; кто дал и кому
+          отдаём, адаптеру безразлично. Он сохраняется на `backend/presets` наравне с прочими
+          пресетами (второй потребитель склада после документа схемы) и живёт самостоятельно.
+
+          Состав: форма (`root` — где записи, `rules` — как поле ложится, `extra` — что с лишними)
+          плюс СПИСКИ проверенных поставщиков и потребителей — просто айдишники ручек,
+          компонентов, утилит, чего угодно. Списки говорят «на этих проверяли», а не ограничивают
+          применимость; механику перекладки они не меняют. `source` («какую ручку дёрнуть, с какими
+          параметрами») внутрь адаптера не входит — это не форма. Решение user 2026-09-18,
+          уточнено 2026-09-19.
+
+      - id: adapter-mismatch-is-loud
+        type: decision
+        status: Done
+        priority: High
+        milestone: null
+        name: "Переиспользование безопасно, потому что промах громкий"
+        description: |
+          Означает: схемы ответа Swagger 2.0 не даёт, формы сводятся по живому ответу — сверить
+          совпадение нечем. Возражение снято отчётом: подсунули не те данные — адаптер просто не
+          перемапит, и это видно. `FieldRuleReport` несёт `converted`/`rejected`/`unmapped`,
+          `applyAdapter` дополнительно даёт именной отказ, когда по `root` ничего нет или там
+          скаляр. Решение user 2026-09-18.
+
+      - id: adapter-entity-stale
+        type: feature
+        status: Open
+        priority: High
+        milestone: null
+        name: "Форма `Adapter` в коде не соответствует решениям — НЕ СДЕЛАНО"
+        description: |
+          Означает: на сегодня сделан только слой имён. Фактический состав `Adapter` всё ещё несёт
+          `source`, стор ищет запись по `sourceKey` (apiId+endpointId), то есть адаптер прибит к
+          одной ручке и пресетом быть не может. Живого потребителя у `entities/adapter` нет ни
+          одного — сущность вызывается только из своих тестов.
+
+          Что предстоит: своя личность (id + имя от юзера, `sourceKey` умирает); вместо `source` —
+          списки проверенных поставщиков и потребителей айдишниками; хранение через
+          `backend/presets`; отчёт `applyAdapter` на экране. Отложено сознательно, решение user
+          2026-09-18: адаптер строится по ЖИВОМУ ответу, и без работающих ручек его не на чем
+          проверить.
+
+      - id: adapter-report-visible
+        type: feature
+        status: Backlog
+        priority: High
+        milestone: null
+        name: "Отчёт `applyAdapter` обязан быть на экране"
+        description: |
+          Означает: безопасность переиспользования держится на том, что промах громкий. Спрячем
+          отчёт — «не перемапилось» станет неотличимо от пустого компонента, и вся схема потеряет
+          смысл. Это не украшение UI, а условие принятого решения `adapter-is-a-preset`.
+
+      - id: response-skeleton-kept
+        type: decision
+        status: Backlog
+        priority: High
+        milestone: null
+        name: "Форма ответа берётся пробой и хранится скелетом, не содержимым"
+        description: |
+          Означает: адаптеру нужна форма ОТВЕТА, а наш документ описывает только параметры ручки —
+          из Swagger 2.0 ответ не достать. Форма берётся пробой (дёрнуть ручку), но хранится не
+          содержимое, а `describeSample(ответ)` из `@web-core/io`: плоский `PathType[]`
+          (`{ path, type }`), только скалярные листья, значений нет вообще.
+
+          Почему не сам ответ: сведение работает на ТИПАХ, содержимое нужно лишь как источник
+          структуры. Плюс проба уезжает на бэк, а в живом ответе — реальные данные чужого
+          продакшена. Пути — JSON Pointer, те же, что у `FieldRule.from`/`.target`, поэтому выбор
+          из мастера уходит в правило без конвертации.
+
+          Есть описание формы ответа — проба не нужна: источник меняется, формат `PathType[]`
+          остаётся. Обратного хода (`PathType[]` → zod) в `io` нет и не предполагается — скелет
+          описывает, но не валидирует; ограничение назвал владелец зоны `io` 2026-09-18. Решения
+          user 2026-09-18, кода нет.
+
+      - id: presets-kind-request
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: "Заявка в `backend/presets`: новые виды пресета"
+        description: |
+          Означает: наши записи едут на бэк пресетов наравне с прочими. `backend/presets` — ЧУЖАЯ
+          зона со своим реестром видов (`internal/kinds`, Go-структура на границе GraphQL),
+          поэтому это не правка на месте, а заявка владельцу через architect. Подаётся ПОСЛЕ того,
+          как состав записей устоится локально. Открытым остаётся объём: сваггеры бывают на
+          мегабайты — надо спросить владельца зоны про ограничения на размер `state`.
+
+  - category: Тождество узлов и резолв Solid
+    items:
+      - id: lists-keyed-by-identity
+        type: bug
+        status: Done
+        priority: High
+        milestone: null
+        name: "Аккордеон схлопывался на любой правке — списки сверялись по ссылке"
+        description: |
+          Означает: `<For>` опознаёт элемент по ссылке на объект, а ссылки в этой цепочке новые
+          всегда — `presetsStore` иммутабельный (path copying отдаёт новый объект пресета на
+          каждую правку), `groupEndpoints` пересобирает группы на каждое чтение пропа. Узел
+          сносился вместе с DOM, а в нём живёт состояние zag-машины: открытость секции, фокус,
+          введённое. При этом устойчивый ключ был — `Box` уже принимал `itemKey` и отдавал его
+          только в `value` аккордеона, в сверку не подавая.
+
+          Починено `<Key each by>` из `@web-core/solid/keyed` в `Box`, `SchemaCatalog` и
+          `Presets`; `children` у `Box`/`Endpoints`/`Presets`/`PresetCard` стали аксессорными —
+          узел остаётся тем же, меняется то, что он показывает. Тесты на тождество DOM-узлов:
+          удаление ручки не пересобирает соседей, новый объект с тем же ключом обновляет узел.
+          Разбор — FAQ.md, «Списки и тождество узла».
+
+      - id: solid-through-own-package
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "Импорты Solid — только через `@web-core/solid`"
+        description: |
+          Означает: 32 файла переведены с `solid-js`/`solid-js/web` на `@web-core/solid` и
+          `@web-core/solid/web`, прямых импортов вендора в зоне не осталось. Правило чужое (зона
+          `packages/solid`): один модуль-синглтон на репозиторий и одна точка, где решается
+          версия. Оттуда же приехал `<Key>` — примитив комьюнити, взятый пакетом готовым, а не
+          переписанный у себя.
+
+      - id: zag-ignores-synthetic-click
+        type: decision
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "Состояние компонента кита в тестах гоняется пропом, не кликом"
+        description: |
+          Означает: Ark-UI на Zag в jsdom не реагирует на синтетический клик — аккордеон не
+          открывается ни от `.click()`, ни от `dispatchEvent`, `onValueChange` не стреляет; при
+          этом контролируемый `value` работает штатно. Тот же класс сложностей известен по
+          floating-UI-компонентам. Поэтому поведение, завязанное на внутреннее состояние кита,
+          проверяется через `value`/`onValueChange`, а структура DOM — структурой. Проверено
+          2026-09-19.
+
+      - id: vitest-inlines-kit-deps
+        type: decision
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "`test.server.deps.inline` под Ark-UI/Zag/Kobalte"
+        description: |
+          Означает: эти пакеты внутри `@web-core/ui` отдают непреобразованный `.jsx` по
+          `solid`-condition, а vitest по умолчанию грузит зависимости из `node_modules` напрямую
+          через Node — голый `.jsx` там не парсится. `server.deps.inline` прогоняет их через
+          `vite-plugin-solid`. Найдено эмпирически на первом компонентном тесте.
+
+  - category: Гигиена
+    items:
+      - id: dead-weight-removed
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "Мёртвый груз вычищен: неиспользуемые экспорты и тесты снесённого кода"
+        description: |
+          Означает: снесён реэкспорт в одну строку, которым никто не пользовался, и константа
+          набора значений `ParamIn`, не звавшаяся ни в `src`, ни в `test` (сам тип живой). Пять
+          тест-файлов, не собиравшихся на импортах несуществующего кода, удалены. Группа ручек без
+          тега переименована в `unknown`. Решения user 2026-09-19.
+
+      - id: docs-cut-to-the-code
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "README/FAQ/EXAMPLES/ROADMAP вычищены от описаний несуществующего кода"
+        description: |
+          Означает: доки описывали снесённый пересборкой API целыми разделами — виджеты, сторы,
+          провайдеры и приложение-потребитель, которых в коде нет. Всё вырезано; EXAMPLES и README
+          переписаны от кода целиком, этот файл сведён к живому и запланированному — по требованию
+          user 2026-09-19 журнал снесённого не хранится даже ради истории.
+
+          Из FAQ убраны и два утверждения, противоречивших коду: «хранить сырой текст» (отменено
+          `no-raw-kept`) и состав адаптера без списков потребителей.
 
       - id: store-parametrized-selectors
         type: decision
@@ -413,494 +416,35 @@ categories:
         description: |
           Означает: `SelectorsShape<T>` (`(state, ...args: never[]) => unknown`) не принимает
           `(state, id: string)`, а при трёх явных аргументах типа перегрузка
-          `createActionStoreFamily` уводит селекторы в параметр ключа `K`; рантайм их
-          поддерживает (`fn.length > 1`), `dist/*.d.ts` пакета вдобавок отстал от `src`. Чужая
-          зона — находка отдана наверх. В feeder временно обычные функции над состоянием
-          (`endpointBy`, `bindingBy`); вернуть в стор, когда починят.
-
-      - id: live-browser-check
-        type: feature
-        status: Backlog
-        priority: Medium
-        milestone: null
-        name: "Живая проверка цикла в браузере (`apps/studio`)"
-        description: |
-          Означает: текущая сборка проверена только vitest+jsdom (включая сквозной DOM-тест
-          экрана). Живьём не гонялась: подключить `BindingEditor`+`useFeed` на страницу
-          `apps/studio/src/pages/lab`, свести поля руками и увидеть, как витрина обновляется —
-          см. `EXAMPLES.md`, кейс 12.
-
-  - category: Адаптер как пресет (ревизия 2026-09-18)
-    items:
-      - id: adapter-is-the-entity
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Сущность — адаптер, не привязка; `entities/binding` → `entities/adapter`"
-        description: |
-          Означает: пересматривает `binding-is-adapter`. «Привязка» — глагол, действие, а действия
-          живут в `features`; вещь, которая реально хранится и переиспользуется, — адаптер.
-          Побочно освобождает слово: в `entities/form` `binding` уже занят привязкой инпута к полю
-          формы (`FieldBinding`/`itemBinding`). Переименование сделано целиком:
-          `Binding`→`Adapter`, `applyBinding`→`applyAdapter`, `bindingStoreOf`→`adapterStoreOf`,
-          `bindingBy`→`adapterBy`, `BindingsState`→`AdaptersState`, `BindingSource`→`FeedSource`,
-          `bindingKey`→`sourceKey`; `test/entities/binding`→`test/entities/adapter`. Снаружи
-          `interfaces/feeder` за эти имена не держался никто (проверено grep по `apps`/`backend`/
-          `products`) — поставка не ломается. Решение user 2026-09-18.
-
-      - id: adapter-is-a-preset
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Адаптер — переиспользуемый пресет N:M, роль — перемапить данные и только"
-        description: |
-          Означает: адаптер сохраняется на `backend/presets` наравне с прочими пресетами и живёт
-          самостоятельно — у одного адаптера много поставщиков (20 бэков, отдающих нужную
-          структуру) и много потребителей (3 компонента на одной структуре данных). Отсюда состав
-          адаптера — только форма: `root` (где записи), `rules` (как поле ложится), `extra` (что с
-          лишними). `source` («какую ручку дёрнуть, с какими параметрами») из него уходит — это не
-          форма. Имени компонента внутри адаптера тоже нет: правила целятся в СТРУКТУРУ входа, а
-          потребитель лишь объявляет, что такую структуру ест.
-
-          Прежнее возражение («формы не сверить — схемы ответа Swagger 2.0 не даёт») снято user:
-          подсунули не тот адаптер — он просто не перемапит. Это безопасно ровно потому, что
-          `applyAdapter` отдаёт `FieldRuleReport` (`converted`/`rejected`/`unmapped`), то есть
-          промах адаптера ГРОМКИЙ, а не тихий. Отсюда требование к UI: отчёт обязан быть на
-          экране — иначе «не перемапилось» выглядит как молча пустой компонент. Решение user
-          2026-09-18.
-
-      - id: feed-link-is-thin
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Привязка — тонкая ссылка «потребитель ↔ ручка ↔ адаптер», своей механики нет"
-        description: |
-          Означает: привязка нужна прежде всего интерфейсу — чтобы юзер видел, с кем адаптер
-          работает; на саму перекладку она не влияет. Но и косметикой она не является: витрина
-          рисуется заново, компонент называет только себя, и кто-то обязан помнить, какой ручкой и
-          каким адаптером его кормить — иначе после перезагрузки страницы пусто. Значит запись
-          сохраняется, но состоит из трёх ссылок и ничего не делает сама. Уточнение user
-          2026-09-18 поверх моего предложения держать адаптер внутри связки.
-
-      - id: adapter-split-not-done
-        type: feature
-        status: Open
-        priority: High
-        milestone: null
-        name: "Разделить `Adapter` и привязку по решениям выше — НЕ СДЕЛАНО"
-        description: |
-          Означает: на сегодня переименован только слой имён. Фактический состав `Adapter` всё ещё
-          несёт `source`, стор всё ещё ключуется `sourceKey` (apiId+endpointId), то есть адаптер
-          по-прежнему прибит к одной ручке и пресетом быть не может. Отложено сознательно, решение
-          user 2026-09-18: сначала довести ручки (настроить → дёрнуть → увидеть ответ), потому что
-          адаптер строится по ЖИВОМУ ответу и без работающих ручек его не на чем проверить.
-
-          Что предстоит: у адаптера появляется своя личность (id + имя от юзера, `sourceKey`
-          умирает); `source` переезжает в отдельную запись привязки; хранение адаптера — через
-          `backend/presets`; отчёт `applyAdapter` выводится в UI.
-
-      - id: adapter-report-visible
-        type: feature
-        status: Backlog
-        priority: High
-        milestone: null
-        name: "Отчёт `applyAdapter` обязан быть на экране"
-        description: |
-          Означает: переиспользование адаптера безопасно ровно потому, что промах ГРОМКИЙ —
-          `FieldRuleReport` (`converted`/`rejected`/`unmapped`) плюс именные отказы `applyAdapter`
-          (нет пути `root`, по пути скаляр, правил нет). Спрячем отчёт — «не перемапилось» станет
-          неотличимо от пустого компонента, и вся безопасность схемы N:M пропадёт. Поэтому это не
-          украшение UI, а условие принятого решения `adapter-is-a-preset`.
-
-  - category: Схема как сущность (2026-09-18)
-    items:
-      - id: schema-is-an-entity
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Загруженный документ — своя сущность, а не поле `raw` каталога ручек"
-        description: |
-          Означает: сегодня `ApiCatalogState.raw` держит сырой документ рядом с распознанными
-          ручками, то есть документ принадлежит каталогу конкретного бэка. Но сам он ни про какой
-          бэк не знает — его принёс юзер, и каталогов по одному документу может быть много.
-          Заводится `entities/schema`: то, что юзер загрузил и хочет хранить.
-          `ExternalSchemaLoader` при этом остаётся загрузчиком, ни к какому API не привязанным —
-          его дело донести документ. Решение user 2026-09-18.
-
-      - id: schema-stores-raw-text
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Хранится сырой текст документа, не разобранные ручки"
-        description: |
-          Означает: распознавание идёт шаблоном (`@web-core/generators/mapping`), и шаблоны будут
-          добавляться — сегодня Swagger 2.0, завтра OpenAPI 3. Разобранные ручки на бэке остались
-          бы разобранными по-старому, и отличить это от правильного результата было бы нечем. Из
-          сырого текста состав пересобирается в любой момент, обратно — никогда. Предложение
-          owner, принято user 2026-09-18.
-
-      - id: schema-entity-local
-        type: feature
-        status: Backlog
-        priority: High
-        milestone: null
-        name: "`entities/schema` — локальная часть: состав записи, стор, чем опознаётся"
-        description: |
-          Означает: наша часть работы, до всякого бэка — тип записи (сырой текст + чем схема
-          опознаётся, имя от юзера по образцу адаптера), семья сторов, перенос `raw` из
-          `ApiCatalogState` (каталог начинает получать документ, а не владеть им), тесты. Порядок
-          задан user 2026-09-18: сначала стабилизируем локально, потом заявка — иначе контракт
-          придётся переписывать уже согласованным.
-
-      - id: presets-kind-request
-        type: feature
-        status: Backlog
-        priority: Medium
-        milestone: null
-        name: "Заявка в `backend/presets`: новые виды пресета — схема и адаптер"
-        description: |
-          Означает: обе записи (схема и адаптер) едут на бэк пресетов наравне с прочими пресетами.
-          `backend/presets` — ЧУЖАЯ зона со своим реестром видов (`internal/kinds`, Go-структура на
-          границе GraphQL), поэтому это не правка на месте, а заявка владельцу через architect.
-          Подаётся ПОСЛЕ того, как состав обеих записей устоится локально (`schema-entity-local`,
-          `adapter-split-not-done`). Открытым остаётся объём: сваггеры бывают на мегабайты — надо
-          спросить у владельца зоны про ограничения на размер `state`.
-
-      - id: readme-after-rebuild
-        type: feature
-        status: Backlog
-        priority: Medium
-        milestone: null
-        name: "Переписать README, когда каркас встанет обратно"
-        description: |
-          Означает: разделы README (Анатомия/Использование/Настройки/IO/Сборки) описывают снятый
-          API — `BindingEditor`, `BindEndpoint`, `ApiList`, `useFeed`, `Mapping`. Статусный блок в
-          «Главном» это говорит прямо, но сами разделы не переписаны: переписывать их сейчас
-          значило бы сочинять доку под ещё не собранный код, а канон репозитория требует обратного
-          порядка (дока — от кода). Переписать одним заходом, когда виджеты вернутся.
-
-  - category: Документация
-    items:
-      - id: readme-faq-roadmap-first-draft
-        type: feature
-        status: Done
-        priority: Medium
-        milestone: null
-        name: "README/FAQ/ROADMAP — первый черновик по шаблону «движок»"
-        description: |
-          Означает: шаблон взят по образцу `packages/store` (первый пилот genus `engine`) —
-          Анатомия/Использование заполнены тем, что реально есть (плейсхолдер); Настройки/
-          Состояния/IO/Сборки/Рецепт — честно помечены пустыми, функциональности под них пока нет
-          (правило «дока — от кода, не наоборот»). FAQ.md держит решения слоя `interfaces`
-          (группа/genus/почему openapi не сливается физически) и разбор, какие кирпичи `io`/
-          `generators` уже закрывают режимы 2/3.
-
-      - id: docs-rewritten-after-rebuild
-        type: feature
-        status: Done
-        priority: High
-        milestone: null
-        name: "README/FAQ/EXAMPLES переписаны под фактический код после пересборки"
-        description: |
-          Означает: доки описывали снесённый API (`OpenapiEditor`/`OpenapiList`/`Mapping a,b`/
-          `Tree` как экспорт) — переписаны от кода. README: анатомия по слоям, контракты, точный
-          состав тестов (51 зелёный + 8 красных файлов от снесённого, названы явно). FAQ: шапка
-          отделяет историческую часть от актуальной, добавлен раздел «Привязка компонента к ручке»
-          — 12 решений пересборки (почему привязка и адаптер одна запись, почему ключ по имени
-          компонента, почему айди ручки метод+url, почему каталог в entities, почему feed —
-          виджет, почему не-2xx по-разному у вызова и у кормления, почему сведение требует
-          пробного вызова, почему селекторы стора временно функции). EXAMPLES: 12 кейсов от
-          словаря до отладочной таблицы «на витрине пусто — где смотреть», весь код сверен с
-          экспортами пакета.
-
-      - id: examples-md
-        type: feature
-        status: Done
-        priority: Medium
-        milestone: null
-        name: "EXAMPLES.md — рабочий копипаст-код под все реализованные моды"
-        description: |
-          Означает: по образцу `interfaces/chat/EXAMPLES.md` (сосед по слою) — не канон, а
-          готовый к запуску код. Дерево без бэкенда, дерево со списком, `OpenapiEditor` с реальным
-          вызовом (jsonplaceholder, публичный fake-REST — «Отправить» реально стучится в сеть),
-          `OpenapiList`, полный флоу редактор→сохранить→витрина, `Mapping` на ответе мода 2.
-          README.md урезан до пары базовых сниппетов со ссылкой сюда.
-
-  - category: Скелет ответа (проба ручки, 2026-09-18)
-    items:
-      - id: probe-is-a-skeleton
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Храним скелет ответа (`PathType[]`), а не сам ответ"
-        description: |
-          Означает: адаптеру нужна форма ответа, а `endpoint.schema` описывает ПАРАМЕТРЫ ручки, не
-          её ответ; из Swagger 2.0 ответ не достать. Берём его пробой — дёргаем ручку — но храним
-          не содержимое, а `describeSample(ответ)` из `@web-core/io`: плоский `PathType[]`
-          (`{ path, type }`), только скалярные листья, значений нет вообще.
-
-          Почему не сам ответ и не обрезанный образец: сведение работает на ТИПАХ, содержимое ему
-          нужно лишь как источник структуры (`rowSetsOf`/`recordPathsOf` копают в значении только
-          чтобы вывести форму). Плюс проба уезжает на бэк, а в живом ответе — реальные данные
-          чужого продакшена. Решение user 2026-09-18.
-
-          Формат не наш и не новый: `packages/io` делался ровно под этот случай — см. его
-          `ROADMAP.yaml`, `adapter-flow-two-way-and-l3` (2026-09-10): «схема — самостоятельный
-          ресурс: скелет чужого ответа, ключи + тип, без значений, из образца ответа ручки».
-          Пути — JSON Pointer, те же, что у `FieldRule.from`/`.target`, поэтому выбор из мастера
-          сведения уходит в правило без конвертации формата.
-
-      - id: probe-keeps-response-only
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Проба — на ручку и только ответ; запрос и корни наборов не храним"
-        description: |
-          Означает: `Schema { id, name, raw, probes: { [endpointKey]: PathType[] } }`. Проба на
-          РУЧКУ, а не на схему: у схемы ручек много, ответ у каждой свой.
-
-          Запрос в пробу не кладём — форма параметров уже есть в `endpoint.schema`, и
-          `describeSchema` даёт из неё тот же `PathType[]`. Ручка выводится из `raw`, значит
-          запросная сторона выводится тоже; хранить её — завести дубль.
-
-          Корни наборов записей тоже не храним: повтор виден в самом пути (`/items/0/...`), и
-          `discoverRowSets` предлагает кандидатов, а выбор делает человек — выбранный корень живёт
-          в адаптере (`Adapter.root`), не в пробе.
-
-      - id: probe-only-when-no-schema
-        type: decision
-        status: Done
-        priority: High
-        milestone: null
-        name: "Есть схема ответа — дёргать не надо"
-        description: |
-          Означает: скелет берётся из описания формы, когда оно есть (`describeSchema` по zod), и
-          пробой — только когда его нет. Сегодня это всегда проба: Swagger 2.0 ответ не описывает.
-          Появится OpenAPI 3 или ручная ручка со схемой ответа — источник меняется, формат
-          (`PathType[]`) остаётся тот же. Решение user 2026-09-18.
-
-      - id: probe-not-a-validator
-        type: decision
-        status: Done
-        priority: Medium
-        milestone: null
-        name: "Скелет — описание для мастера и для глаз, не валидатор"
-        description: |
-          Означает: обратного хода `PathType[]` → zod-схема в `@web-core/io` нет и не
-          предполагается. Проверять приходящие данные по сохранённому скелету сегодня нельзя; если
-          понадобится — это новая механика и отдельная задача владельцу `io`, а не «допилить на
-          месте». Ограничение названо владельцем зоны `io`, 2026-09-18.
-
-      - id: probe-storage-not-built
-        type: feature
-        status: Open
-        priority: High
-        milestone: null
-        name: "`probes` в `entities/schema` — НЕ СДЕЛАНО"
-        description: |
-          Означает: решения выше приняты, кода нет. Предстоит: поле `probes` в записи схемы и
-          действия над ним; снятие пробы (вызов ручки + `describeSample`) — а вызова у нас сейчас
-          тоже нет, `features/invoke-endpoint` снесён пересборкой. Порядок работ: вернуть вызов →
-          форма параметров по `endpoint.schema` → снять скелет в пробу.
-
-          Хранение на бэке — за границей зоны: вид пресета под схему заводит architect, см.
-          `presets-kind-request`.
+          `createActionStoreFamily` уводит селекторы в параметр ключа `K`; рантайм их поддерживает
+          (`fn.length > 1`), `dist/*.d.ts` пакета вдобавок отстал от `src`. Чужая зона — находка
+          отдана наверх. В feeder временно обычная функция над состоянием (`adapterBy`); вернуть в
+          стор, когда починят.
 
 log:
-  - id: binding-and-adapter-built
+  - id: docs-and-identity-cleanup
     type: plan
-    date: 2026-09-18
+    date: 2026-09-19
     summary: >
-      Шесть итераций подряд по ТЗ user, каждая принята по ходу: (1) каркас `features/api-manager`
-      и семья сторов по `apiId` + `endpointKey`; (2) `entities/binding` — привязка как единая
-      запись вместе с адаптером; (3) восстановленный `features/invoke-endpoint`; (4) перенос
-      каталога ручек в `entities/openapi` и `widgets/feed` (`useFeed`) — цикл замкнулся сквозным
-      тестом; (5) `entities/mapping` + `widgets/mapping` — UI сведения; (6) `widgets/binding` —
-      экран целиком и публичный API пакета.
+      Заход начался с бага «аккордеон дёргается при правке пресетов» и раскопался до общей
+      причины: списки в пакете сверялись по ссылке на объект, при том что стабильный ключ был
+      объявлен пропом `itemKey` и в сверку не подавался. Иммутабельный стор отдаёт новый объект на
+      каждую правку, `groupEndpoints` пересобирает группы на каждое чтение — узел сносился вместе
+      с DOM и уносил состояние zag-машины. Починено `<Key each by>`; попытка написать свой аналог
+      была отбита user как самопал, вместо неё зона `packages/solid` завела примитив готовым, и
+      feeder встал на него.
 
-      Ключевое решение, заданное вопросом user «есть идеи как красиво обыграть»: стык привязки И
-      ЕСТЬ адаптер — одна запись `Binding` вместо «ссылка на ручку» + отдельный реестр правил.
-      Отсюда всё остальное: ключ привязок по имени компонента (читатель на витрине знает только
-      себя; одна ручка кормит несколько компонентов разными правилами), айди ручки метод+url
-      (переживает перезалив документа), привязка как чистый JSON (сохраняется потребителем).
+      Дальше по требованию user вычищено всё наследство пересборки: снесены пять тест-файлов, не
+      собиравшихся на импортах несуществующего кода, и пара неиспользуемых экспортов; импорты
+      Solid переведены на `@web-core/solid` во всех 32 файлах зоны. Доки переписаны от кода — FAQ потерял больше трети записей, EXAMPLES и
+      README переписаны целиком, этот файл сведён к живому и запланированному.
 
-      Развилка по слоям вынесена user'у отдельно и решена им в пользу «более правильного»
-      варианта: каталог ручек опущен из фичи в `entities/openapi`, в `features/api-manager`
-      осталось интерфейсное. `feedOf` при этом всё равно виджет — сборка фичи вызова и сущностей.
+      Две находки, поднятые по ходу и решённые user: адаптер — шов, которому безразлично кто и
+      кому, со списками проверенных поставщиков и потребителей айдишниками (код этому пока не
+      соответствует, `adapter-entity-stale`); пресет хранит разобранный документ, а не сырьё, и
+      прежняя запись FAQ об обратном была ложью. Отдельно найдено, что у ручки и тега нет
+      собственного айди — опознаются содержимым, которое юзер правит
+      (`endpoint-identity-is-derived`).
 
-      Итог: 51 зелёный тест, `build`/`lint` чистые, пакет выставляет наружу весь путь
-      «настроить → привязать → свести → дёрнуть на витрине». Живого браузера не было. Доки
-      (README/FAQ/EXAMPLES) переписаны под фактический код в том же заходе — старые описывали
-      снесённый API.
-
-  - id: mode-openapi-groups-done
-    type: plan
-    date: 2026-09-17
-    summary: >
-      Обсуждение с user, доведённое до кода в одном заходе: кейс — часть бэков юзера отдаёт
-      сваггер 2.0, часть вообще без него, ручки нужно заводить вручную. Первая гипотеза (мод 2
-      напрямую читает наш собственный «формат» через ещё один `MappingTemplate` рядом со
-      swagger2Template) отброшена по ходу разбора — `run(raw, templates)` выбирает ОДИН подошедший
-      шаблон, не объединяет, а сваггер-ручки и ручные должны сосуществовать РЯДОМ, не сливаясь в
-      кучу (юзеру важно подписывать, что откуда).
-
-      Решение: `OpenapiEditor` работает не с одним `raw`, а со списком ГРУПП (`OpenapiGroup` —
-      `SchemaGroup`|`ManualGroup`, у каждой имя от юзера). Группа-схема — read-only, тот же
-      `swagger2Template`, что и раньше, «обновить» = заменить `raw` целиком. Группа-юзер —
-      полностью редактируемая: ручки внутри заводятся как схема A (`EndpointDescriptor` —
-      `method`/`url`/`params[]`), а схема A рендерится и редактируется той же `Tree` (мод 1), что
-      уже умеет add/remove/edit по зод-схеме — находка user в разговоре («мод 1 рисует форму по
-      схеме, схема для мода 2 — тоже просто данные, зачем что-то новое изобретать»). Уточнение по
-      ходу: `Tree` не СТРОИТ zod-тип, он редактирует данные ПО готовой схеме — поэтому реально два
-      разных zod-объекта на разных уровнях (схема A самого дескриптора, известная заранее и
-      статичная — редактируется `Tree`; итоговая схема ОДНОЙ ручки, `z.ZodType`, строится из
-      заполненного дескриптора адаптером `descriptorToEndpoint`, тем же приёмом, что и парсинг
-      свагера). `headers`/`enum`/вложенные объекты в дескриптор не заведены — `invokeEndpoint` их
-      сегодня не поддерживает, а часть param-типов (`array`) не входит в v1 — explicit «пока
-      базовых настроек хватит, расширим по мере необходимости» от user.
-
-      `entities/openapi/descriptor.ts` (схема + адаптер, 7 тестов) — `widgets/openapi/{schema-
-      group,manual-group}.tsx` (тело каждого вида группы, извлечено/заведено) — `editor.tsx`
-      переписан на `groups`+`onGroupsChange`, добавление/удаление группы — тоже внутри виджета
-      (11 тестов на файл, было 3). build/typecheck/lint/test зелёные (52 теста на пакет). Публичный
-      контракт `OpenapiEditor` сменился (`raw` → `groups`) — единственный внешний потребитель
-      (`apps/studio/src/pages/lab`) держит вызов закомментированным, живым потребителем мода 2
-      по-прежнему никто не был (тот же precedent, что и у первой версии). Разбор — FAQ.md.
-
-  - id: mode-mapping-done
-    type: plan
-    date: 2026-09-15
-    summary: >
-      Мод 4 (`Mapping`) заведён и доведён до принятого состояния в одном заходе — не по
-      исходному плану (там сведение было частью модов 2/3, `mapping-ui`), а по находке user
-      поверх готового мода 2: результат вызова ручки сам по себе бесполезен без способа скормить
-      его конкретному потребителю, а способ этот не должен знать, откуда данные взялись. Решение:
-      отдельный мод, вход — два «варианта» (А/Б, каждый сырые данные или zod-схема), юзер сводит
-      поля вручную (v1 — 1:1, без `steps`/`onFail` в UI), движок отдаёт `{ rules, result }` живьём
-      на каждый пик. `rules` — сохранить и переиспользовать на новых данных той же формы,
-      сохранение на бэке — забота user, не feeder.
-
-      `entities/mapping` (`describeVariant`+`applyMapping`) — тонкая обёртка, вся механика в
-      `@web-core/io` (`describeSample`/`describeSchema`/`applyFieldRules`), от feeder только
-      интерфейс — по словам user. `widgets/mapping` — по ходу тестирования выяснилось, что Ark-UI
-      `Select` (тот же приём, что `EnumInput` мода 1) в принципе не открывается в jsdom ни одним
-      способом эмуляции клика/pointer/клавиатуры — `FieldPicker` переписан на нативный `<select>`
-      (`FieldSelect` из `@web-core/ui`), надёжнее и уместнее для плоского списка путей.
-
-      41 тест на пакет, build/typecheck/lint зелёные. Объём мода 3 сузился — сможет переиспользовать
-      готовый `Mapping`, не строить сведение заново. `mapping-ui` закрыт этим модом (не только для
-      мода 3, как думали раньше). Живого браузера не было — vitest+jsdom.
-
-  - id: mode-openapi-done
-    type: plan
-    date: 2026-09-15
-    summary: >
-      Мод 2 доведён до принятого состояния — весь стек, поверх переосмысления из
-      `mode-openapi-rediscussed`. `entities/openapi` (свой `MappingTemplate` под Swagger 2.0,
-      самодостаточный zod из спеки, вложенные `$ref`+циклы через `z.lazy`), `features/invoke-
-      endpoint` (реальный `fetch` через `@web-core/query/rest`, path/query/body из одного `value`),
-      `widgets/openapi` — 30 тестов на весь пакет, build/typecheck/lint зелёные.
-
-      По ходу ревью user нашёл реальный кейс, не заложенный в исходный план: настройка ручки и её
-      вызов происходят на РАЗНЫХ экранах (редактор конфигурации vs витрина показа компонента) —
-      один виджет на два сценария не годится. Решение: разделить на `OpenapiEditor` (полный,
-      бывший единственный `Openapi`) и `OpenapiList` (компактный, новый — только вызов уже
-      настроенного, без единого поля конфигурации). Следом сам user поймал вторую дыру в
-      контракте — `OpenapiInvocation` не нёс `value` (то, с чем реально вызвали), без него
-      `{ endpoint, value }` для `OpenapiList` собрать было не из чего; добавлено во все точки
-      (`EndpointCard.onInvoke`, `OpenapiEditor`, `OpenapiList`).
-
-      Живого браузера с модом 2 не было (в отличие от мода 1) — весь прогон через vitest+jsdom.
-      `EXAMPLES.md` заведён по образцу `interfaces/chat` — 5 кейсов, README урезан до базовых
-      сниппетов со ссылкой. Закоммичено вместе с этим заходом.
-
-  - id: mode-openapi-rediscussed
-    type: plan
-    date: 2026-09-14
-    summary: >
-      Переосмысление мода 2 с user — первоначальный план (см. лог `interfaces-layer-founded`) был
-      неверным: мод 2 — не «нетипизированное сведение корма» (FieldRule/mapping-ui), а типизированный
-      движок как мод 1, просто схема строится из спеки Swagger 2.0 при распознавании, а не приходит
-      готовой. Также — граница со скином тоньше, чем в первой версии FAQ: не только рендер тела
-      ручки, а весь путь целиком — свой `MappingTemplate` под свагер 2.0 (не переиспользует
-      apps/skin-шный, тот завязан на apps/skin-домен и не строит схему тела), список ручек,
-      конфигурация параметров (переиспользует `Node`/`Leaf` мода 1), и сам HTTP-вызов —
-      всё на стороне feeder (`@web-core/query/rest`, новая зависимость). `onChange` мода 2 стреляет
-      на вызов ручки (несёт `{ endpoint, response }`), не на каждую правку поля, в отличие от мода 1.
-      apps/skin-шный `entities/openapi` (модели/сторы сервисов, свой парсинг, свой `call.ts`) этой
-      работой не трогается — интеграция (заменить ли им свою механику на feeder) осталась за
-      владельцем `apps/skin`. FAQ.md/ROADMAP.yaml поправлены под уточнённую модель перед стартом
-      кода — по явной просьбе user, не в параллель с кодом.
-
-  - id: mode-typed-tree-done
-    type: plan
-    date: 2026-09-14
-    summary: >
-      Мод 1 (`Tree`) доведён до принятого состояния. Перенос из `apps/skin/entities/feeder` под
-      разметку `entities/tree`/`features/edit-value`/`widgets/tree`, решённую в этом же заходе.
-      Тесты: `entities/tree` (чистая логика, 8 шт) + `widgets/tree` (реальный DOM-рендер через
-      `solid-js/web`, 3 шт) — потребовали `test.server.deps.inline` в `vitest.config.ts` под
-      Ark-UI/Zag/Kobalte (отдают сырой `.jsx`). build/typecheck/lint/test зелёные, закоммичено.
-
-      Побочная находка при живой проверке в браузере (`apps/skin/src/pages/index.tsx`, живой
-      потребитель `Tree`): мигание всего экрана при добавлении элемента списка — НЕ баг feeder,
-      причина в `packages/skin` (`useComponentSkin`/`ensureComponentSkin`, `provider.tsx`/
-      `connection.ts`) — там общий на всё приложение сигнал (`outfitData`) перезаписывается
-      безусловно при монтировании ЛЮБОГО компонента `@web-core/ui`, из-за чего монтирование новых
-      элементов аккордеона задевает несвязанные компоненты (например, индикатор `SegmentGroup`).
-      Найдено вместе с user через `MutationObserver`+`chrome-devtools` на живой странице, ошибочная
-      первая гипотеза (роутер `apps/skin`) отброшена по требованию user проверить точечно.
-      Эскалировано user как заявка на `packages/skin` — не в зоне feeder, не чинилось здесь.
-
-  - id: fsd-layers-adapted-decided
-    type: plan
-    date: 2026-09-14
-    summary: >
-      Обсуждение с user: внутренняя архитектура feeder — FSD-слои как в `apps/skin`, но
-      переосмысленные под движок, не бизнес-приложение. `entities` — структурная модель движка
-      (не бизнес-сущность), `features` — фичи интерфейса (не бизнес-операция), `widgets` —
-      сборка. `app`/`pages` не заводятся — нет роутинга, вход наружу — экспорты пакета. Разметка
-      под мод 1 зафиксирована (`entities/tree`, `features/edit-value`, `widgets/tree`). Это
-      архитектура конкретно feeder-а, не канон всего слоя `interfaces/` — user верхний уровень
-      (канон слоя, будущий `interfaces/chat`) оставляет за собой вместе с architect, возьмут
-      feeder как образец.
-
-  - id: interfaces-layer-founded
-    type: plan
-    date: 2026-09-14
-    summary: >
-      Обсуждение с user: новый корень `interfaces/` — слой между `packages/` и `apps/`, сущности
-      которого сводят функционал нескольких пакетов под общий UI и переиспользуются больше чем
-      одним приложением. Первый кейс — feeder (объединяет `@web-core/generators`+`@web-core/io`
-      под три задуманных режима наполнения — зод-схема→дерево, ручки по шаблону версии, файл),
-      второй ожидаемый — chat, ещё не заведён. По ходу разбора выяснилось, что `@web-core/io` уже
-      несёт headless-кирпичи под untyped-режимы (`describeSample`/`describeSchema`/`FieldRule`), а
-      `@web-core/generators/mapping` — механизм шаблонов по версии, уже используемый swagger2-
-      импортом в `apps/skin/entities/openapi`; недостающая часть — UI поверх них и сама разборка
-      тела запроса ручки в схему (сегодня `Endpoint.body` — голый `string`).
-
-      Решение user: сначала фундамент (воркспейс, скелет пакета, плейсхолдер в приложении), план
-      функционала — отдельным заходом. Сделано в этом заходе: `interfaces/*` в
-      `pnpm-workspace.yaml`, `interfaces/feeder` по образцу `packages/form` (vite-сборка,
-      solid-js peer), `FeederPlaceholder` подключён в пустую dev-страницу `apps/skin/src/pages/
-      lab`, build/typecheck/lint зелёные, цепочка резолва проверена dev-сервером Vite. Роль
-      architect: сделано напрямую без owner-сессии — `interfaces/` ещё не зона с назначенным
-      овнером, решение user (обсуждение в этом же заходе).
-
-  - id: readme-faq-roadmap-drafted
-    type: plan
-    date: 2026-09-14
-    summary: >
-      По просьбе user подтянута тройка README/FAQ/ROADMAP.yaml по образцу пилота genus `engine`
-      (`packages/store`). Группа `interfaces` выбрана как ещё не устоявшаяся для движков (снято
-      прямым текстом корневого README) — называет принадлежность новому корню, не то, что пакет
-      делает (это заняли бы `data`/`state`, уже занятые `io`/`store`). Разделы без реального
-      содержания (Настройки/Состояния/IO/Сборки/Рецепт) оставлены явно пустыми с пометкой «см.
-      ROADMAP», не заполнены вымышленным текстом под ещё не реализованные режимы.
+      Итог: lint, typecheck и 111 тестов зелёные, `pnpm test` по зоне чист впервые за пересборку.
+      Живого браузера не было.

@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 import { fieldsOf, type FieldDescriptor } from "@web-core/generators/fields";
 import type { z } from "@web-core/io";
 
