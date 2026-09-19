@@ -116,6 +116,12 @@ export const EXPECTED_REGISTRATIONS = [
     matcher: "Edit|Write|NotebookEdit|MultiEdit",
     command: "node .claude/hooks/governance.mjs",
   },
+  { event: "PreToolUse", matcher: null, command: "node .claude/hooks/docs-gate.mjs" },
+  {
+    event: "PostToolUse",
+    matcher: "Read|NotebookRead",
+    command: "node .claude/hooks/docs-gate.mjs",
+  },
   { event: "SessionStart", matcher: null, command: "node .claude/hooks/main-session-marker.mjs" },
   { event: "SessionStart", matcher: null, command: "node .claude/hooks/scope-identity.mjs" },
 ];
