@@ -4,7 +4,12 @@ function isEndpoint(value: unknown): value is EndpointDescriptor {
   if (typeof value !== "object" || value === null) return false;
 
   const item = value as Partial<EndpointDescriptor>;
-  return typeof item.method === "string" && typeof item.url === "string" && Array.isArray(item.params);
+  return (
+    typeof item.id === "string" &&
+    typeof item.method === "string" &&
+    typeof item.url === "string" &&
+    Array.isArray(item.params)
+  );
 }
 
 export function asSchemaDocument(value: unknown): SchemaDocument | undefined {

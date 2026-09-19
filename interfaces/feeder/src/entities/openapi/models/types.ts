@@ -16,6 +16,7 @@ export interface EndpointParam {
 }
 
 export interface EndpointDescriptor {
+  readonly id: string;
   readonly method: HttpMethod;
   readonly url: string;
   readonly tag?: string;
@@ -24,6 +25,13 @@ export interface EndpointDescriptor {
 
 export interface SchemaDocument {
   readonly endpoints: readonly EndpointDescriptor[];
+  readonly defs: Readonly<Record<string, SchemaNode>>;
+}
+
+export type IncomingEndpoint = Omit<EndpointDescriptor, "id">;
+
+export interface IncomingDocument {
+  readonly endpoints: readonly IncomingEndpoint[];
   readonly defs: Readonly<Record<string, SchemaNode>>;
 }
 

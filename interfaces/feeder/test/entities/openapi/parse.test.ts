@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { endpointKey, endpointOf, parseSchema } from "../../../src/entities/openapi";
+import { endpointOf, parseSchema } from "../../../src/entities/openapi";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
 const petstore = readFileSync(join(fixtureDir, "fixtures/petstore.yaml"), "utf-8");
@@ -46,7 +46,7 @@ describe("parseSchema", () => {
     const document = await parseSchema(petstore);
     const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
 
-    expect(endpoints.map(endpointKey)).toContain(
+    expect(endpoints.map((endpoint) => `${endpoint.method} ${endpoint.url}`)).toContain(
       "GET https://petstore.swagger.io/v2/pet/findByStatus",
     );
     expect(endpoints[0]?.schema.safeParse({}).success).toBeTypeOf("boolean");
@@ -54,5 +54,22 @@ describe("parseSchema", () => {
 
   it("нераспознанный документ — исключение с текстом, а не пустой состав", async () => {
     await expect(parseSchema("это не сваггер")).rejects.toThrow();
+  });
+
+  it("каждая ручка получает свой айди, и он не производен от содержимого", async () => {
+    const document = await parseSchema(petstore);
+    const ids = document.endpoints.map((endpoint) => endpoint.id);
+
+    expect(ids.every((id) => id.length > 0)).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("два разбора одного документа дают разные айди — айди у записи, а не у текста", async () => {
+    const first = await parseSchema(petstore);
+    const second = await parseSchema(petstore);
+
+    expect(second.endpoints.map((endpoint) => endpoint.id)).not.toEqual(
+      first.endpoints.map((endpoint) => endpoint.id),
+    );
   });
 });

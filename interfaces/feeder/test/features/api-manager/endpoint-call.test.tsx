@@ -14,6 +14,7 @@ afterEach(() => {
 
 function endpoint(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
   return {
+    id: "users",
     method: "GET",
     url: "https://back/v2/users",
     params: [{ name: "limit", in: "query", required: true, schema: { type: "string" } }],
@@ -22,7 +23,7 @@ function endpoint(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
 }
 
 function stubFetch(handler: () => Promise<Response>) {
-  const mock = vi.fn(handler);
+  const mock = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) => handler());
   vi.stubGlobal("fetch", mock);
   return mock;
 }

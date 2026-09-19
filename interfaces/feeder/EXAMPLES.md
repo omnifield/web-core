@@ -37,7 +37,7 @@
 | --- | --- | --- |
 | **Пресет** | `Preset { id, name, content }` — именованная запись на складе, `content` для склада непрозрачен | `id`, uuid при создании |
 | **Документ схемы** | `SchemaDocument { endpoints, defs }` — наш формат API, он и лежит в `content` | — |
-| **Ручка** | `EndpointDescriptor { method, url, tag?, params }`, `params[].schema` — JSON Schema | `endpointKey` = `` `${method} ${url}` `` |
+| **Ручка** | `EndpointDescriptor { id, method, url, tag?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
 | **Адаптер** | `Adapter` — шов «поставщик → потребитель», перекладывает данные в нужную форму | в коде сегодня заготовка, см. `ROADMAP.yaml` |
 
 Зод из документа не хранится — он строится при отрисовке (`endpointOf`) и живёт ровно столько,
@@ -132,7 +132,7 @@ const id = presetsStore.actions.add("petstore", await parseSchema(rawSwaggerText
 presetsStore.actions.add("мои заметки", { any: "json" });
 ```
 
-Ручки можно собрать и руками, без документа:
+Ручки можно собрать и руками, без документа — но айди у каждой обязателен:
 
 ```ts
 import { presetsStore, type SchemaDocument } from "@web-core/feeder";
@@ -140,6 +140,7 @@ import { presetsStore, type SchemaDocument } from "@web-core/feeder";
 const document: SchemaDocument = {
   endpoints: [
     {
+      id: crypto.randomUUID(),
       method: "GET",
       url: "https://back/users/{id}",
       tag: "users",
@@ -152,6 +153,9 @@ const document: SchemaDocument = {
 presetsStore.actions.add("мой бэк", document);
 ```
 
+Своим ручкам айди проставляешь сам: сам ставит его только входной слой (`parseSchema`), а
+документ без айди каталог схемой не признает.
+
 ---
 
 <h2 id="кейс-4">4. Править содержимое пресета точечно</h2>
@@ -159,13 +163,15 @@ presetsStore.actions.add("мой бэк", document);
 `edit` даёт immer-черновик содержимого — менять можно на месте, наружу уйдёт новое значение.
 
 ```ts
-import { endpointKey, presetsStore, type SchemaDocument } from "@web-core/feeder";
+import { presetsStore, type SchemaDocument } from "@web-core/feeder";
 
 presetsStore.actions.edit<SchemaDocument>(id, (draft) => {
-  const gone = endpointKey({ method: "GET", url: "https://back/users/{id}" });
-  draft.endpoints = draft.endpoints.filter((one) => endpointKey(one) !== gone);
+  draft.endpoints = draft.endpoints.filter((one) => one.id !== goneId);
 });
 ```
+
+Ручка опознаётся своим `id`, а не методом с урлом: урл юзер правит, и тождество на нём не
+держится.
 
 Внутри пакета для этого есть готовые `removeEndpoint`/`removeTag` (`entities/openapi/models/edit`),
 но наружу они сегодня **не отданы** — снаружи состав правится черновиком, как выше.
@@ -201,12 +207,12 @@ presetsStore.actions.hydrate(await (await fetch("/api/presets")).json());
 <h2 id="кейс-6">6. Состав ручек без UI — сгруппировать и обойти</h2>
 
 ```ts
-import { asSchemaDocument, endpointKey, groupEndpoints, presetsStore } from "@web-core/feeder";
+import { asSchemaDocument, groupEndpoints, presetsStore } from "@web-core/feeder";
 
 const document = asSchemaDocument(presetsStore.selectors.presetBy(id)?.content);
 
 for (const group of groupEndpoints(document?.endpoints ?? [])) {
-  console.log(group.tag, group.endpoints.map(endpointKey));
+  console.log(group.tag, group.endpoints.map((one) => `${one.method} ${one.url}`));
 }
 ```
 
@@ -302,7 +308,7 @@ export function Demo() {
 | Что видно | Почему | Куда смотреть |
 | --- | --- | --- |
 | «Схема не распозналась» под загрузчиком | ни один шаблон не подошёл; сегодня их один — Swagger 2.0, и совпадение жёсткое (`swagger: "2.0"`) | текст ошибки под полем |
-| Пресет завёлся, но каталог пишет «не похож на схему API» | `content` не прошёл `asSchemaDocument` — нет массива `endpoints` или элементы без `method`/`url`/`params` | `asSchemaDocument(preset.content)` в консоли |
+| Пресет завёлся, но каталог пишет «не похож на схему API» | `content` не прошёл `asSchemaDocument` — нет массива `endpoints` или элементы без `id`/`method`/`url`/`params` | `asSchemaDocument(preset.content)` в консоли |
 | Ручка есть, а параметров в форме нет | у ручки пустой `params` — документ их не объявил | `endpointOf(descriptor, defs).schema` |
 | Параметр есть, а поле не рисуется | `$ref` указывает в `defs`, которого нет — неизвестная ссылка становится `z.unknown()` | `document.defs` |
 | Вызов молча ничего не вернул | сорванный транспорт — это исключение; `useInvoke` кладёт его текст в `failure()` | `invocation.failure()` |

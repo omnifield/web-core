@@ -37,14 +37,6 @@ function trash(host: HTMLElement): HTMLButtonElement[] {
   return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Убрать"]')];
 }
 
-function plus(host: HTMLElement): HTMLButtonElement[] {
-  return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Добавить"]')];
-}
-
-function contentOf(): { endpoints: { url: string; tag?: string }[] } {
-  return presetsStore.get().presets[0]?.content as { endpoints: { url: string; tag?: string }[] };
-}
-
 describe("SchemaCatalog", () => {
   it("пустой каталог объясняет себя словами, а не пустотой", () => {
     const host = mount();

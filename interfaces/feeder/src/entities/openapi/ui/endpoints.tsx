@@ -1,7 +1,7 @@
 import type { Accessor, JSX } from "@web-core/solid";
 
 import { Box } from "../../../shared/ui";
-import { endpointKey, groupEndpoints, type EndpointDescriptor } from "../models";
+import { groupEndpoints, type EndpointDescriptor } from "../models";
 
 export function Endpoints(props: {
   label?: string;
@@ -35,7 +35,7 @@ export function Endpoints(props: {
       {(group) => (
         <Box
           items={group().endpoints}
-          itemKey={endpointKey}
+          itemKey={(endpoint) => endpoint.id}
           itemLabel={(endpoint) => `${endpoint.method} ${endpoint.url}`}
           onItemRemove={props.onRemoveEndpoint}
         >

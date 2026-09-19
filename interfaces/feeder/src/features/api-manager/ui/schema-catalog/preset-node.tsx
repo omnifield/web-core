@@ -5,7 +5,6 @@ import { Show } from "@web-core/solid";
 
 import {
   asSchemaDocument,
-  endpointKey,
   Endpoints,
   removeEndpoint,
   removeTag,
@@ -34,7 +33,7 @@ export function PresetNode(props: { preset: Preset }) {
             onRemove={() => presetsStore.actions.remove(props.preset.id)}
             onRemoveTag={(tag) => edit((draft) => removeTag(draft, tag))}
             onRemoveEndpoint={(endpoint) =>
-              edit((draft) => removeEndpoint(draft, endpointKey(endpoint)))
+              edit((draft) => removeEndpoint(draft, endpoint.id))
             }
           >
             {(endpoint) => <EndpointCall endpoint={endpoint()} defs={found().defs} />}

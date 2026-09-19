@@ -4,6 +4,7 @@ import { endpointOf, type EndpointDescriptor } from "../../../src/entities/opena
 
 function descriptor(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
   return {
+    id: "users",
     method: "GET",
     url: "https://back/users",
     params: [],

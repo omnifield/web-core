@@ -1,8 +1,7 @@
-import { z } from "@web-core/io";
 import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Endpoints, type OpenapiEndpoint } from "../../../src/entities/openapi";
+import { Endpoints, type EndpointDescriptor } from "../../../src/entities/openapi";
 
 let dispose: (() => void) | undefined;
 
@@ -11,14 +10,14 @@ afterEach(() => {
   dispose = undefined;
 });
 
-function endpoint(url: string, tag?: string): OpenapiEndpoint {
-  return { method: "GET", url, tag, schema: z.object({}) };
+function endpoint(id: string, url: string, tag?: string): EndpointDescriptor {
+  return { id, method: "GET", url, tag, params: [] };
 }
 
 const petstore = [
-  endpoint("https://back/pet", "pet"),
-  endpoint("https://back/pet/findByStatus", "pet"),
-  endpoint("https://back/store/order", "store"),
+  endpoint("pet", "https://back/pet", "pet"),
+  endpoint("by-status", "https://back/pet/findByStatus", "pet"),
+  endpoint("order", "https://back/store/order", "store"),
 ];
 
 function mount(ui: () => ReturnType<typeof Endpoints>): HTMLDivElement {

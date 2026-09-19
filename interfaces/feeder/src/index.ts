@@ -31,7 +31,6 @@ export {
 } from "./entities/preset";
 export {
   asSchemaDocument,
-  endpointKey,
   endpointOf,
   Endpoints,
   groupEndpoints,

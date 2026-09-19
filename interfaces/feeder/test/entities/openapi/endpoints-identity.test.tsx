@@ -11,14 +11,14 @@ afterEach(() => {
   dispose = undefined;
 });
 
-function endpoint(url: string, tag: string): EndpointDescriptor {
-  return { method: "GET", url, tag, params: [] };
+function endpoint(id: string, url: string, tag: string): EndpointDescriptor {
+  return { id, method: "GET", url, tag, params: [] };
 }
 
 const petstore = [
-  endpoint("https://back/pet", "pet"),
-  endpoint("https://back/pet/findByStatus", "pet"),
-  endpoint("https://back/store/order", "store"),
+  endpoint("e-pet", "https://back/pet", "pet"),
+  endpoint("e-by-status", "https://back/pet/findByStatus", "pet"),
+  endpoint("e-order", "https://back/store/order", "store"),
 ];
 
 function node(host: HTMLElement, value: string): HTMLElement {
@@ -40,16 +40,16 @@ describe("Endpoints — узел переживает правку состав�
     const host = mount(() => <Endpoints endpoints={endpoints()} />);
 
     const store = node(host, "store");
-    const kept = node(host, "GET https://back/pet");
+    const kept = node(host, "e-pet");
 
-    setEndpoints(petstore.filter((one) => one.url !== "https://back/pet/findByStatus"));
+    setEndpoints(petstore.filter((one) => one.id !== "e-by-status"));
 
     expect(node(host, "store")).toBe(store);
-    expect(node(host, "GET https://back/pet")).toBe(kept);
-    expect(host.querySelector('[id$=":item:GET https://back/pet/findByStatus"]')).toBeNull();
+    expect(node(host, "e-pet")).toBe(kept);
+    expect(host.querySelector('[id$=":item:e-by-status"]')).toBeNull();
   });
 
-  it("новый объект с тем же ключом обновляет узел, а не заменяет его", () => {
+  it("новый объект с тем же айди обновляет узел, а не заменяет его", () => {
     const [endpoints, setEndpoints] = createSignal(petstore);
     const host = mount(() => (
       <Endpoints endpoints={endpoints()}>
@@ -57,14 +57,26 @@ describe("Endpoints — узел переживает правку состав�
       </Endpoints>
     ));
 
-    const kept = node(host, "GET https://back/pet");
+    const kept = node(host, "e-pet");
 
     setEndpoints([
       { ...petstore[0]!, params: [{ name: "id", in: "query", required: false, schema: { type: "string" } }] },
       ...petstore.slice(1),
     ]);
 
-    expect(node(host, "GET https://back/pet")).toBe(kept);
+    expect(node(host, "e-pet")).toBe(kept);
     expect(kept.textContent).toContain("1 парам.");
+  });
+
+  it("правка урла не трогает узел — тождество держит айди, а не метод с урлом", () => {
+    const [endpoints, setEndpoints] = createSignal(petstore);
+    const host = mount(() => <Endpoints endpoints={endpoints()} />);
+
+    const kept = node(host, "e-pet");
+
+    setEndpoints([{ ...petstore[0]!, url: "https://back/pets" }, ...petstore.slice(1)]);
+
+    expect(node(host, "e-pet")).toBe(kept);
+    expect(kept.textContent).toContain("GET https://back/pets");
   });
 });

@@ -4,11 +4,11 @@ import { parse } from "yaml";
 import type { SchemaNode } from "../../json-schema";
 import {
   HTTP_METHODS,
-  type EndpointDescriptor,
   type EndpointParam,
   type HttpMethod,
+  type IncomingDocument,
+  type IncomingEndpoint,
   type ParamIn,
-  type SchemaDocument,
 } from "../../types";
 
 interface Swagger2Parameter {
@@ -75,9 +75,9 @@ function paramsOf(operation: Swagger2Operation): readonly EndpointParam[] {
   return params;
 }
 
-function documentOf(doc: Swagger2Document): SchemaDocument {
+function documentOf(doc: Swagger2Document): IncomingDocument {
   const baseUrl = baseUrlOf(doc);
-  const endpoints: EndpointDescriptor[] = [];
+  const endpoints: IncomingEndpoint[] = [];
 
   for (const [path, operations] of Object.entries(doc.paths ?? {})) {
     for (const [method, operation] of Object.entries(operations)) {
@@ -96,7 +96,7 @@ function documentOf(doc: Swagger2Document): SchemaDocument {
   return { endpoints, defs: doc.definitions ?? {} };
 }
 
-export const swagger2Template: MappingTemplate<SchemaDocument, SchemaDocument> = {
+export const swagger2Template: MappingTemplate<IncomingDocument, IncomingDocument> = {
   name: "swagger-2.0",
 
   isEntry: (raw) => parseSwagger2(raw) !== undefined,

@@ -1,8 +1,10 @@
 {
   "//": [
-    "Конфиг САМОГО пакета: собирает исходники плейсхолдера. Функциональность не спроектирована —",
-    "состав входов поменяется вместе с планом. База для потребителя — зона `build` подпутём",
-    "`@web-core/build/tsconfig`."
+    "Конфиг САМОГО пакета. Своего `tsconfig` наружу пакет не отдаёт — базу приложениям задаёт",
+    "зона `build` подпутём `@web-core/build/tsconfig`.",
+    "",
+    "`include` держит и `test`: по этому же конфигу ходят `pnpm typecheck` и `pnpm lint`, и без",
+    "папки тестов их не проверял никто — vitest типы не считает."
   ],
   "compilerOptions": {
     "target": "ES2023",
@@ -24,6 +26,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "test", "vite.config.ts", "vitest.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

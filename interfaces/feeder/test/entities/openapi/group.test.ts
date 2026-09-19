@@ -1,14 +1,16 @@
-import { z } from "@web-core/io";
 import { describe, expect, it } from "vitest";
 
 import {
   groupEndpoints,
   NO_TAG,
-  type OpenapiEndpoint,
+  type EndpointDescriptor,
 } from "../../../src/entities/openapi";
 
-function endpoint(url: string, tag?: string): OpenapiEndpoint {
-  return { method: "GET", url, tag, schema: z.object({}) };
+let seq = 0;
+
+function endpoint(url: string, tag?: string): EndpointDescriptor {
+  seq += 1;
+  return { id: `id-${seq}`, method: "GET", url, tag, params: [] };
 }
 
 describe("groupEndpoints", () => {
