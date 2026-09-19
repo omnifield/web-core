@@ -2,7 +2,7 @@ import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { EndpointDescriptor, InvokeResult } from "../../../src/entities/openapi";
-import { EndpointCall } from "../../../src/features/api-manager";
+import { Endpoint } from "../../../src/features/api-manager";
 
 let dispose: (() => void) | undefined;
 
@@ -42,7 +42,7 @@ function mount(
 ): HTMLDivElement {
   const host = document.createElement("div");
   document.body.append(host);
-  dispose = render(() => <EndpointCall endpoint={item} defs={{}} onResult={onResult} />, host);
+  dispose = render(() => <Endpoint endpoint={item} defs={{}} onResult={onResult} />, host);
   return host;
 }
 
@@ -54,7 +54,7 @@ function check(host: HTMLElement): HTMLButtonElement {
   return button;
 }
 
-describe("EndpointCall", () => {
+describe("Endpoint", () => {
   it("рисует форму параметров по схеме ручки", () => {
     const host = mount(endpoint());
 

@@ -12,7 +12,7 @@ export {
 export { schemaNodeToZod, type SchemaNode } from "./json-schema";
 export { endpointOf } from "./descriptor";
 export { groupEndpoints, NO_TAG, type EndpointGroup } from "./group";
-export { identify, removeEndpoint, removeTag } from "./edit";
+export { addEndpoint, identify, newTag, removeEndpoint, removeTag } from "./edit";
 export { parseSchema, templates } from "./parse";
 export { asSchemaDocument } from "./document";
 export { toResult, resolveUrl, appendQuery, type InvokeResult } from "./invoke";

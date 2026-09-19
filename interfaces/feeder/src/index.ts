@@ -1,10 +1,12 @@
 export { TreeForm } from "./features/tree-form";
 export { ExternalSchemaLoader } from "./features/external-schema";
 export {
-  EndpointCall,
+  ApiCatalog,
+  Call,
+  Endpoint,
   invokeEndpoint,
-  SchemaCatalog,
   useInvoke,
+  type ApiCatalogResult,
   type Invocation,
 } from "./features/api-manager";
 
