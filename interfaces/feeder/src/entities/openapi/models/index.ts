@@ -10,6 +10,7 @@ export {
   type ParamIn,
   type SchemaDocument,
 } from "./types";
+export { API_KIND } from "./kind";
 export { schemaNodeToZod, type SchemaNode } from "./json-schema";
 export { endpointOf } from "./descriptor";
 export { groupEndpoints, NO_GROUP, type EndpointGroup } from "./group";

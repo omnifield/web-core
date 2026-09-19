@@ -96,8 +96,8 @@ describe("ApiCatalog", () => {
   });
 
   it("каждый пресет — свой узел с его именем", async () => {
-    presetsStore.actions.add("Петстор", await parseSchema(petstore));
-    presetsStore.actions.add("Свой бэк", await parseSchema(petstore));
+    presetsStore.actions.add("api", "Петстор", await parseSchema(petstore));
+    presetsStore.actions.add("api", "Свой бэк", await parseSchema(petstore));
 
     const host = mount();
 
@@ -106,7 +106,7 @@ describe("ApiCatalog", () => {
   });
 
   it("узел разворачивается в ручки пресета — без повторного разбора", async () => {
-    presetsStore.actions.add("Петстор", await parseSchema(petstore));
+    presetsStore.actions.add("api", "Петстор", await parseSchema(petstore));
 
     const host = mount();
 
@@ -115,7 +115,7 @@ describe("ApiCatalog", () => {
   });
 
   it("подмена содержимого пересобирает состав — копий ручек нет", async () => {
-    const id = presetsStore.actions.add("Петстор", { endpoints: [], defs: {} });
+    const id = presetsStore.actions.add("api", "Петстор", { endpoints: [], defs: {} });
 
     const host = mount();
     expect(host.textContent).not.toContain("findByStatus");
@@ -125,17 +125,27 @@ describe("ApiCatalog", () => {
     expect(host.textContent).toContain("GET https://petstore.swagger.io/v2/pet/findByStatus");
   });
 
-  it("пресет не той формы назван вслух, а не показан пустым", () => {
-    presetsStore.actions.add("Чужой", { что: "то совсем другое" });
+  it("своя запись с битым содержимым названа вслух, а не показана пустой", () => {
+    presetsStore.actions.add("api", "Кривая", { что: "то совсем другое" });
 
     const host = mount();
 
     expect(host.textContent).toContain("Пресет не похож на схему API");
   });
 
+  it("запись чужого вида каталог не показывает и не ругается на неё", () => {
+    presetsStore.actions.add("adapter", "Адаптер", { rules: [] });
+
+    const host = mount();
+
+    expect(host.textContent).not.toContain("Адаптер");
+    expect(host.textContent).not.toContain("не похож на схему API");
+    expect(host.textContent).toContain("Схем пока нет");
+  });
+
   it("корзина на узле убирает ровно свой пресет", async () => {
-    presetsStore.actions.add("Первая", await parseSchema(petstore));
-    const second = presetsStore.actions.add("Вторая", await parseSchema(petstore));
+    presetsStore.actions.add("api", "Первая", await parseSchema(petstore));
+    const second = presetsStore.actions.add("api", "Вторая", await parseSchema(petstore));
 
     const host = mount();
     trash(host)[0]?.click();
@@ -145,7 +155,7 @@ describe("ApiCatalog", () => {
   });
 
   it("«+» на схеме заводит пустую группу первой — ручку в неё заводят отдельно", () => {
-    const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
+    const id = presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[0]?.click();
@@ -157,7 +167,7 @@ describe("ApiCatalog", () => {
   });
 
   it("второй «+» на схеме заводит ещё одну группу, а не переиспользует первую", () => {
-    const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
+    const id = presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[0]?.click();
@@ -168,7 +178,7 @@ describe("ApiCatalog", () => {
   });
 
   it("«+» на группе заводит ручку под ней, первой в группе", () => {
-    const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
+    const id = presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[1]?.click();
@@ -179,7 +189,7 @@ describe("ApiCatalog", () => {
   });
 
   it("у самой ручки «+» нет — глубже ручки заводить нечего", () => {
-    presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
+    presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
 
     const host = mount();
 
@@ -187,7 +197,7 @@ describe("ApiCatalog", () => {
   });
 
   it("корзина на группе уносит все ручки под ней, соседняя группа цела", () => {
-    const id = presetsStore.actions.add("Свой бэк", {
+    const id = presetsStore.actions.add("api", "Свой бэк", {
       endpoints: [
         { id: "пёс-раз", method: "GET", url: "/dog", groupId: "g-пёс", params: [] },
         { id: "пёс-два", method: "POST", url: "/dog", groupId: "g-пёс", params: [] },
@@ -208,7 +218,7 @@ describe("ApiCatalog", () => {
 
   it("ответ ручки уходит наружу диспатчем, а не оседает в каталоге", async () => {
     stubFetch([{ id: 1, name: "Аня" }]);
-    const id = presetsStore.actions.add("Петстор", oneEndpoint("users"));
+    const id = presetsStore.actions.add("api", "Петстор", oneEndpoint("users"));
     const onResult = vi.fn();
 
     const host = mount(onResult);
@@ -225,8 +235,8 @@ describe("ApiCatalog", () => {
 
   it("в диспатче видно, чья именно ручка ответила", async () => {
     stubFetch({});
-    presetsStore.actions.add("Первая", oneEndpoint("users"));
-    const second = presetsStore.actions.add("Вторая", oneEndpoint("pets"));
+    presetsStore.actions.add("api", "Первая", oneEndpoint("users"));
+    const second = presetsStore.actions.add("api", "Вторая", oneEndpoint("pets"));
     const onResult = vi.fn();
 
     const host = mount(onResult);

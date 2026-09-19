@@ -20,7 +20,7 @@ beforeEach(() => {
 
 describe("presetsStore.edit", () => {
   it("правит содержимое на месте — склад в него не заглядывает", () => {
-    const id = presetsStore.actions.add("Петстор", content());
+    const id = presetsStore.actions.add("api", "Петстор", content());
 
     presetsStore.actions.edit<Content>(id, (draft) => {
       draft.endpoints.splice(1, 1);
@@ -31,7 +31,7 @@ describe("presetsStore.edit", () => {
   });
 
   it("нетронутое сохраняет ССЫЛКУ — правка точечная, а не перезапись целого", () => {
-    const id = presetsStore.actions.add("Петстор", content());
+    const id = presetsStore.actions.add("api", "Петстор", content());
     const before = presetsStore.selectors.presetBy(id)?.content as Content;
 
     presetsStore.actions.edit<Content>(id, (draft) => {
@@ -44,7 +44,7 @@ describe("presetsStore.edit", () => {
   });
 
   it("две правки подряд складываются, а не затирают друг друга", () => {
-    const id = presetsStore.actions.add("Петстор", content());
+    const id = presetsStore.actions.add("api", "Петстор", content());
 
     presetsStore.actions.edit<Content>(id, (draft) => {
       draft.endpoints.splice(0, 1);
@@ -58,8 +58,8 @@ describe("presetsStore.edit", () => {
   });
 
   it("соседний пресет правка не задевает", () => {
-    const mine = presetsStore.actions.add("Мой", content());
-    const alien = presetsStore.actions.add("Чужой", content());
+    const mine = presetsStore.actions.add("api", "Мой", content());
+    const alien = presetsStore.actions.add("api", "Чужой", content());
     const before = presetsStore.selectors.presetBy(alien)?.content;
 
     presetsStore.actions.edit<Content>(mine, (draft) => {
@@ -70,7 +70,7 @@ describe("presetsStore.edit", () => {
   });
 
   it("правка по несуществующему айди проходит молча", () => {
-    presetsStore.actions.add("Петстор", content());
+    presetsStore.actions.add("api", "Петстор", content());
 
     presetsStore.actions.edit<Content>("нет-такого", (draft) => {
       draft.endpoints.splice(0, 1);

@@ -35,7 +35,7 @@
 
 | Слово | Что это в коде | Чем опознаётся |
 | --- | --- | --- |
-| **Пресет** | `Preset { id, name, content }` — именованная запись на складе, `content` для склада непрозрачен | `id`, uuid при создании |
+| **Пресет** | `Preset { id, kind, name, content }` — именованная запись на складе, `content` для склада непрозрачен, `kind` он сравнивает, но не толкует | `id`, uuid при создании |
 | **Документ схемы** | `SchemaDocument { endpoints, groups, defs }` — наш формат API, он и лежит в `content` | — |
 | **Ручка** | `EndpointDescriptor { id, method, url, groupId?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
 | **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа | `id`, uuid при разборе документа |
@@ -92,65 +92,72 @@ const [probe, setProbe] = createSignal<ApiCatalogResult>();
 
 ```tsx
 import {
+  API_KIND,
   asSchemaDocument,
   Endpoint,
   Endpoints,
+  Presets,
   presetsStore,
 } from "@web-core/feeder";
-import { Show } from "@web-core/solid";
-import { Key } from "@web-core/solid/keyed";
 
 export function MyCatalog() {
-  const state = presetsStore.use();
-
   return (
-    <Key each={state().presets} by="id">
-      {(preset) => (
-        <Show when={asSchemaDocument(preset().content)}>
-          {(document) => (
-            <Endpoints
-              label={preset().name}
-              document={document()}
-              onRemove={() => presetsStore.actions.remove(preset().id)}
-            >
-              {(endpoint) => (
-                <Endpoint endpoint={endpoint()} defs={document().defs} />
-              )}
-            </Endpoints>
-          )}
-        </Show>
+    <Presets kind={API_KIND} as={asSchemaDocument} empty="Схем пока нет">
+      {(preset, document) => (
+        <Endpoints
+          label={preset().name}
+          document={document()}
+          onRemove={() => presetsStore.actions.remove(preset().id)}
+        >
+          {(endpoint) => <Endpoint endpoint={endpoint()} defs={document().defs} />}
+        </Endpoints>
       )}
-    </Key>
+    </Presets>
   );
 }
 ```
 
-`Endpoints` берёт документ целиком, а не список ручек: реестр групп лежит в нём, и без него
-пустую группу нечем показать.
+`Presets` — механика склада: отбирает записи своего вида, перебирает их с тождеством по `id`,
+приводит содержимое переданным стражем и отдаёт наружу три вещи — аксессор записи, аксессор
+приведённого содержимого и правку черновиком (третий аргумент, в примере не нужен):
 
-Два обязательных момента, иначе экран будет схлопываться на каждой правке:
+```tsx
+{(preset, document, edit) => (
+  <Endpoints
+    document={document()}
+    onAddGroup={() => edit((draft) => addGroup(draft))}
+    …
+  />
+)}
+```
 
-- список пресетов перебирается `<Key by="id">`, а не `<For>` — разбор в `FAQ.md`, «Списки и
-  тождество узла»;
-- `children` у `Endpoints` получает **аксессор**, поэтому `endpoint()`, а не `endpoint`.
+Своего `<Key>`, стража и обработки «пресет не того вида» писать не нужно — это и есть то, что
+механика делает за потребителя. `Endpoints` при этом берёт документ целиком, а не список ручек:
+реестр групп лежит в нём, и без него пустую группу нечем показать.
+
+Одно обязательное: `children` и у `Presets`, и у `Endpoints` получает **аксессоры**, поэтому
+`preset()`/`endpoint()`, а не `preset`/`endpoint` — разбор в `FAQ.md`, «Списки и тождество узла».
 
 ---
 
 <h2 id="кейс-3">3. Завести пресет кодом, без загрузчика</h2>
 
 ```ts
-import { parseSchema, presetsStore } from "@web-core/feeder";
+import { API_KIND, parseSchema, presetsStore } from "@web-core/feeder";
 
-const id = presetsStore.actions.add("petstore", await parseSchema(rawSwaggerText));
+const id = presetsStore.actions.add(API_KIND, "petstore", await parseSchema(rawSwaggerText));
 ```
 
 `parseSchema` распознаёт документ шаблоном и отдаёт наш `SchemaDocument`. Сырой текст дальше не
 нужен и нигде не хранится — чужой формат разбирается один раз, на входе.
 
+Первый аргумент — **вид записи**: по нему запись потом и находят (`presetsOf`). Поставишь свой
+вид — каталог схем такую запись не покажет, и это не поломка, а ровно то, ради чего вид завёлся.
+
 Содержимым пресета может быть что угодно, склад его не проверяет:
 
 ```ts
-presetsStore.actions.add("мои заметки", { any: "json" });
+presetsStore.actions.add("заметки", "мои заметки", { any: "json" });
 ```
 
 Ручки можно собрать и руками, без документа — но айди у каждой обязателен:
@@ -174,7 +181,7 @@ const document: SchemaDocument = {
   defs: {},
 };
 
-presetsStore.actions.add("мой бэк", document);
+presetsStore.actions.add(API_KIND, "мой бэк", document);
 ```
 
 Своим ручкам айди проставляешь сам: сам ставит его только входной слой (`parseSchema`), а
@@ -213,7 +220,10 @@ presetsStore.actions.edit<SchemaDocument>(id, (draft) => {
 просто нет.
 
 Остальные действия склада: `rename(id, name)`, `replace(id, content)` (заменить содержимое
-целиком), `remove(id)`.
+целиком), `remove(id)`. Вид записи не меняет ничто — он ставится при заведении и живёт с записью.
+
+Внутри узла `Presets` то же самое делается третьим аргументом `children` — правка уже привязана
+к своей записи, айди подставлять не нужно.
 
 ---
 
@@ -234,7 +244,8 @@ await fetch("/api/presets", {
 presetsStore.actions.hydrate(await (await fetch("/api/presets")).json());
 ```
 
-`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние.
+`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние. Вид (`kind`) уезжает и
+приезжает вместе с записью: без него поднятую запись не найдёт ни один экран.
 
 ---
 
@@ -345,7 +356,8 @@ export function Demo() {
 | Что видно | Почему | Куда смотреть |
 | --- | --- | --- |
 | «Схема не распозналась» под загрузчиком | ни один шаблон не подошёл; сегодня их один — Swagger 2.0, и совпадение жёсткое (`swagger: "2.0"`) | текст ошибки под полем |
-| Пресет завёлся, но каталог пишет «не похож на схему API» | `content` не прошёл `asSchemaDocument` — нет массива `endpoints`, элементы без `id`/`method`/`url`/`params`, либо в `groups` лежит не `{ id, name }` | `asSchemaDocument(preset.content)` в консоли |
+| Пресет завёлся, но каталога с ним нет вовсе — ни узла, ни отказа | у записи другой вид: каталог берёт только `kind === API_KIND`, остальные не его | `presetsStore.selectors.presetsOf(API_KIND)` |
+| Пресет завёлся, но каталог пишет «не похож на схему API» | вид свой, а `content` не прошёл `asSchemaDocument` — нет массива `endpoints`, элементы без `id`/`method`/`url`/`params`, либо в `groups` лежит не `{ id, name }` | `asSchemaDocument(preset.content)` в консоли |
 | Ручка ушла в группу `unknown`, хотя группа задана | `groupId` не ведёт ни в одну запись `groups` — ручку не теряем, но и группы для неё нет | `document.groups` |
 | Ручка есть, а параметров в форме нет | у ручки пустой `params` — документ их не объявил | `endpointOf(descriptor, defs).schema` |
 | Параметр есть, а поле не рисуется | `$ref` указывает в `defs`, которого нет — неизвестная ссылка становится `z.unknown()` | `document.defs` |

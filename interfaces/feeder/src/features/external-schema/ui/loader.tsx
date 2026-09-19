@@ -1,8 +1,9 @@
 import { Flow, FlowItem, Typography } from "@web-core/ui";
 import { createSignal, Show } from "@web-core/solid";
 
-import { parseSchema } from "../../../entities/openapi";
-import { PresetInfo, PresetLoader, presetsStore } from "../../../entities/preset";
+import { API_KIND, parseSchema } from "../../../entities/openapi";
+import { PresetInfo, presetsStore } from "../../../entities/preset";
+import { RawLoader } from "../../../shared/ui";
 
 export function ExternalSchemaLoader() {
   const [name, setName] = createSignal("");
@@ -14,7 +15,7 @@ export function ExternalSchemaLoader() {
     setFailure(undefined);
 
     try {
-      presetsStore.actions.add(title(), await parseSchema(raw));
+      presetsStore.actions.add(API_KIND, title(), await parseSchema(raw));
       setName("");
     } catch (error) {
       setFailure(error instanceof Error ? error.message : String(error));
@@ -27,7 +28,12 @@ export function ExternalSchemaLoader() {
         <PresetInfo name={name()} onName={setName} />
       </FlowItem>
       <FlowItem>
-        <PresetLoader disabled={title() === ""} onLoad={(raw) => void save(raw)} />
+        <RawLoader
+          label="Загрузить схему"
+          accept=".json,.yaml,.yml,.txt"
+          disabled={title() === ""}
+          onLoad={(raw) => void save(raw)}
+        />
       </FlowItem>
       <Show when={failure()}>
         {(message) => (

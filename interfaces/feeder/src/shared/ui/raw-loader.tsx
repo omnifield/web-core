@@ -11,8 +11,10 @@ import {
 } from "@web-core/ui";
 import { createSignal, Show } from "@web-core/solid";
 
-export function PresetLoader(props: {
+export function RawLoader(props: {
+  label: string;
   onLoad: (raw: string) => void;
+  accept?: string;
   onPick?: (fileName: string) => void;
   disabled?: boolean;
 }) {
@@ -46,7 +48,7 @@ export function PresetLoader(props: {
         >
           <FileUpload
             style={layoutSelf({ shrink: false })}
-            accept=".json,.yaml,.yml,.txt"
+            accept={props.accept}
             maxFiles={1}
             onFileAccept={(details) => {
               const file = details.files[0];
@@ -104,7 +106,7 @@ export function PresetLoader(props: {
           disabled={raw().trim() === "" || props.disabled === true}
           onClick={load}
         >
-          Загрузить схему
+          {props.label}
         </Button>
       </FlowItem>
     </Flow>
