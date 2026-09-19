@@ -21,26 +21,28 @@
 `solid-js`/`solid-js/web` напрямую — тогда `createSignal`/`onMount`/`render` во всех файлах ловят
 один и тот же модуль-синглтон, а версию решает architect в одном месте, а не 20 `package.json`
 по репозиторию. 🛠️ Средство, а не решение: сам по себе пакет не приносит своего вида, только
-резолв — ПЛЮС собственные добавления поверх (первое — `mountApp()`/`#root`, точка входа
-приложения, у самого Solid её нет).
+резолв — ПЛЮС то, чего у самого Solid нет: собственные добавления (`mountApp()`/`#root`, точка
+входа приложения) и примитивы комьюнити, взятые готовыми (`./keyed`).
 
 <h2 id="анатомия">🧩 Анатомия</h2>
 
-🗺️ У движка нет DOM-анатомии — «часть» здесь означает подпуть поставки. Два подпути зеркалят
-вход `solid-js` и `solid-js/web` дословно; третий — собственное добавление пакета, которого у
-вендора нет вовсе.
+🗺️ У движка нет DOM-анатомии — «часть» здесь означает подпуть поставки. Подпуть называет
+ПРОИСХОЖДЕНИЕ кода: два зеркалят вход `solid-js` и `solid-js/web` дословно, один держит
+собственное добавление пакета, один — примитив комьюнити, взятый готовым.
 
 | Часть | Адрес | Экспортирует |
 |---|---|---|
 | Реактивное ядро | `@web-core/solid` | весь `solid-js` (`createSignal`, `createEffect`, `createMemo`, `onMount`, `onCleanup`, `createUniqueId`, JSX-типы, …) |
 | DOM-рендер | `@web-core/solid/web` | весь `solid-js/web` (`render`, `Portal`, `hydrate`, …) |
 | Точка монтирования | `@web-core/solid/mount` | `mountApp(root)` — СОБСТВЕННОЕ добавление, не из вендора |
+| Поток по ключу | `@web-core/solid/keyed` | весь `@solid-primitives/keyed` (`Key`, `Entries`, `MapEntries`, `SetValues`, `Rerun`, `keyArray`) |
 
 📦 Внутри пакета: `src/index.ts` — единственный файл в корне `src/`, тонкая поверхность (один
 реэкспорт `engine/`). Каждый подпуть — своя папка: `src/engine/index.ts`
 (`export * from "solid-js"`), `src/web/index.ts` (`export * from "solid-js/web"`),
-`src/mount/index.ts` (`mountApp`) — по форме `@web-core/router` (`index.ts` + `engine/` + `vite/` +
-`devtools/`).
+`src/mount/index.ts` (`mountApp`), `src/keyed/index.ts`
+(`export * from "@solid-primitives/keyed"`) — по форме `@web-core/router` (`index.ts` + `engine/` +
+`vite/` + `devtools/`).
 
 <h2 id="использование">🚀 Использование</h2>
 
@@ -73,14 +75,29 @@ mountApp(() => <App />);
 <div id="root"></div>
 ```
 
+**Поток по ключу** — `<Key>` вместо `<For>`, когда список перестраивается новыми объектами, а
+узел за ключом обязан пережить перестройку. `by` — имя поля или функция ключа; `item` и `index`
+в теле — СИГНАЛЫ, не значения:
+
+```tsx
+import { Key } from "@web-core/solid/keyed";
+
+<Key each={props.items} by={props.itemKey}>
+  {(item) => <Node value={props.itemKey(item())} />}
+</Key>;
+```
+
 <h2 id="настройки">🎚️ Настройки</h2>
 
 🎚️ У реэкспорта настроек нет — это вендорская поверхность как есть. У `mountApp()` одна: сам
-корневой компонент.
+корневой компонент. У `<Key>` — три пропса вендора.
 
 | Настройка | Где | Тип | По умолчанию |
 |---|---|---|---|
 | `root` | `mountApp(root)` | `() => JSX.Element` | обязательное |
+| `each` | `<Key>` | `readonly T[] \| null \| false` | необязательное — пусто значит `fallback` |
+| `by` | `<Key>` | `keyof T \| ((item: T) => unknown)` | обязательное |
+| `fallback` | `<Key>` | `JSX.Element` | нет — при пустом `each` не рисуется ничего |
 
 <h2 id="состояния">🎛️ Состояния</h2>
 
@@ -103,21 +120,25 @@ mountApp(() => <App />);
 | Функция | Принимает |
 |---|---|
 | `mountApp(root)` | `() => JSX.Element` — корневой компонент |
+| `<Key>` | `each`/`by`/`fallback` (см. Настройки) плюс `children` — `(item, index) => JSX.Element`, где оба аргумента СИГНАЛЫ (`Accessor`) |
 
 <h3>📤 Выход</h3>
 
 | Источник | Отдаёт |
 |---|---|
 | `mountApp` | `void` — `dispose` наружу не отдаётся, держит его сама функция (`WeakMap`) |
+| `<Key>` | `JSX.Element` — узел за ключом переживает перестройку списка новыми объектами |
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
-⚠️ Автоматических проб сегодня нет — пакет только что заведён, `test/` ещё не написан. Ниже —
-что фактически проверено ✅ вручную.
+⚠️ Автоматические пробы есть только у `./keyed` — остальное проверено ✅ вручную, `test/` по
+подпутям `.`/`./web`/`./mount` ещё не написан (см. `ROADMAP.yaml`, `id: write-test-suite`).
 
 | Проверено | Как | Результат |
 |---|---|---|
-| Три подпути собираются раздельными файлами `dist/` | `tsc -p tsconfig.build.json` | `dist/{index,engine,web,mount}/…` |
+| `<Key>` держит узел за ключом при подмене объектов списка | `test/keyed.test.tsx`, рендер в JSDOM | узел `[data-key="a"]` тот же, текст обновился |
+| `./keyed` отдаёт весь состав вендора | `test/keyed.test.tsx` | `Key`/`Entries`/`MapEntries`/`SetValues`/`Rerun`/`keyArray` — все `function` |
+| Четыре подпути собираются раздельными файлами `dist/` | `tsc -p tsconfig.build.json` | `dist/{index,engine,web,mount,keyed}/…` |
 | Барель `.` реэкспортирует `solid-js` целиком | `import()` `dist/index.js` | `createSignal`/`onMount`/… — все на месте |
 | `./web` реэкспортирует `solid-js/web` целиком | `import()` `dist/web/index.js` | `render`/`Portal`/… — все на месте |
 
