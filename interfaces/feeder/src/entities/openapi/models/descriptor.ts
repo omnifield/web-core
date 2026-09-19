@@ -18,7 +18,6 @@ export function endpointOf(
   return {
     method: descriptor.method,
     url: descriptor.url,
-    tag: descriptor.tag,
     schema: z.object(shape),
   };
 }

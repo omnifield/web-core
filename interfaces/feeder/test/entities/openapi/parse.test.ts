@@ -18,7 +18,7 @@ describe("parseSchema", () => {
     );
 
     expect(found?.method).toBe("GET");
-    expect(found?.tag).toBe("pet");
+    expect(document.groups.find((group) => group.id === found?.groupId)?.name).toBe("pet");
     expect(found?.params[0]?.name).toBe("status");
     expect(found?.params[0]?.in).toBe("query");
   });

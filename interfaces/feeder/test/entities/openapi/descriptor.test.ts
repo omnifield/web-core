@@ -68,11 +68,11 @@ describe("endpointOf", () => {
     expect(endpoint.schema.safeParse({ body: {} }).success).toBe(false);
   });
 
-  it("метод, адрес и тег переносятся как есть", () => {
-    const endpoint = endpointOf(descriptor({ method: "DELETE", tag: "pet" }));
+  it("метод и адрес переносятся как есть, группа в вызов не едет", () => {
+    const endpoint = endpointOf(descriptor({ method: "DELETE", groupId: "g-pet" }));
 
     expect(endpoint.method).toBe("DELETE");
     expect(endpoint.url).toBe("https://back/users");
-    expect(endpoint.tag).toBe("pet");
+    expect(endpoint).not.toHaveProperty("groupId");
   });
 });

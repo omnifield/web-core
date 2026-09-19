@@ -1,35 +1,40 @@
 import type { Accessor, JSX } from "@web-core/solid";
 
 import { Box } from "../../../shared/ui";
-import { groupEndpoints, type EndpointDescriptor } from "../models";
+import {
+  groupEndpoints,
+  type EndpointDescriptor,
+  type EndpointGroup,
+  type SchemaDocument,
+} from "../models";
 
 export function Endpoints(props: {
   label?: string;
-  endpoints: readonly EndpointDescriptor[];
-  onAddTag?: () => void;
+  document: SchemaDocument;
+  onAddGroup?: () => void;
   onRemove?: () => void;
-  onAddEndpoint?: (tag: string) => void;
-  onRemoveTag?: (tag: string) => void;
+  onAddEndpoint?: (group: EndpointGroup) => void;
+  onRemoveGroup?: (group: EndpointGroup) => void;
   onRemoveEndpoint?: (endpoint: EndpointDescriptor) => void;
   children?: (endpoint: Accessor<EndpointDescriptor>) => JSX.Element;
 }) {
   return (
     <Box
       label={props.label}
-      onAddChild={props.onAddTag}
+      onAddChild={props.onAddGroup}
       onRemove={props.onRemove}
-      items={groupEndpoints(props.endpoints)}
-      itemKey={(group) => group.tag}
-      itemLabel={(group) => group.tag}
+      items={groupEndpoints(props.document)}
+      itemKey={(group) => group.id}
+      itemLabel={(group) => group.name}
       onItemAddChild={
         props.onAddEndpoint === undefined
           ? undefined
-          : (group) => props.onAddEndpoint?.(group.tag)
+          : (group) => props.onAddEndpoint?.(group)
       }
       onItemRemove={
-        props.onRemoveTag === undefined
+        props.onRemoveGroup === undefined
           ? undefined
-          : (group) => props.onRemoveTag?.(group.tag)
+          : (group) => props.onRemoveGroup?.(group)
       }
     >
       {(group) => (

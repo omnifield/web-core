@@ -41,6 +41,7 @@ export {
   type EndpointDescriptor,
   type EndpointGroup,
   type EndpointParam,
+  type Group,
   type HttpMethod,
   type InvokeResult,
   type OpenapiEndpoint,

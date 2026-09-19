@@ -29,7 +29,7 @@ describe("run(raw, [swagger2Template])", () => {
     await expect(run("не свагер", [swagger2Template])).rejects.toThrow(/none of the templates recognize/);
   });
 
-  it("собирает все три ручки с методом/url/тегом", async () => {
+  it("собирает все три ручки, а тег документа становится группой", async () => {
     const document = identify(await run(petstore, [swagger2Template]));
     const endpoints = document.endpoints.map((descriptor) => endpointOf(descriptor, document.defs));
 
@@ -41,7 +41,9 @@ describe("run(raw, [swagger2Template])", () => {
         "GET https://petstore.swagger.io/v2/pet/{petId}",
       ]),
     );
-    for (const endpoint of endpoints) expect(endpoint.tag).toBe("pet");
+    const pet = document.groups.find((group) => group.name === "pet");
+    expect(pet).toBeDefined();
+    for (const descriptor of document.endpoints) expect(descriptor.groupId).toBe(pet?.id);
   });
 
   it("query-параметр массив+enum — обязательный, элементы только из enum", async () => {

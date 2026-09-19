@@ -6,11 +6,11 @@ import { Show } from "@web-core/solid";
 
 import {
   addEndpoint,
+  addGroup,
   asSchemaDocument,
   Endpoints,
-  newTag,
   removeEndpoint,
-  removeTag,
+  removeGroup,
   type EndpointDescriptor,
   type InvokeResult,
   type SchemaDocument,
@@ -52,11 +52,11 @@ export function ApiCatalog(props: {
                   {(found) => (
                     <Endpoints
                       label={preset().name}
-                      endpoints={found().endpoints}
-                      onAddTag={() => edit((draft) => addEndpoint(draft, newTag()))}
-                      onAddEndpoint={(tag) => edit((draft) => addEndpoint(draft, tag))}
+                      document={found()}
+                      onAddGroup={() => edit((draft) => addGroup(draft))}
+                      onAddEndpoint={(group) => edit((draft) => addEndpoint(draft, group.id))}
                       onRemove={() => presetsStore.actions.remove(preset().id)}
-                      onRemoveTag={(tag) => edit((draft) => removeTag(draft, tag))}
+                      onRemoveGroup={(group) => edit((draft) => removeGroup(draft, group.id))}
                       onRemoveEndpoint={(endpoint) =>
                         edit((draft) => removeEndpoint(draft, endpoint.id))
                       }

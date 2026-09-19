@@ -69,7 +69,11 @@ describe("ExternalSchemaLoader", () => {
     const preset = presetsStore.get().presets[0];
     expect(preset?.name).toBe("Петстор");
     expect(asSchemaDocument(preset?.content)?.endpoints.length).toBeGreaterThan(0);
-    expect(Object.keys(preset?.content as object).sort()).toEqual(["defs", "endpoints"]);
+    expect(Object.keys(preset?.content as object).sort()).toEqual([
+      "defs",
+      "endpoints",
+      "groups",
+    ]);
   });
 
   it("нераспознанный документ пресетом не становится", async () => {

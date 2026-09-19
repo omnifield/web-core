@@ -2,62 +2,88 @@ import { describe, expect, it } from "vitest";
 
 import {
   groupEndpoints,
-  NO_TAG,
+  NO_GROUP,
   type EndpointDescriptor,
+  type Group,
+  type SchemaDocument,
 } from "../../../src/entities/openapi";
 
 let seq = 0;
 
-function endpoint(url: string, tag?: string): EndpointDescriptor {
+function endpoint(url: string, groupId?: string): EndpointDescriptor {
   seq += 1;
-  return { id: `id-${seq}`, method: "GET", url, tag, params: [] };
+  return { id: `id-${seq}`, method: "GET", url, groupId, params: [] };
 }
 
-describe("groupEndpoints", () => {
-  it("собирает ручки одного тега в одну группу", () => {
-    const groups = groupEndpoints([
-      endpoint("/pet", "pet"),
-      endpoint("/store", "store"),
-      endpoint("/pet/{id}", "pet"),
-    ]);
+function document(
+  endpoints: readonly EndpointDescriptor[],
+  groups: readonly Group[] = [],
+): SchemaDocument {
+  return { endpoints, groups, defs: {} };
+}
 
-    expect(groups.map((group) => group.tag)).toEqual(["pet", "store"]);
+const pet: Group = { id: "g-pet", name: "pet" };
+const store: Group = { id: "g-store", name: "store" };
+
+describe("groupEndpoints", () => {
+  it("собирает ручки одной группы вместе, имя берёт из записи группы", () => {
+    const groups = groupEndpoints(
+      document(
+        [endpoint("/pet", pet.id), endpoint("/store", store.id), endpoint("/pet/{id}", pet.id)],
+        [pet, store],
+      ),
+    );
+
+    expect(groups.map((group) => group.name)).toEqual(["pet", "store"]);
     expect(groups[0]?.endpoints.map((item) => item.url)).toEqual(["/pet", "/pet/{id}"]);
   });
 
-  it("порядок групп — по первому появлению тега, а не алфавитный", () => {
-    const groups = groupEndpoints([
-      endpoint("/store", "store"),
-      endpoint("/pet", "pet"),
-    ]);
+  it("порядок групп — реестр документа, а не порядок ручек", () => {
+    const groups = groupEndpoints(
+      document([endpoint("/store", store.id), endpoint("/pet", pet.id)], [pet, store]),
+    );
 
-    expect(groups.map((group) => group.tag)).toEqual(["store", "pet"]);
+    expect(groups.map((group) => group.name)).toEqual(["pet", "store"]);
   });
 
-  it("ручки без тега — своя группа, и она идёт последней", () => {
-    const groups = groupEndpoints([
-      endpoint("/loose"),
-      endpoint("/pet", "pet"),
-      endpoint("/other"),
-    ]);
+  it("группа без ручек живёт — у неё своя запись, она не производна", () => {
+    const groups = groupEndpoints(document([], [pet]));
 
-    expect(groups.map((group) => group.tag)).toEqual(["pet", NO_TAG]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({ id: pet.id, name: "pet", endpoints: [] });
+  });
+
+  it("ручки без группы — своя псевдогруппа, и она идёт последней", () => {
+    const groups = groupEndpoints(
+      document([endpoint("/loose"), endpoint("/pet", pet.id), endpoint("/other")], [pet]),
+    );
+
+    expect(groups.map((group) => group.id)).toEqual([pet.id, NO_GROUP]);
     expect(groups[1]?.endpoints.map((item) => item.url)).toEqual(["/loose", "/other"]);
   });
 
-  it("пустой каталог даёт пустой список групп, а не группу-пустышку", () => {
-    expect(groupEndpoints([])).toEqual([]);
+  it("ссылка на несуществующую группу не теряет ручку — она падает к безгрупповым", () => {
+    const groups = groupEndpoints(document([endpoint("/lost", "снесённая")], []));
+
+    expect(groups.map((group) => group.id)).toEqual([NO_GROUP]);
+    expect(groups[0]?.endpoints.map((item) => item.url)).toEqual(["/lost"]);
+  });
+
+  it("пустой документ даёт пустой список групп, а не группу-пустышку", () => {
+    expect(groupEndpoints(document([]))).toEqual([]);
   });
 
   it("ни одна ручка не теряется и не двоится", () => {
     const endpoints = [
-      endpoint("/a", "one"),
+      endpoint("/a", pet.id),
       endpoint("/b"),
-      endpoint("/c", "two"),
-      endpoint("/d", "one"),
+      endpoint("/c", store.id),
+      endpoint("/d", pet.id),
     ];
 
-    const flat = groupEndpoints(endpoints).flatMap((group) => group.endpoints);
+    const flat = groupEndpoints(document(endpoints, [pet, store])).flatMap(
+      (group) => group.endpoints,
+    );
 
     expect(flat).toHaveLength(endpoints.length);
     expect(new Set(flat.map((item) => item.url))).toEqual(

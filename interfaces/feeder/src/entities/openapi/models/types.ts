@@ -15,20 +15,31 @@ export interface EndpointParam {
   readonly schema: SchemaNode;
 }
 
+export interface Group {
+  readonly id: string;
+  readonly name: string;
+}
+
 export interface EndpointDescriptor {
   readonly id: string;
   readonly method: HttpMethod;
   readonly url: string;
-  readonly tag?: string;
+  readonly groupId?: string;
   readonly params: readonly EndpointParam[];
 }
 
 export interface SchemaDocument {
   readonly endpoints: readonly EndpointDescriptor[];
+  readonly groups: readonly Group[];
   readonly defs: Readonly<Record<string, SchemaNode>>;
 }
 
-export type IncomingEndpoint = Omit<EndpointDescriptor, "id">;
+export interface IncomingEndpoint {
+  readonly method: HttpMethod;
+  readonly url: string;
+  readonly tag?: string;
+  readonly params: readonly EndpointParam[];
+}
 
 export interface IncomingDocument {
   readonly endpoints: readonly IncomingEndpoint[];
@@ -38,6 +49,5 @@ export interface IncomingDocument {
 export interface OpenapiEndpoint {
   readonly method: HttpMethod;
   readonly url: string;
-  readonly tag?: string;
   readonly schema: z.ZodType;
 }

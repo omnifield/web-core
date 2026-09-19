@@ -9,7 +9,7 @@
 
 **Экран**
 - [1. Загрузить документ API и показать каталог](#кейс-1)
-- [2. Свой экран вместо `SchemaCatalog`](#кейс-2)
+- [2. Свой экран вместо `ApiCatalog`](#кейс-2)
 
 **Склад пресетов**
 - [3. Завести пресет кодом, без загрузчика](#кейс-3)
@@ -31,13 +31,14 @@
 
 <h2 id="словарь">0. Словарь</h2>
 
-Четыре слова, которые встречаются дальше в каждом примере.
+Пять слов, которые встречаются дальше в каждом примере.
 
 | Слово | Что это в коде | Чем опознаётся |
 | --- | --- | --- |
 | **Пресет** | `Preset { id, name, content }` — именованная запись на складе, `content` для склада непрозрачен | `id`, uuid при создании |
-| **Документ схемы** | `SchemaDocument { endpoints, defs }` — наш формат API, он и лежит в `content` | — |
-| **Ручка** | `EndpointDescriptor { id, method, url, tag?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
+| **Документ схемы** | `SchemaDocument { endpoints, groups, defs }` — наш формат API, он и лежит в `content` | — |
+| **Ручка** | `EndpointDescriptor { id, method, url, groupId?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
+| **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа | `id`, uuid при разборе документа |
 | **Адаптер** | `Adapter` — шов «поставщик → потребитель», перекладывает данные в нужную форму | в коде сегодня заготовка, см. `ROADMAP.yaml` |
 
 Зод из документа не хранится — он строится при отрисовке (`endpointOf`) и живёт ровно столько,
@@ -50,13 +51,13 @@
 Два компонента на весь экран: первый принимает документ, второй показывает, что из него вышло.
 
 ```tsx
-import { ExternalSchemaLoader, SchemaCatalog } from "@web-core/feeder";
+import { ApiCatalog, ExternalSchemaLoader } from "@web-core/feeder";
 
 export function ApiScreen() {
   return (
     <>
       <ExternalSchemaLoader />
-      <SchemaCatalog />
+      <ApiCatalog />
     </>
   );
 }
@@ -64,19 +65,36 @@ export function ApiScreen() {
 
 Оба ходят в один и тот же модульный стор пресетов — связывать их пропами не нужно. Загрузчик
 принимает файл или вставку, разбирает документ и кладёт пресет; каталог показывает все пресеты,
-которые похожи на документ API: теги → ручки → форма параметров с кнопкой «Проверить».
+которые похожи на документ API: группы → ручки → форма параметров с кнопкой «Проверить».
+
+Состав правится прямо там же: «+» на схеме заводит пустую группу, «+» на группе — пустую ручку под
+ней, корзина убирает схему, группу (со всеми её ручками) или одну ручку.
+
+Ответ каталог не показывает — отдаёт наружу, вместе с тем, чей он:
+
+```tsx
+import { ApiCatalog, type ApiCatalogResult } from "@web-core/feeder";
+
+const [probe, setProbe] = createSignal<ApiCatalogResult>();
+
+<ApiCatalog onResult={setProbe} />;
+```
+
+`presetId` и `endpoint` в событии нужны, чтобы экран знал, по какой именно ручке пришёл ответ:
+на каталоге их десятки. Сорванный вызов сюда не приходит — ответа не было, и `Call`
+говорит об этом на месте.
 
 ---
 
-<h2 id="кейс-2">2. Свой экран вместо `SchemaCatalog`</h2>
+<h2 id="кейс-2">2. Свой экран вместо `ApiCatalog`</h2>
 
 Когда нужен свой порядок или своё содержимое строки — `Endpoints` собирается руками.
 
 ```tsx
 import {
   asSchemaDocument,
+  Endpoint,
   Endpoints,
-  EndpointCall,
   presetsStore,
 } from "@web-core/feeder";
 import { Show } from "@web-core/solid";
@@ -92,11 +110,11 @@ export function MyCatalog() {
           {(document) => (
             <Endpoints
               label={preset().name}
-              endpoints={document().endpoints}
+              document={document()}
               onRemove={() => presetsStore.actions.remove(preset().id)}
             >
               {(endpoint) => (
-                <EndpointCall endpoint={endpoint()} defs={document().defs} />
+                <Endpoint endpoint={endpoint()} defs={document().defs} />
               )}
             </Endpoints>
           )}
@@ -106,6 +124,9 @@ export function MyCatalog() {
   );
 }
 ```
+
+`Endpoints` берёт документ целиком, а не список ручек: реестр групп лежит в нём, и без него
+пустую группу нечем показать.
 
 Два обязательных момента, иначе экран будет схлопываться на каждой правке:
 
@@ -137,16 +158,19 @@ presetsStore.actions.add("мои заметки", { any: "json" });
 ```ts
 import { presetsStore, type SchemaDocument } from "@web-core/feeder";
 
+const users = { id: crypto.randomUUID(), name: "users" };
+
 const document: SchemaDocument = {
   endpoints: [
     {
       id: crypto.randomUUID(),
       method: "GET",
       url: "https://back/users/{id}",
-      tag: "users",
+      groupId: users.id,
       params: [{ name: "id", in: "path", required: true, schema: { type: "integer" } }],
     },
   ],
+  groups: [users],
   defs: {},
 };
 
@@ -155,6 +179,10 @@ presetsStore.actions.add("мой бэк", document);
 
 Своим ручкам айди проставляешь сам: сам ставит его только входной слой (`parseSchema`), а
 документ без айди каталог схемой не признает.
+
+`groups` можно не заводить вовсе — тогда ручки без `groupId` соберутся в псевдогруппу `unknown`.
+А вот `groupId`, который не ведёт ни в одну запись, ручку не потеряет: она уйдёт туда же, к
+безгрупповым.
 
 ---
 
@@ -173,10 +201,16 @@ presetsStore.actions.edit<SchemaDocument>(id, (draft) => {
 Ручка опознаётся своим `id`, а не методом с урлом: урл юзер правит, и тождество на нём не
 держится.
 
-Внутри пакета для этого есть готовые `removeEndpoint`/`removeTag` (`entities/openapi/models/edit`),
-но наружу они сегодня **не отданы** — снаружи состав правится черновиком, как выше.
+Внутри пакета для этого есть готовые `addGroup`/`addEndpoint`/`removeEndpoint`/`removeGroup`
+(`entities/openapi/models/edit`), но наружу они сегодня **не отданы** — снаружи состав правится
+черновиком, как выше. Ими же работают кнопки каталога.
 
-Ручки без тега собираются в группу с именем `unknown`.
+Что стоит знать про них, если повторяешь руками: новая запись встаёт **первой** (ручка — первой в
+своей группе), `removeGroup` уносит и запись группы, и все ручки под ней, а имя группы правится
+как обычное поле — тождество держит `id`, и узел на экране от переименования не вздрагивает.
+
+Ручки без группы собираются в псевдогруппу с именем `unknown`. Это не запись: `groupId` у них
+просто нет.
 
 Остальные действия склада: `rename(id, name)`, `replace(id, content)` (заменить содержимое
 целиком), `remove(id)`.
@@ -211,13 +245,16 @@ import { asSchemaDocument, groupEndpoints, presetsStore } from "@web-core/feeder
 
 const document = asSchemaDocument(presetsStore.selectors.presetBy(id)?.content);
 
-for (const group of groupEndpoints(document?.endpoints ?? [])) {
-  console.log(group.tag, group.endpoints.map((one) => `${one.method} ${one.url}`));
+if (document !== undefined) {
+  for (const group of groupEndpoints(document)) {
+    console.log(group.name, group.endpoints.map((one) => `${one.method} ${one.url}`));
+  }
 }
 ```
 
 `asSchemaDocument` — это и проверка, и приведение: не похоже на документ API — вернёт `undefined`,
-а не бросит. Группы отдаются в порядке первого появления тега, `unknown` всегда последней.
+а не бросит. `groupEndpoints` отдаёт группы в порядке реестра документа — включая пустые, у них
+своя запись, — а псевдогруппу `unknown` всегда последней.
 
 ---
 
@@ -244,8 +281,8 @@ result.body;
 
 <h2 id="кейс-8">8. Форма параметров ручки своими руками</h2>
 
-`EndpointCall` делает это целиком, но если нужен свой вид — из ручки берётся зод, и дальше это
-обычная форма.
+`Endpoint` делает это целиком (внутри — форма по зод-схеме и `Call` с кнопкой), но если нужен свой
+вид — из ручки берётся зод, и дальше это обычная форма.
 
 ```tsx
 import { endpointOf, TreeForm, useInvoke } from "@web-core/feeder";
@@ -308,7 +345,8 @@ export function Demo() {
 | Что видно | Почему | Куда смотреть |
 | --- | --- | --- |
 | «Схема не распозналась» под загрузчиком | ни один шаблон не подошёл; сегодня их один — Swagger 2.0, и совпадение жёсткое (`swagger: "2.0"`) | текст ошибки под полем |
-| Пресет завёлся, но каталог пишет «не похож на схему API» | `content` не прошёл `asSchemaDocument` — нет массива `endpoints` или элементы без `id`/`method`/`url`/`params` | `asSchemaDocument(preset.content)` в консоли |
+| Пресет завёлся, но каталог пишет «не похож на схему API» | `content` не прошёл `asSchemaDocument` — нет массива `endpoints`, элементы без `id`/`method`/`url`/`params`, либо в `groups` лежит не `{ id, name }` | `asSchemaDocument(preset.content)` в консоли |
+| Ручка ушла в группу `unknown`, хотя группа задана | `groupId` не ведёт ни в одну запись `groups` — ручку не теряем, но и группы для неё нет | `document.groups` |
 | Ручка есть, а параметров в форме нет | у ручки пустой `params` — документ их не объявил | `endpointOf(descriptor, defs).schema` |
 | Параметр есть, а поле не рисуется | `$ref` указывает в `defs`, которого нет — неизвестная ссылка становится `z.unknown()` | `document.defs` |
 | Вызов молча ничего не вернул | сорванный транспорт — это исключение; `useInvoke` кладёт его текст в `failure()` | `invocation.failure()` |

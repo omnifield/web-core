@@ -2,6 +2,7 @@ export {
   HTTP_METHODS,
   type EndpointDescriptor,
   type EndpointParam,
+  type Group,
   type HttpMethod,
   type IncomingDocument,
   type IncomingEndpoint,
@@ -11,8 +12,15 @@ export {
 } from "./types";
 export { schemaNodeToZod, type SchemaNode } from "./json-schema";
 export { endpointOf } from "./descriptor";
-export { groupEndpoints, NO_TAG, type EndpointGroup } from "./group";
-export { addEndpoint, identify, newTag, removeEndpoint, removeTag } from "./edit";
+export { groupEndpoints, NO_GROUP, type EndpointGroup } from "./group";
+export {
+  addEndpoint,
+  addGroup,
+  identify,
+  NEW_GROUP,
+  removeEndpoint,
+  removeGroup,
+} from "./edit";
 export { parseSchema, templates } from "./parse";
 export { asSchemaDocument } from "./document";
 export { toResult, resolveUrl, appendQuery, type InvokeResult } from "./invoke";

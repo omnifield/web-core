@@ -63,9 +63,17 @@ function checks(host: HTMLElement): HTMLButtonElement[] {
 
 function oneEndpoint(id: string): SchemaDocument {
   return {
-    endpoints: [{ id, method: "GET", url: `https://back/v2/${id}`, tag: "все", params: [] }],
+    endpoints: [
+      { id, method: "GET", url: `https://back/v2/${id}`, groupId: "g-все", params: [] },
+    ],
+    groups: [{ id: "g-все", name: "все" }],
     defs: {},
   };
+}
+
+function groupsOf(id: string): readonly { id: string; name: string }[] {
+  const content = presetsStore.get().presets.find((preset) => preset.id === id)?.content;
+  return asSchemaDocument(content)?.groups ?? [];
 }
 
 function stubFetch(body: unknown) {
@@ -136,38 +144,37 @@ describe("ApiCatalog", () => {
     expect(host.textContent).not.toContain("Первая");
   });
 
-  it("«+» на схеме заводит пустую ручку первой, в своём новом теге", () => {
+  it("«+» на схеме заводит пустую группу первой — ручку в неё заводят отдельно", () => {
     const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[0]?.click();
 
-    const added = endpointsOf(id)[0];
-    expect(added).toMatchObject({ method: "GET", url: "", params: [] });
-    expect(added?.tag).toBeTypeOf("string");
-    expect(added?.tag).not.toBe("все");
+    expect(groupsOf(id)[0]).toMatchObject({ name: "Новая группа" });
+    expect(groupsOf(id)).toHaveLength(2);
+    expect(endpointsOf(id)).toHaveLength(1);
+    expect(host.textContent).toContain("Новая группа");
   });
 
-  it("второй «+» на схеме заводит ещё один тег, а не копит ручки в первом", () => {
+  it("второй «+» на схеме заводит ещё одну группу, а не переиспользует первую", () => {
     const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[0]?.click();
     add(host)[0]?.click();
 
-    const tags = endpointsOf(id).map((endpoint) => endpoint.tag);
-    expect(new Set(tags).size).toBe(3);
-    expect(endpointsOf(id)).toHaveLength(3);
+    expect(groupsOf(id)).toHaveLength(3);
+    expect(new Set(groupsOf(id).map((group) => group.id)).size).toBe(3);
   });
 
-  it("«+» на теге заводит ручку под тем же тегом, первой в группе", () => {
+  it("«+» на группе заводит ручку под ней, первой в группе", () => {
     const id = presetsStore.actions.add("Свой бэк", oneEndpoint("users"));
 
     const host = mount();
     add(host)[1]?.click();
 
     expect(endpointsOf(id)).toHaveLength(2);
-    expect(endpointsOf(id)[0]).toMatchObject({ url: "", tag: "все" });
+    expect(endpointsOf(id)[0]).toMatchObject({ url: "", groupId: "g-все" });
     expect(endpointsOf(id)[1]?.id).toBe("users");
   });
 
@@ -179,12 +186,16 @@ describe("ApiCatalog", () => {
     expect(add(host)).toHaveLength(2);
   });
 
-  it("корзина на теге уносит все ручки под ним, соседний тег цел", () => {
+  it("корзина на группе уносит все ручки под ней, соседняя группа цела", () => {
     const id = presetsStore.actions.add("Свой бэк", {
       endpoints: [
-        { id: "пёс-раз", method: "GET", url: "/dog", tag: "пёс", params: [] },
-        { id: "пёс-два", method: "POST", url: "/dog", tag: "пёс", params: [] },
-        { id: "кот", method: "GET", url: "/cat", tag: "кот", params: [] },
+        { id: "пёс-раз", method: "GET", url: "/dog", groupId: "g-пёс", params: [] },
+        { id: "пёс-два", method: "POST", url: "/dog", groupId: "g-пёс", params: [] },
+        { id: "кот", method: "GET", url: "/cat", groupId: "g-кот", params: [] },
+      ],
+      groups: [
+        { id: "g-пёс", name: "пёс" },
+        { id: "g-кот", name: "кот" },
       ],
       defs: {},
     } satisfies SchemaDocument);
