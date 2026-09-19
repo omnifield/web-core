@@ -1,4 +1,4 @@
-import { ExternalSchemaLoader, SchemaCatalog } from "@web-core/feeder";
+import { ExternalSchemaLoader, ApiCatalog } from "@web-core/feeder";
 
 /** Настройка API выбранного компонента: откуда он берёт еду и какая ручка за это отвечает.
  *
@@ -8,7 +8,11 @@ export function ApiConfiguration() {
   return (
     <>
       <ExternalSchemaLoader />
-      <SchemaCatalog />
+      <ApiCatalog
+        onResult={(e) => {
+          console.log(e);
+        }}
+      />
     </>
   );
 }
