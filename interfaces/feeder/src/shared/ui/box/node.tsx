@@ -11,6 +11,7 @@ import { Show, type JSX } from "@web-core/solid";
 export function Node(props: {
   value: string;
   label: string;
+  onConfig?: () => void;
   onAddChild?: () => void;
   onRemove?: () => void;
   children: JSX.Element;
@@ -20,6 +21,20 @@ export function Node(props: {
       <AccordionControl>
         <Typography>{props.label}</Typography>
         <Flow>
+          <Show when={props.onConfig}>
+            {(onConfig) => (
+              <Button
+                data-variant="tertiary"
+                aria-label="Настроить"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onConfig()();
+                }}
+              >
+                <Icon name="pencil" />
+              </Button>
+            )}
+          </Show>
           <Show when={props.onAddChild}>
             {(onAddChild) => (
               <Button

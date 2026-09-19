@@ -50,6 +50,10 @@ function add(host: HTMLElement): HTMLButtonElement[] {
   return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Добавить"]')];
 }
 
+function settings(host: HTMLElement): HTMLButtonElement[] {
+  return [...host.querySelectorAll<HTMLButtonElement>('button[aria-label="Настроить"]')];
+}
+
 function endpointsOf(id: string): readonly EndpointDescriptor[] {
   const content = presetsStore.get().presets.find((preset) => preset.id === id)?.content;
   return asSchemaDocument(content)?.endpoints ?? [];
@@ -214,6 +218,41 @@ describe("ApiCatalog", () => {
     trash(host)[1]?.click();
 
     expect(endpointsOf(id).map((endpoint) => endpoint.id)).toEqual(["кот"]);
+  });
+
+  it("«Настроить» есть у каждого узла — у схемы, у группы и у ручки", () => {
+    presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
+
+    const host = mount();
+
+    expect(settings(host)).toHaveLength(3);
+  });
+
+  it("«Настроить» открывает диалог и отдаёт в него ТОТ узел, на котором нажали", () => {
+    presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
+    const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+    const host = mount();
+    settings(host)[2]?.click();
+
+    expect(log).toHaveBeenLastCalledWith(
+      "config-dialog: узел",
+      expect.objectContaining({ id: "users" }),
+    );
+
+    settings(host)[1]?.click();
+    expect(log).toHaveBeenLastCalledWith(
+      "config-dialog: узел",
+      expect.objectContaining({ id: "g-все", name: "все" }),
+    );
+
+    settings(host)[0]?.click();
+    expect(log).toHaveBeenLastCalledWith(
+      "config-dialog: узел",
+      expect.objectContaining({ groups: [{ id: "g-все", name: "все" }] }),
+    );
+
+    log.mockRestore();
   });
 
   it("ответ ручки уходит наружу диспатчем, а не оседает в каталоге", async () => {

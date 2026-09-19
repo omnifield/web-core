@@ -6,6 +6,7 @@ import { Node } from "./node";
 
 export function Box<T>(props: {
   label?: string;
+  onConfig?: (item?: T) => void;
   onAddChild?: () => void;
   onRemove?: () => void;
   items: readonly T[];
@@ -22,6 +23,11 @@ export function Box<T>(props: {
           <Node
             value={props.itemKey(item())}
             label={props.itemLabel(item())}
+            onConfig={
+              props.onConfig === undefined
+                ? undefined
+                : () => props.onConfig?.(item())
+            }
             onAddChild={
               props.onItemAddChild === undefined
                 ? undefined
@@ -47,6 +53,7 @@ export function Box<T>(props: {
           <Node
             value="box"
             label={label()}
+            onConfig={props.onConfig}
             onAddChild={props.onAddChild}
             onRemove={props.onRemove}
           >

@@ -41,6 +41,7 @@ describe("Box", () => {
 
     expect(buttons(host, "Добавить")).toHaveLength(0);
     expect(buttons(host, "Убрать")).toHaveLength(0);
+    expect(buttons(host, "Настроить")).toHaveLength(0);
   });
 
   it("кнопка появляется от самого колбэка, иконку кладёт Box, а не потребитель", () => {
@@ -75,6 +76,26 @@ describe("Box", () => {
     buttons(host, "Убрать")[1]?.click();
 
     expect(onItemRemove).toHaveBeenCalledWith(rows[1]);
+  });
+
+  it("«Настроить» отдаёт тот элемент, на котором нажали", () => {
+    const onConfig = vi.fn();
+    const host = mount(() => (
+      <Box
+        items={rows}
+        itemKey={(row) => row.id}
+        itemLabel={(row) => row.title}
+        onConfig={onConfig}
+      >
+        {(row) => <span>{row().id}</span>}
+      </Box>
+    ));
+
+    expect(buttons(host, "Настроить")).toHaveLength(rows.length);
+
+    buttons(host, "Настроить")[1]?.click();
+
+    expect(onConfig).toHaveBeenCalledWith(rows[1]);
   });
 
   it("без `label` верхней секции нет — вложенный бокс не плодит лишний заголовок", () => {

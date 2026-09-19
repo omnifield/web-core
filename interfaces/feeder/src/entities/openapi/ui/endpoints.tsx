@@ -14,6 +14,9 @@ export function Endpoints(props: {
   onAddGroup?: () => void;
   onRemove?: () => void;
   onAddEndpoint?: (group: EndpointGroup) => void;
+  onConfig?: (
+    item: SchemaDocument | EndpointGroup | EndpointDescriptor,
+  ) => void;
   onRemoveGroup?: (group: EndpointGroup) => void;
   onRemoveEndpoint?: (endpoint: EndpointDescriptor) => void;
   children?: (endpoint: Accessor<EndpointDescriptor>) => JSX.Element;
@@ -21,6 +24,11 @@ export function Endpoints(props: {
   return (
     <Box
       label={props.label}
+      onConfig={
+        props.onConfig === undefined
+          ? undefined
+          : (group) => props.onConfig?.(group ?? props.document)
+      }
       onAddChild={props.onAddGroup}
       onRemove={props.onRemove}
       items={groupEndpoints(props.document)}
@@ -42,6 +50,11 @@ export function Endpoints(props: {
           items={group().endpoints}
           itemKey={(endpoint) => endpoint.id}
           itemLabel={(endpoint) => `${endpoint.method} ${endpoint.url}`}
+          onConfig={
+            props.onConfig === undefined
+              ? undefined
+              : (endpoint) => props.onConfig?.(endpoint ?? props.document)
+          }
           onItemRemove={props.onRemoveEndpoint}
         >
           {(endpoint) => props.children?.(endpoint)}
