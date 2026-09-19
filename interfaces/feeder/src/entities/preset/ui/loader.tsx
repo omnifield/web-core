@@ -41,7 +41,9 @@ export function PresetLoader(props: {
   return (
     <Flow data-variant="column">
       <FlowItem style={layoutSelf({ align: "stretch" })}>
-        <Flow style={layoutGroup({ align: "center", gap: "space-2", wrap: false })}>
+        <Flow
+          style={layoutGroup({ align: "center", gap: "space-2", wrap: false })}
+        >
           <FileUpload
             style={layoutSelf({ shrink: false })}
             accept=".json,.yaml,.yml,.txt"
@@ -54,10 +56,24 @@ export function PresetLoader(props: {
             <FileUploadTrigger>Выбрать файл</FileUploadTrigger>
           </FileUpload>
 
-          <Field style={{ ...layoutSelf({ grow: true, shrink: true }), "min-width": "0" }}>
+          <Field
+            style={{
+              ...layoutSelf({ grow: true, shrink: true }),
+              "min-width": "0",
+            }}
+          >
             <FieldTextarea
               rows={1}
-              style={{ "min-width": "0", width: "100%", resize: "vertical" }}
+              style={{
+                "text-align": "center",
+
+                padding: "6px",
+                "min-width": "0",
+                width: "100%",
+                resize: "none",
+                "min-block-size": "34px",
+                "max-height": "34px",
+              }}
               placeholder="PASTE"
               value={raw()}
               onInput={(event) => setRaw(event.currentTarget.value)}
