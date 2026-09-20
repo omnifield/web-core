@@ -24,6 +24,7 @@ type Record struct {
 
 // Input — конверт сохранения/замены: то, что реально прислал клиент, до выдачи id и времени.
 type Input struct {
+	ID          string // "" — айди выдаёт хранилище; иначе запись рождается с айди клиента
 	Label       string
 	Name        string // "" — не задано
 	Description string // "" — не задано

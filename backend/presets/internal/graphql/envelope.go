@@ -20,8 +20,15 @@ var label = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,31}$`)
 
 const badNameMessage = "Имя — короткая метка из строчных латинских букв, цифр и дефисов (до 32 символов), например twitter-dark."
 
+// uuidForm — канонический вид айди: тот же, что выдаёт сама служба (newID, internal/store) и тот
+// же, что рождается у клиента (crypto.randomUUID). Проверка формы — здесь, занятость — в store:
+// занятость видна только внутри транзакции записи.
+var uuidForm = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+
+const badIDMessage = "Айди — UUID в каноническом виде строчными: 8-4-4-4-12 шестнадцатеричных знаков, например 3f2504e0-4f89-41d3-9a0c-0305e82c3301."
+
 // normalizeInput — конверт записи/замены: та же проверка, что раньше делал REST (parseEnvelope,
-// internal/api) — label обязателен и в пределах длины, name (если задан) — строгой формы,
+// internal/api) — label обязателен и в пределах длины, name и id (если заданы) — строгой формы,
 // description — в пределах длины. `kind` эта функция НЕ проверяет: его проверяет validateState —
 // требование там строже формата строки (kind обязан быть ЗАРЕГИСТРИРОВАННЫМ видом, иначе GraphQL
 // не знает, в какой конкретный тип резолвить ответ).
@@ -32,6 +39,11 @@ func normalizeInput(input model.PresetInput, lim limits.Limits) (presetsmodel.In
 	}
 	if utf8.RuneCountInString(trimmedLabel) > lim.LabelChars {
 		return presetsmodel.Input{}, fmt.Errorf("presets: label длиннее %d символов", lim.LabelChars)
+	}
+
+	id := strings.TrimSpace(derefString(input.ID))
+	if id != "" && !uuidForm.MatchString(id) {
+		return presetsmodel.Input{}, fmt.Errorf("presets: %s", badIDMessage)
 	}
 
 	name := derefString(input.Name)
@@ -45,6 +57,7 @@ func normalizeInput(input model.PresetInput, lim limits.Limits) (presetsmodel.In
 	}
 
 	return presetsmodel.Input{
+		ID:          id,
 		Label:       trimmedLabel,
 		Name:        name,
 		Description: description,

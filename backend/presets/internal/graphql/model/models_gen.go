@@ -17,6 +17,9 @@ type Mutation struct {
 // Конверт записи/замены — тот же смысл, что у сегодняшнего REST-конверта (label/name/description/
 // kind/state), state валидируется по kinds-registry вида.
 type PresetInput struct {
+	// Айди клиента (client-supplied-id, ROADMAP.yaml): не задан — выдаёт служба; задан — запись
+	//   рождается с ним, занятый отвергается. У replacePreset обязан совпадать с айди аргумента.
+	ID          *string `json:"id,omitempty"`
 	Kind        string  `json:"kind"`
 	Label       string  `json:"label"`
 	Name        *string `json:"name,omitempty"`

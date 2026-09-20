@@ -45,6 +45,77 @@ func TestCreateAndGet(t *testing.T) {
 	}
 }
 
+func TestCreateHonorsClientSuppliedID(t *testing.T) {
+	s := open(t, limits.Default)
+
+	given := input("skin", "brand", `{"a":1}`)
+	given.ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+
+	record, err := s.Create(given)
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	if record.ID != given.ID {
+		t.Fatalf("хранилище перебило айди клиента: %q вместо %q", record.ID, given.ID)
+	}
+	if _, err := s.Get(given.ID); err != nil {
+		t.Fatalf("запись не читается по айди клиента: %v", err)
+	}
+}
+
+func TestCreateRejectsTakenIDWithoutTouchingTheRecord(t *testing.T) {
+	s := open(t, limits.Default)
+
+	first := input("skin", "brand", `{"a":1}`)
+	first.ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+	if _, err := s.Create(first); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	second := input("outfit", "other", `{"a":2}`)
+	second.ID = first.ID
+	_, err := s.Create(second)
+	if _, taken := err.(*IDTakenError); !taken {
+		t.Fatalf("ожидался IDTakenError, получено %v", err)
+	}
+
+	got, err := s.Get(first.ID)
+	if err != nil || string(got.State) != `{"a":1}` {
+		t.Fatalf("отбитая укладка затронула чужую запись: state=%s err=%v", got.State, err)
+	}
+}
+
+func TestConcurrentCreatesWithSameIDLeaveExactlyOne(t *testing.T) {
+	s := open(t, limits.Default)
+
+	const attempts = 20
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	ok, taken := 0, 0
+
+	for i := 0; i < attempts; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			given := input("skin", "", "1")
+			given.ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+			_, err := s.Create(given)
+			mu.Lock()
+			defer mu.Unlock()
+			if err == nil {
+				ok++
+			} else if _, isTaken := err.(*IDTakenError); isTaken {
+				taken++
+			}
+		}()
+	}
+	wg.Wait()
+
+	if ok != 1 || taken != attempts-1 {
+		t.Fatalf("ровно одна укладка обязана победить за айди: прошло %d, отбито %d из %d", ok, taken, attempts-1)
+	}
+}
+
 func TestGetNotFound(t *testing.T) {
 	s := open(t, limits.Default)
 	if _, err := s.Get("нет-такого"); err != ErrNotFound {

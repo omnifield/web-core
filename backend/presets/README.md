@@ -53,7 +53,9 @@
 `description`/`kind`/`savedAt`) и шесть конкретных типов по видам реестра —
 `Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`. `Query.presets(kind, component)`/`Query.preset(id)` —
 чтение; `Mutation.createPreset`/`replacePreset`/`deletePreset` — запись, конверт (`PresetInput`) по
-смыслу тот же, что раньше нёс REST-конверт (`kind`/`label`/`name`/`description`/`state`).
+смыслу тот же, что раньше нёс REST-конверт (`kind`/`label`/`name`/`description`/`state`), плюс
+необязательный `id`: запись, родившаяся у клиента, кладётся под своим айди, а не под выданным
+службой.
 
 🗳️ Вторая, независимая схема (`internal/graphql/feedback.graphql`) — тип `FeedbackEntry`, НЕ
 реализует `Preset`, не смешивается с шестью видами выше. `Query.feedback(status?, sign?)` —
@@ -103,6 +105,17 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
   "variables": { "input": { "kind": "palette", "label": "Бренд", "name": "brand", "state": {"name":"brand","author":"..."} } }
 }'
 # → { "data": { "createPreset": { "id": "...", "name": "brand", "author": "..." } } }
+```
+
+**Положить запись со СВОИМ айди** — когда запись родилась у клиента раньше сети и на неё уже
+ссылаются другие записи:
+
+```sh
+curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
+  "query": "mutation($input: PresetInput!) { createPreset(input: $input) { id } }",
+  "variables": { "input": { "id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301", "kind": "palette", "label": "Бренд", "state": {"name":"brand"} } }
+}'
+# → тот же id в ответе; второй раз с тем же id — отказ, а не перезапись чужой записи
 ```
 
 **Точечный запрос** (MCP-профиль — только то, что нужно прямо сейчас, без связей):
@@ -187,6 +200,9 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 | `label` пуст / длиннее предела | «у пресета должно быть непустое label» / «label длиннее N символов» |
 | `name` не подходит под форму | то же сообщение, что раньше отдавал REST (`^[a-z0-9][a-z0-9-]{0,31}$`) |
 | `description` длиннее предела | «description длиннее N символов» |
+| `id` в конверте не UUID канонического вида | «Айди — UUID в каноническом виде строчными…» |
+| Присланный `id` уже занят другой записью | `IDTakenError` из `internal/store` |
+| `id` в конверте замены не тот, что у заменяемой записи | «айди в конверте (…) не тот, что у заменяемой записи (…)» |
 | Имя занято другой записью ЭТОГО ЖЕ вида | `NameTakenError` из `internal/store`, как раньше |
 | Кончилось место (список вида / байты хранилища) | `StorageFullError` из `internal/store`, как раньше |
 | Одна запись больше предела | `TooLargeError` из `internal/store`, как раньше |
@@ -204,6 +220,7 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 
 | Поле | Обязательно | Форма |
 |---|---|---|
+| `id` | нет | UUID в каноническом виде строчными (`8-4-4-4-12`); не задан — айди выдаёт служба, задан и занят — отказ. У `replacePreset` обязан совпадать с айди аргумента |
 | `kind` | да | зарегистрированный вид (`palette`/`form`/`outfit`/`content`/`tag`/`assembly` сегодня) |
 | `label` | да | непустая строка, ≤ `LabelChars` |
 | `name` | нет | `^[a-z0-9][a-z0-9-]{0,31}$` |
@@ -233,10 +250,10 @@ bbolt-хранилище и реальной сети (54 теста, 7 файл
 
 | Сборка | Что доказывает |
 |---|---|
-| `internal/store/store_test.go` | CRUD, атомарность `Replace`, пределы (запись/вид/объём целиком), opaque-проход `state`, `GetMany`-батч (пропуск отсутствующего id, не отказ), конкурентные создания под гонкой (`-race`) |
+| `internal/store/store_test.go` | CRUD, атомарность `Replace`, пределы (запись/вид/объём целиком), opaque-проход `state`, `GetMany`-батч (пропуск отсутствующего id, не отказ), айди клиента (сохраняется как прислан, занятый отбивается, 20 одновременных укладок одного айди оставляют ровно одну), конкурентные создания под гонкой (`-race`) |
 | `internal/store/feedback_test.go` | Свой бакет: create/get/list (новые сверху), `ReplaceFeedbackState` держит id и обновляет `savedAt`, отказ на несуществующую заявку, фидбэк считается в ОБЩИЙ `TotalBytes` (диск общий с пресетами) |
 | `internal/kinds/kinds_test.go` | Все шесть видов зарегистрированы, каждый разбирается по своей форме (включая `tag` — по форме живой записи прода, не выдумке), двойная регистрация одного `kind` паникует |
-| `internal/graphql/resolver_test.go` | Типизация по видам вперемешку, отказ на незарегистрированный/неверной формы `state`, резолв связей `Outfit.palette/forms/tags` с тихим пропуском dangling-ссылки, `create`/`replace`/`delete`-роундтрип, проверка конверта (label/name/description), проход store-ошибки (`NameTakenError`) через резолвер не глотается |
+| `internal/graphql/resolver_test.go` | Типизация по видам вперемешку, отказ на незарегистрированный/неверной формы `state`, резолв связей `Outfit.palette/forms/tags` с тихим пропуском dangling-ссылки, `create`/`replace`/`delete`-роундтрип, проверка конверта (label/name/description/id), айди клиента доживает до чтения, чужой айди в конверте замены отбивается, проход store-ошибки (`NameTakenError`) через резолвер не глотается |
 | `internal/graphql/feedback_test.go` | `sign`/`status` по умолчанию на создании, фильтр `Query.feedback` по status/sign, `resolveFeedback` не трогает остальные поля и отказывает на повторный резолв, фидбэк НЕ появляется среди `Query.presets` (свой бакет — не Preset) |
 | `internal/graphql/batching_test.go` | **Измерено, не прочитано по коду**: реальный GraphQL-запрос (`generated.NewExecutableSchema` + `handler.NewDefaultServer`, тот же стек, что в `cmd/presets`) через `httptest`-сервер со считающей обёрткой (`countingStore`) поверх `internal/graphql.Store`/`loaders.Store` — число вызовов `store.List`/`GetMany` ОДИНАКОВОЕ при N=5 и N=50 нарядов, каждый со своей формой и общей палитрой. Доказывает O(1), не просто «мало при одном N» |
 | `cmd/presets/main_test.go` | `/healthz`-ответ, CORS-preflight (204 без похода до GraphQL-обработчика) и что не-preflight запрос доходит |

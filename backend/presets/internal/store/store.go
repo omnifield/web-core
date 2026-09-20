@@ -162,10 +162,14 @@ func nameKey(kind, name string) []byte {
 	return []byte(kind + "\x00" + name)
 }
 
-// Create кладёт новую запись. Идентификатор и время выдаёт хранилище — клиент их не присылает.
+// Create кладёт новую запись. Время выдаёт хранилище всегда; айди — только если клиент не
+// прислал свой (`Input.ID`). Занятость присланного айди проверяется В ТОЙ ЖЕ транзакции, что и
+// запись, — иначе две одновременные укладки одного айди обе увидели бы свободно (FAQ.md,
+// «Почему служба принимает айди от клиента»).
 func (s *Store) Create(input model.Input) (*model.Record, error) {
 	record := &model.Record{
 		Meta: model.Meta{
+			ID:          input.ID,
 			Label:       input.Label,
 			Name:        input.Name,
 			Description: input.Description,
@@ -175,7 +179,11 @@ func (s *Store) Create(input model.Input) (*model.Record, error) {
 	}
 
 	err := s.db.Update(func(tx *bbolt.Tx) error {
-		record.ID = newID()
+		if record.ID == "" {
+			record.ID = newID()
+		} else if tx.Bucket(bucketMeta).Get([]byte(record.ID)) != nil {
+			return &IDTakenError{ID: record.ID}
+		}
 		record.SavedAt = nowStamp()
 		return s.put(tx, record, nil)
 	})
