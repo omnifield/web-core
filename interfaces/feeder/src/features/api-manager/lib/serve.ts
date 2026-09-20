@@ -1,14 +1,8 @@
 import type { FieldRuleReport } from "@web-core/io";
 
-import {
-  adapterFor,
-  asAdapter,
-  ADAPTER_KIND,
-  feed,
-  type Adapter,
-} from "../../../entities/adapter";
+import { adapterFor, asAdapter, ADAPTER_KIND, feed, type Adapter } from "../../../entities/adapter";
 import type { InvokeResult, OpenapiEndpoint } from "../../../entities/openapi";
-import { presetsStore } from "../../../entities/preset";
+import { recordsOf } from "../../../entities/preset";
 import { invokeEndpoint } from "./invoke";
 
 export interface Serving {
@@ -24,10 +18,7 @@ export interface Users {
 }
 
 function adapterOf(users: Users): Adapter | undefined {
-  const records = presetsStore.selectors
-    .presetsOf(ADAPTER_KIND)
-    .map((preset) => asAdapter(preset.content))
-    .filter((one): one is Adapter => one !== undefined);
+  const records = recordsOf(ADAPTER_KIND, asAdapter).map((one) => one.content);
 
   return adapterFor(records, users.provider, users.consumer);
 }

@@ -1,5 +1,5 @@
 export { TreeForm } from "./features/tree-form";
-export { AdapterMastering } from "./features/adapter-manager";
+export { AdapterMastering, savedAdapters } from "./features/adapter-manager";
 export { ExternalSchemaLoader } from "./features/external-schema";
 export {
   API_USER,
@@ -11,6 +11,7 @@ export {
   serve,
   useInvoke,
   type ApiCatalogResult,
+  type ApiProbeResult,
   type Invocation,
   type Serving,
   type Users,
@@ -42,10 +43,12 @@ export {
   PresetInfo,
   Presets,
   presetsStore,
+  recordsOf,
   PRESET_CONFIG,
   type Preset,
   type PresetConfig,
   type PresetsState,
+  type Record,
 } from "./entities/preset";
 export {
   API_KIND,

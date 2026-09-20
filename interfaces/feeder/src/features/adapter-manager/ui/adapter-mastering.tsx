@@ -3,20 +3,15 @@ import { createMemo } from "@web-core/solid";
 
 import {
   adapterFor,
-  asAdapter,
   ADAPTER_KIND,
   link,
   rememberUser,
   unlink,
   type Adapter,
 } from "../../../entities/adapter";
-import { presetsStore, type Preset } from "../../../entities/preset";
+import { presetsStore } from "../../../entities/preset";
+import { savedAdapters } from "../lib";
 import { Mastering } from "./mastering";
-
-interface Record {
-  readonly preset: Preset;
-  readonly adapter: Adapter;
-}
 
 const EMPTY: Adapter = { root: "", rules: [], providers: {}, consumers: {} };
 
@@ -31,21 +26,16 @@ export function AdapterMastering(props: {
   input: readonly PathType[];
   name?: string;
 }) {
-  const records = createMemo<Record[]>(() =>
-    presetsStore.selectors
-      .presetsOf(ADAPTER_KIND)
-      .map((preset) => ({ preset, adapter: asAdapter(preset.content) }))
-      .filter((one): one is Record => one.adapter !== undefined),
-  );
+  const records = createMemo(() => savedAdapters());
 
   const current = createMemo(() => {
     const adapter = adapterFor(
-      records().map((one) => one.adapter),
+      records().map((one) => one.content),
       props.provider,
       props.consumer,
     );
 
-    return records().find((one) => one.adapter === adapter);
+    return records().find((one) => one.content === adapter);
   });
 
   function edit(recipe: (draft: Parameters<typeof link>[0]) => void): void {
@@ -75,7 +65,7 @@ export function AdapterMastering(props: {
     <Mastering
       output={props.output}
       input={props.input}
-      rules={current()?.adapter.rules ?? []}
+      rules={current()?.content.rules ?? []}
       onLink={(made) =>
         edit((draft) => {
           link(draft, made.target, made.from);

@@ -44,16 +44,16 @@ vitest+jsdom.
 | Часть | Экспортирует | Про что |
 | --- | --- | --- |
 | Загрузка | `ExternalSchemaLoader` | принять документ файлом или вставкой, разобрать, положить пресетом |
-| Каталог | `ApiCatalog`, `ApiProbe`, `Endpoints` | состав API: группы → ручки → параметры; `ApiCatalog` правит состав, `ApiProbe` только показывает и даёт дёрнуть |
+| Каталог | `ApiCatalog`, `ApiProbe`, `Endpoints` | состав API: группы → ручки → параметры; `ApiCatalog` правит состав, `ApiProbe` показывает только связанное с потребителем и кормит его |
 | Вызов | `Endpoint`, `Call`, `useInvoke`, `invokeEndpoint`, `serve` | форма параметров, один HTTP-вызов, ответ; `serve` вдобавок кормит потребителя |
-| Склад | `presetsStore`, `Presets`, `PresetInfo` | именованные пользовательские записи, отбор по виду |
+| Склад | `presetsStore`, `Presets`, `PresetInfo`, `recordsOf` | именованные пользовательские записи, отбор по виду, выдача записей приведёнными |
 | Модель API | `API_KIND`, `parseSchema`, `asSchemaDocument`, `endpointOf`, `groupEndpoints`, `schemaNodeToZod` | наш формат документа и работа с ним |
 | Конфиг узла | `ENDPOINT_CONFIG`, `GROUP_CONFIG`, `PRESET_CONFIG`, `endpointConfigOf`, `groupConfigOf`, `presetConfigOf` | зод-схема и значение формы для узла: ручки, группы, записи склада |
 | Форма | `TreeForm` | дерево по произвольной зод-схеме |
 | Сведение | `AdapterMastering` | мастер: слоты выхода принимают поля входа переносом |
 | Адаптер | `ADAPTER_KIND`, `asAdapter`, `applyAdapter`, `feed`, `isFed`, `noFeed` | запись шва и работа с ней |
-| Пользователи адаптера | `API_USER`, `defineUserKind`, `userKinds`, `userKindOf`, `usedBy`, `usersOf`, `adapterFor`, `partnersOf` | кто кормит и кого кормят: объявление вида, адреса, поиск |
-| Типы | `Preset`, `PresetsState`, `PresetConfig`, `SchemaDocument`, `SchemaNode`, `EndpointDescriptor`, `EndpointParam`, `EndpointConfig`, `Group`, `GroupConfig`, `EndpointGroup`, `ConfigTarget`, `HttpMethod`, `ParamIn`, `OpenapiEndpoint`, `InvokeResult`, `Invocation`, `ApiCatalogResult`, `Serving`, `Users`, `Adapter`, `AdapterRule`, `UserTree`, `UserKind`, `UserPath`, `FeedResult` | |
+| Пользователи адаптера | `API_USER`, `defineUserKind`, `userKinds`, `userKindOf`, `usedBy`, `usersOf`, `adapterFor`, `partnersOf`, `savedAdapters` | кто кормит и кого кормят: объявление вида, адреса, поиск, готовый список записей |
+| Типы | `Preset`, `PresetsState`, `PresetConfig`, `SchemaDocument`, `SchemaNode`, `EndpointDescriptor`, `EndpointParam`, `EndpointConfig`, `Group`, `GroupConfig`, `EndpointGroup`, `ConfigTarget`, `HttpMethod`, `ParamIn`, `OpenapiEndpoint`, `InvokeResult`, `Invocation`, `ApiCatalogResult`, `ApiProbeResult`, `Serving`, `Users`, `Record`, `Adapter`, `AdapterRule`, `UserTree`, `UserKind`, `UserPath`, `FeedResult` | |
 
 📦 Внутри — адаптированный FSD, переосмысленный под движок (правила слоёв — [`src/DBP.md`](./src/DBP.md)):
 
@@ -114,6 +114,21 @@ const COMPONENT_USER = defineUserKind("component", (name: string) => [name]);
 Связи хранит запись адаптера на складе: мастер сам находит её по паре адресов, а при первой связи
 заводит. Пока ничего не перетащили — записи нет.
 
+✅ Витрина потребителя — только связанные с ним ручки, и сразу с едой:
+
+```tsx
+import { ApiProbe } from "@web-core/feeder";
+
+<ApiProbe
+  consumer={COMPONENT_USER.path("user-card")}
+  onServing={(event) => board.put(event.serving.data)}
+/>;
+```
+
+Каталог сам спрашивает `partnersOf`, кто связан с этим потребителем, и показывает только эти
+схемы и ручки. Вызов идёт через `serve`, поэтому наружу едет не сырой ответ, а конверт: оригинал,
+собранные данные и отчёт.
+
 ✅ Дёрнуть ручку и сразу получить еду для потребителя:
 
 ```ts
@@ -129,11 +144,16 @@ shot.report; // что сошлось, что нет
 ✅ Кто с кем связан:
 
 ```ts
-import { partnersOf } from "@web-core/feeder";
+import { partnersOf, savedAdapters } from "@web-core/feeder";
+
+const adapters = savedAdapters().map((one) => one.content);
 
 partnersOf(adapters, "consumers", COMPONENT_USER.path("user-card")); // какие ручки кормят карточку
 partnersOf(adapters, "providers", API_USER.path(presetId, endpointId)); // кого кормит ручка
 ```
+
+Доставать записи со склада руками не нужно: `savedAdapters()` отдаёт их уже приведёнными стражем,
+вместе с пресетом, в котором они лежат.
 
 ✅ Форма по любой зод-схеме:
 
@@ -149,8 +169,10 @@ import { TreeForm } from "@web-core/feeder";
 
 🔧 `ExternalSchemaLoader` — **без пропов**: работает с общим стором пресетов. `ApiCatalog` оттуда же
 берёт состав и принимает один необязательный проп — `onResult`
-(`ApiCatalogResult { presetId, endpoint, result }`). `ApiProbe` принимает то же событие, но состав
-не правит вовсе: у его узлов нет ни «Добавить», ни «Убрать», ни «Настроить».
+(`ApiCatalogResult { presetId, endpoint, result }`). `ApiProbe` устроен иначе: он принимает
+`consumer` (адрес потребителя) и необязательный `onServing`, состав не правит вовсе (ни
+«Добавить», ни «Убрать», ни «Настроить») и показывает только то, что связано с этим потребителем —
+схемы без связанных ручек не рисуются, а когда связей нет вовсе, он говорит это словами.
 
 Состав `ApiCatalog` правит сам, через склад: «+» на схеме заводит пустую группу, «+» на группе —
 пустую ручку под ней, корзина убирает схему, группу (со всеми её ручками) или одну ручку. У самой
@@ -167,8 +189,9 @@ import { TreeForm } from "@web-core/feeder";
 `Presets` — механика склада: `kind`, `as` (страж содержимого), необязательные `empty`/`broken` и
 обязательный `children`.
 
-`Endpoint` — `endpoint: EndpointDescriptor`, `defs`, необязательный `onResult`. `Call` —
-`endpoint: OpenapiEndpoint`, `value`, необязательный `onResult`. `PresetInfo` — `name` / `onName`.
+`Endpoint` — `endpoint: EndpointDescriptor`, `defs`, необязательные `users`, `onResult` и
+`onServing`. `Call` — то же плюс `value`. Передали `users` — вызов идёт через `serve` и наружу
+едет конверт `Serving`; не передали — как раньше, сырой `InvokeResult`. `PresetInfo` — `name` / `onName`.
 `TreeForm` — `schema: z.ZodType`, `value`, `onChange`.
 
 Чего у движка **нет**: форматов кроме Swagger 2.0; заголовков и авторизации у вызова; хранения
@@ -229,11 +252,16 @@ endpointId)` → `["api", presetId, endpointId]`. Вид ставит сам п�
 потребителя может быть несколько — каждая собирается своими правилами из тех же записей.
 
 ↔️ **Вызов с кормлением.** `serve(endpoint, value, { provider, consumer })` → `Serving`: `result`
-приезжает всегда, `data`/`report`/`error` — только если нашёлся адаптер этой пары.
+приезжает всегда, `data`/`report`/`error` — только если нашёлся адаптер этой пары. Тот же конверт
+отдают `Endpoint`/`Call` событием `onServing` и `ApiProbe` — событием `ApiProbeResult`, где рядом
+лежит происхождение (`presetId` + ручка).
+
+↔️ **Записи склада наружу.** `recordsOf(kind, as)` отдаёт записи своего вида уже приведёнными
+стражем — `{ preset, content }`. `savedAdapters()` — то же для адаптеров, без аргументов.
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
-🧪 Vitest + jsdom. **220 тестов, все зелёные:**
+🧪 Vitest + jsdom. **223 теста, все зелёные:**
 
 - `entities/openapi` — конфиг узла, распознавание petstore, айди при разборе, JSON Schema → zod,
   компоновка по группам, правки состава, живучесть узлов при правке;
@@ -244,8 +272,9 @@ endpointId)` → `["api", presetId, endpointId]`. Вид ставит сам п�
   коллекции и промах корня), реестр видов, поиск по паре и перечисление партнёров, блоки мастера в
   DOM (лунка, чип, метки типов, снятие связи);
 - `features/api-manager` — вызов на моке `fetch`, `useInvoke`, каталог схем и правка состава,
-  настройка узла диалогом, `ApiProbe` без кнопок правки (с контрольной проверкой, что в каталоге
-  они есть), `serve` с адаптером и без;
+  настройка узла диалогом, `ApiProbe` (отбор по потребителю, пустая витрина словами, отсутствие
+  кнопок правки — с контрольной проверкой, что в каталоге они есть), `serve` с адаптером и без,
+  узел ручки с потребителем и без него;
 - `features/adapter-manager` — перенос поля в слот, ответ слотов на совместимость во время
   переноса, заведение записи при первой связи, подхват готовой записи пары;
 - `features/external-schema` — сквозной путь «вставили документ → в сторе лежит разобранный пресет»;

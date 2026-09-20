@@ -32,6 +32,7 @@
 - [12. Дёрнуть ручку и сразу получить еду (`serve`)](#кейс-12)
 - [13. Собрать объект потребителя из ответа кодом (`feed`)](#кейс-13)
 - [14. Кто с кем связан](#кейс-14)
+- [15. Витрина потребителя: только связанные ручки](#кейс-15)
 
 ---
 
@@ -492,12 +493,9 @@ feed(response, adapter).value;
 <h2 id="кейс-14">14. Кто с кем связан</h2>
 
 ```ts
-import { ADAPTER_KIND, asAdapter, partnersOf, presetsStore, usersOf } from "@web-core/feeder";
+import { partnersOf, savedAdapters, usersOf } from "@web-core/feeder";
 
-const adapters = presetsStore.selectors
-  .presetsOf(ADAPTER_KIND)
-  .map((preset) => asAdapter(preset.content))
-  .filter((one) => one !== undefined);
+const adapters = savedAdapters().map((one) => one.content);
 
 // какие ручки кормят этот компонент
 partnersOf(adapters, "consumers", COMPONENT_USER.path("user-card"));
@@ -513,3 +511,37 @@ usersOf(adapters[0], "providers");
 
 Пути возвращаются целиком, вместе с видом первым сегментом — по нему `userKindOf(path)` скажет,
 ручка это или компонент. Один и тот же партнёр из двух записей в списке не двоится.
+
+`savedAdapters()` отдаёт записи уже приведёнными стражем, вместе с пресетом
+(`{ preset, content }`) — доставать их со склада и фильтровать руками не нужно. Для других видов
+записей есть та же механика общего вида: `recordsOf(kind, as)`.
+
+---
+
+<h2 id="кейс-15">15. Витрина потребителя: только связанные ручки</h2>
+
+```tsx
+import { ApiProbe } from "@web-core/feeder";
+
+<ApiProbe
+  consumer={COMPONENT_USER.path("user-card")}
+  onServing={(event) => board.put(event.serving.data)}
+/>;
+```
+
+Каталог сам спросит `partnersOf`, какие ручки связаны с этим потребителем, и покажет только их:
+схемы без связанных ручек не рисуются, а когда связей нет вовсе — скажет это словами.
+
+Вызов идёт через `serve`, поэтому в событии приезжает не сырой ответ, а конверт вместе с
+происхождением:
+
+```ts
+event.presetId;              // в какой схеме
+event.endpoint;              // какая ручка ответила
+event.serving.result;        // оригинал: status, ok, headers, body
+event.serving.data;          // объект формы потребителя
+event.serving.report;        // что сошлось, что нет
+```
+
+Правки состава у этого каталога нет: ни «Добавить», ни «Убрать», ни «Настроить» — это витрина, а
+не редактор.

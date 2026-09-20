@@ -3,20 +3,28 @@ import { Button, Flow, FlowItem, Typography } from "@web-core/ui";
 import { Show } from "@web-core/solid";
 
 import type { InvokeResult, OpenapiEndpoint } from "../../../../entities/openapi";
-import { useInvoke } from "../../lib";
+import { useInvoke, type Serving, type Users } from "../../lib";
 
 export function Call(props: {
   endpoint: OpenapiEndpoint;
   value: unknown;
+  users?: Users;
   onResult?: (result: InvokeResult) => void;
+  onServing?: (serving: Serving) => void;
 }) {
-  const invocation = useInvoke(() => props.endpoint);
+  const invocation = useInvoke(
+    () => props.endpoint,
+    () => props.users,
+  );
 
   async function check() {
     await invocation.call(props.value);
 
     const result = invocation.result();
     if (result !== undefined) props.onResult?.(result);
+
+    const serving = invocation.serving();
+    if (serving !== undefined) props.onServing?.(serving);
   }
 
   return (

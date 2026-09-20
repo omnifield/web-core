@@ -17,6 +17,14 @@ export interface FeedResult {
   readonly error: string | null;
 }
 
+const EMPTY_REPORT: FieldRuleReport = {
+  total: 0,
+  converted: 0,
+  rejected: 0,
+  issues: [],
+  unmapped: [],
+};
+
 interface RowTarget {
   readonly list: FieldRef;
   readonly rule: FieldRule;
@@ -59,11 +67,18 @@ export function feed(response: unknown, adapter: Adapter): FeedResult {
 
   const value: Record<string, unknown> = {};
 
-  const single = collectFieldRuleReport(
-    [(typeof response === "object" && response !== null ? response : {}) as Record<string, unknown>],
-    flat,
-    "drop",
-  );
+  const single =
+    flat.length === 0
+      ? { rows: [], report: EMPTY_REPORT }
+      : collectFieldRuleReport(
+          [
+            (typeof response === "object" && response !== null
+              ? response
+              : {}) as Record<string, unknown>,
+          ],
+          flat,
+          "drop",
+        );
 
   Object.assign(value, single.rows[0] ?? {});
 
