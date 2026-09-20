@@ -17,6 +17,21 @@ import (
 	"github.com/vikstrous/dataloadgen"
 )
 
+// Adapters is the resolver for the adapters field.
+func (r *menuResolver) Adapters(ctx context.Context, obj *model.Menu) ([]*model.Adapter, error) {
+	presets, err := resolveManyByName(ctx, "adapter", obj.AdapterNames)
+	if err != nil {
+		return nil, err
+	}
+	adapters := make([]*model.Adapter, 0, len(presets))
+	for _, p := range presets {
+		if adapter, ok := p.(*model.Adapter); ok {
+			adapters = append(adapters, adapter)
+		}
+	}
+	return adapters, nil
+}
+
 // CreatePreset is the resolver for the createPreset field.
 func (r *mutationResolver) CreatePreset(ctx context.Context, input model.PresetInput) (model.Preset, error) {
 	if err := validateState(input.Kind, input.State); err != nil {
@@ -174,6 +189,9 @@ func (r *queryResolver) Preset(ctx context.Context, id string) (model.Preset, er
 	return toPreset(record)
 }
 
+// Menu returns generated.MenuResolver implementation.
+func (r *Resolver) Menu() generated.MenuResolver { return &menuResolver{r} }
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -184,6 +202,7 @@ func (r *Resolver) Outfit() generated.OutfitResolver { return &outfitResolver{r}
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type (
+	menuResolver     struct{ *Resolver }
 	mutationResolver struct{ *Resolver }
 	outfitResolver   struct{ *Resolver }
 	queryResolver    struct{ *Resolver }

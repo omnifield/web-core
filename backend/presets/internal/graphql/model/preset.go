@@ -71,6 +71,37 @@ type Tag struct {
 
 func (Tag) IsPreset() {}
 
+// Api — зеркало internal/kinds.Api + общие поля.
+type Api struct {
+	model.Meta
+	Endpoints JSON
+	Groups    JSON
+	Defs      JSON
+}
+
+func (Api) IsPreset() {}
+
+// Adapter — зеркало internal/kinds.Adapter + общие поля.
+type Adapter struct {
+	model.Meta
+	Root      string
+	Rules     JSON
+	Extra     *string
+	Providers JSON
+	Consumers JSON
+}
+
+func (Adapter) IsPreset() {}
+
+// Menu — зеркало internal/kinds.Menu + общие поля. AdapterNames — НЕ поле схемы, тем же приёмом,
+// что FormNames у Outfit: связь резолвится лениво, отдельным полевым резолвером.
+type Menu struct {
+	model.Meta
+	AdapterNames []string
+}
+
+func (Menu) IsPreset() {}
+
 // Assembly — зеркало internal/kinds.ComponentAssembly + общие поля.
 type Assembly struct {
 	model.Meta

@@ -37,5 +37,11 @@ models:
     model: presets/internal/graphql/model.Tag
   Assembly:
     model: presets/internal/graphql/model.Assembly
+  Api:
+    model: presets/internal/graphql/model.Api
+  Adapter:
+    model: presets/internal/graphql/model.Adapter
+  Menu:
+    model: presets/internal/graphql/model.Menu
   FeedbackEntry:
     model: presets/internal/graphql/model.FeedbackEntry

@@ -143,6 +143,71 @@ func TestOutfitRelationsResolveAndSkipDanglingReference(t *testing.T) {
 	}
 }
 
+// TestMenuResolvesAdaptersByNameAndSkipsDangling — меню адресует адаптеры именами, ровно как
+// наряд свои формы (feeder-kinds, ROADMAP.yaml): один запрос отдаёт меню вместе с адаптерами,
+// ссылка в никуда пропускается тихо, а не роняет весь запрос.
+func TestMenuResolvesAdaptersByNameAndSkipsDangling(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "adapter", "users-list", `{
+		"root": "/data/items",
+		"rules": [{"id":"r1","target":"/title","from":"/name"}],
+		"providers": {},
+		"consumers": {}
+	}`)
+	menuRecord := create(t, s, "menu", "studio", `{"name":"studio","adapters":["users-list","нет-такого"]}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	preset, err := toPreset(menuRecord)
+	if err != nil {
+		t.Fatalf("toPreset: %v", err)
+	}
+	menu, ok := preset.(*model.Menu)
+	if !ok {
+		t.Fatalf("ожидался *model.Menu, получено %T", preset)
+	}
+
+	adapters, err := resolver.Menu().Adapters(ctx, menu)
+	if err != nil {
+		t.Fatalf("Adapters: %v", err)
+	}
+	if len(adapters) != 1 || adapters[0].Name != "users-list" || adapters[0].Root != "/data/items" {
+		t.Fatalf("ожидался ровно один реальный адаптер: %+v", adapters)
+	}
+	if string(adapters[0].Rules) == "" {
+		t.Fatalf("правила перекладки не доехали JSON-полем: %+v", adapters[0])
+	}
+}
+
+// TestApiRecordKeepsUnknownDocumentFields — документ чужого API проходит службу без разбора:
+// поля, о которых она ничего не знает, доезжают до читателя, а не срезаются по дороге.
+func TestApiRecordKeepsUnknownDocumentFields(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	const document = `{"endpoints":[{"id":"e1","method":"GET","url":"/users","params":[],"неизвестноеПоле":1}],"defs":{"User":{"type":"object"}}}`
+	preset, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		Kind:  "api",
+		Label: "Бэк users",
+		State: model.JSON(document),
+	})
+	if err != nil {
+		t.Fatalf("CreatePreset: %v", err)
+	}
+	api, ok := preset.(*model.Api)
+	if !ok {
+		t.Fatalf("ожидался *model.Api, получено %T", preset)
+	}
+	if !strings.Contains(string(api.Endpoints), "неизвестноеПоле") {
+		t.Fatalf("байты документа пересобрались по дороге: %s", api.Endpoints)
+	}
+	if api.Groups != nil {
+		t.Fatalf("groups не задавались, ждали null: %s", api.Groups)
+	}
+}
+
 func TestCreatePresetValidatesAgainstKindShape(t *testing.T) {
 	s := openTestStore(t)
 	resolver := New(s, limits.Default)
