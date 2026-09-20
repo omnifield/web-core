@@ -9,7 +9,7 @@ import { declares, type Cursor, type Walk } from "./state.js";
 
 export function growLocal<Mark>(cursor: Cursor, style: LocalStyle, where: string, walk: Walk<Mark>): void {
   if (style.props && declares(style.props)) {
-    checkStyle(style.props, `${where}.props`, cursor.known, walk.flaws, walk.homes);
+    checkStyle(style.props, `${where}.props`, cursor.known, walk.flaws, walk.homes, walk.colors);
     checkMotionOnly(style.props, `${where}.props`, cursor, walk.flaws);
     walk.out.push({
       ...walk.mark(cursor),

@@ -32,7 +32,7 @@
 | Часть | Адрес | Экспортирует |
 |---|---|---|
 | Модель (срез рантайма) | `@web-core/skin/model` | `ComponentPassport`, `PassportAnatomy`, `PassportPart`, `PassportSetting*`, `PassportVariantAxis`, `definePassport`, `createAnatomy`, `defineSettings`, `SETTINGS`, `settingApplies`, `addressesView`, `PassportLookup`, `passportLookup`, `coordinateOf`, `partOf`, `SkinAncestor`, `SkinCoordinate`, `BoundModel`, `withPassports`, `SkinGap(Kind)`, `skinGaps`, `GROW_SHRINK_BLOCK/INLINE`, `DARK_CLASS`/`FORCE_ATTRIBUTE`/`LAYER_ORDER`/`NODE_ATTRIBUTE`/`SKETCH_LAYER`/`SKIN_LAYER`, `Form`/`Outfit`/`Palette`, `OutfitRefused`, `Role`/`RoleKind`, `knownRole`, `ROLE_NAMES`, `SCALE_ROLES`, `VOCABULARY`, типы рецепта (`Skin`, `SlotRecipe`, …) |
-| Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategorySlots`, `CategoryClash`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
+| Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategories`, `CategoryClash`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
 | Плоский CSS | `@web-core/skin/flat` | `flattenCss` |
 | Срез редактора | `@web-core/skin/editor` | `admits`, `defineEditorInfo`, `checkAssembly`, `checkAssemblyData`, `footprintOf`, `GROUPS`, `groupOf`, `baseAssemblyOf`, `isAssemblyContent`, `isAssemblyRepeat`, `isContentNode`, `isDataBinding`, `resolveDataBinding`, `PassportAssembly`, `PassportEditorInfo` и её срез-типы |
 | Служба раздачи | `@web-core/skin/presets` | `createPresetsClient`, `createPresetsSkinSource`, `PRESET_KIND`, `PresetsDown`, `PresetsRefused`, `PresetRecord` |
@@ -76,17 +76,19 @@ const { skin, report } = assemble(outfit, { palettes, forms });
 const css = generateSkinCss(skin);
 ```
 
-🏷️ **Раскрасить категории — семь устойчивых слотов из одного семени.** Флаг `category` у шкалы
-палитры печатает семь полных лестниц (12 ступеней + `contrast` каждая) именами
-`--<шкала>-category-<слот>-<ступень>`; проверка называет слоты, которые не разошлись:
+🏷️ **Больше цветов — больше категорий, без особой механики.** Палитра — это список категорий: у
+каждой имя, семя и своя лесенка из 13 ступеней. Пятёрка (`accent`, `neutral`, `danger`, `success`,
+`warning`) — обязательный минимум, который палитра закрывает; сверх него объявляется что угодно
+своё, и печатается тем же приёмом. Семена под набор взаимно различимых категорий раскладывает
+`buildCategorySeeds` (`@web-core/style`):
 
 ```ts
-const palette = { name: "brand", scales: { accent: { seed: "#3b82f6", category: true } } };
+const palette = {
+  name: "brand",
+  scales: { ...five, purple: "#8b5cf6" }, // → --purple-1 … --purple-12, --purple-contrast
+};
 
-// в рецепте: фон -4/-5, рамка -7, текст -11 — опознаётся рамкой и текстом, не фоном
-// backgroundColor: "var(--accent-category-3-4)", color: "var(--accent-category-3-11)"
-
-const clashes = checkCategorySlots(palette); // пусто — слоты различимы
+const clashes = checkCategories(palette); // пусто — категории различимы между собой
 ```
 
 **Надеть скин (без Solid) и проверить порядок подключения:**
@@ -191,7 +193,7 @@ import { layoutGroup, layoutSelf, railVar } from "@web-core/skin";
 | `useOutfitData()` | `Accessor<T | undefined>` — то же самое, но про наряд целиком (у `presets`-источника — `{ outfit: PresetRecord<Outfit>, palette: PresetRecord<Palette> }`) |
 | `skinGaps` | перечень непокрытых координат |
 | `skinContrast` | перечень пар, не прошедших норму читаемости, и пар, которые посчитать нечем |
-| `checkCategorySlots` | перечень пар категорийных слотов, которые не расходятся на ступенях, где различимость обещана |
+| `checkCategories` | перечень пар категорий палитры, которые не расходятся на ступенях, где различимость обещана |
 | `PresetsClient.list/get` | `PresetRecord<T>` — запись целиком, с содержимым |
 
 `author?: string` — сквозной атрибут владения на КАЖДОМ виде (`Palette`/`Form`/`Outfit`/

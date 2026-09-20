@@ -15,7 +15,7 @@ export type {
 } from "./contrast/index.js";
 export { INDISTINCT, skinContrast } from "./contrast/index.js";
 
-export { checkCategorySlots, type CategoryClash } from "./seeds/index.js";
+export { checkCategories, type CategoryClash } from "./seeds/index.js";
 
 export type {
   AlignPosition,

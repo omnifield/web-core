@@ -59,6 +59,7 @@ export function checkStepPurpose(
   at: string,
   flaws: Flaws,
   homes: ReadonlyMap<string, readonly VariableHome[]> = new Map(),
+  colors: ReadonlySet<string> = new Set(),
 ): void {
   if (typeof value !== "string") return;
 
@@ -66,7 +67,7 @@ export function checkStepPurpose(
   if (expected === undefined) return;
 
   for (const [, name] of value.matchAll(VAR_REFERENCE)) {
-    const found = colorStepPurpose(name!);
+    const found = colorStepPurpose(name!, colors);
     if (found === undefined || found === expected) continue;
 
     flaws.add(

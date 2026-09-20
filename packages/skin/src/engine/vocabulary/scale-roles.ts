@@ -5,28 +5,20 @@ export const SCALE_ROLES: readonly string[] = ["accent", "neutral", "danger", "s
 
 export const STEPS: readonly string[] = [...SCALE_STEPS.map(String), "contrast"];
 
-// Тот же перебор «семья × ступень», каким `VOCABULARY` (`./index.ts`) строит полный перечень имён
-// цвета, — здесь строит обратный словарь «полное имя → класс назначения» для гейта
-// (`../rules/step-purpose.ts`). Не два перебора врозь: разойдись они, гейт узнавал бы про ступень
-// то, чего не знает `VOCABULARY`, и наоборот.
-const COLOR_STEP_PURPOSE: ReadonlyMap<string, StepPurposeClass> = new Map(
-  SCALE_ROLES.flatMap((scale) =>
-    STEPS.map((step): [string, StepPurposeClass] => [`--${scale}-${step}`, STEP_PURPOSE_CLASS[step as ScaleKey]]),
-  ),
-);
+/**
+ * Класс назначения ступени по полному имени переменной (`--accent-9` → `fill`). Имя категории
+ * сверх обязательной пятёрки разбирается так же — своя она у палитры или наша, на класс ступени
+ * это не влияет. Не ступень объявленной категории — `undefined`.
+ */
+export function colorStepPurpose(name: string, declared: ReadonlySet<string>): StepPurposeClass | undefined {
+  const bare = name.startsWith("--") ? name.slice(2) : name;
+  const cut = bare.lastIndexOf("-");
 
-// Слот категории несёт ту же лестницу, что и сама шкала (`seeds/build.ts`), поэтому класс ступени
-// берётся из того же словаря — снятием номера слота, а не вторым перебором на 455 имён.
-const CATEGORY_SLOT = /^(--[^-]+)-category-\d+-(.+)$/;
+  if (cut < 0) return undefined;
 
-/** Класс назначения ступени по полному имени переменной (`--accent-9` → `fill`). Не имя цветовой шкалы — `undefined`. */
-export function colorStepPurpose(name: string): StepPurposeClass | undefined {
-  const full = name.startsWith("--") ? name : `--${name}`;
-  const direct = COLOR_STEP_PURPOSE.get(full);
+  const scale = bare.slice(0, cut);
 
-  if (direct !== undefined) return direct;
+  if (!declared.has(scale) && !SCALE_ROLES.includes(scale)) return undefined;
 
-  const slot = CATEGORY_SLOT.exec(full);
-
-  return slot ? COLOR_STEP_PURPOSE.get(`${slot[1]}-${slot[2]}`) : undefined;
+  return STEP_PURPOSE_CLASS[bare.slice(cut + 1) as ScaleKey];
 }

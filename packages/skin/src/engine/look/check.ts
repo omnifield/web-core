@@ -2,8 +2,8 @@
 import type { PassportLookup } from "../address/index.js";
 import { trace } from "../../trace/index.js";
 import { homesText, partVariables, variableHomes } from "../variables/index.js";
-import { knownRole, SCALE_ROLES, VOCABULARY } from "../vocabulary/index.js";
-import { closedByDimensions, closedByScales, paletteValues, summarizeByFamily } from "./coverage.js";
+import { knownRole, VOCABULARY } from "../vocabulary/index.js";
+import { closedByDimensions, closedByScales, ownScale, paletteValues, summarizeByFamily } from "./coverage.js";
 import { formRefs } from "./references.js";
 import type { LookParts, Outfit, OutfitFlaw } from "./types.js";
 
@@ -28,26 +28,15 @@ export function checkOutfit(outfit: Outfit, parts: LookParts, lookup: PassportLo
   }
 
   if (palette) {
-    for (const scale of Object.keys(palette.scales ?? {})) {
-      if (!SCALE_ROLES.includes(scale)) {
-        flaws.push({
-          name: "outside-vocabulary",
-          where: `palette.scales.${scale}`,
-          means:
-            `the palette declares scale "${scale}", which is not in the vocabulary. Scale roles ` +
-            `are declared by purpose (${SCALE_ROLES.join(", ")}), and a form will only ask for those`,
-        });
-      }
-    }
-
     for (const role of paletteValues(palette)) {
-      if (!knownRole(role)) {
+      if (!knownRole(role) && !ownScale(palette, role)) {
         flaws.push({
           name: "outside-vocabulary",
           where: `palette.${role}`,
           means:
-            `the palette declares role "${role}", which is not in the vocabulary. No form will be ` +
-            "able to ask for it — the value will go nowhere, and quietly",
+            `the palette declares role "${role}", which is neither in the vocabulary nor a step of ` +
+            "a category the palette declares itself. No form will be able to ask for it — the value " +
+            "will go nowhere, and quietly",
         });
       }
     }

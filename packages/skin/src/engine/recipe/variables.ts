@@ -4,8 +4,6 @@ import type { DimensionSeed } from "../fluid/index.js";
 export interface SeededScale {
   readonly seed: string;
   readonly alpha?: boolean;
-  readonly chart?: boolean;
-  readonly category?: boolean;
   readonly scrim?: boolean;
 }
 

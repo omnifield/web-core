@@ -15,6 +15,10 @@ export function paletteValues(palette: Palette): Set<string> {
   return roles;
 }
 
+export function ownScale(palette: Palette, role: string): boolean {
+  return Object.keys(palette.scales ?? {}).some((scale) => role.startsWith(`${scale}-`));
+}
+
 export function closedByScales(palette: Palette): Set<string> {
   const closed = new Set<string>();
 

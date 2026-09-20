@@ -13,6 +13,7 @@ export function checkStyle(
   known: Set<string>,
   flaws: Flaws,
   homes: Map<string, VariableHome[]> = new Map(),
+  colors: ReadonlySet<string> = new Set(),
 ): void {
   for (const [key, value] of Object.entries(style)) {
     if (value === undefined) continue;
@@ -33,12 +34,12 @@ export function checkStyle(
         continue;
       }
 
-      checkStyle(value, at, known, flaws, homes);
+      checkStyle(value, at, known, flaws, homes, colors);
       continue;
     }
 
     checkValue(value, at, known, flaws, homes);
-    checkStepPurpose(key, value, at, flaws, homes);
+    checkStepPurpose(key, value, at, flaws, homes, colors);
   }
 }
 

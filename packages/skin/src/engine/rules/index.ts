@@ -35,6 +35,7 @@ export function skinRules(skin: Skin, lookup: PassportLookup, vocabulary: ValueV
   const walk: Walk<{ coordinate: RuleCoordinate }> = {
     lookup,
     known,
+    colors: new Set(Object.keys(skin.variables?.scales ?? {})),
     homes: variableHomes(lookup, Object.keys(skin.recipes)),
     flaws,
     out,
@@ -132,6 +133,7 @@ export function sketchRules(
   const walk: Walk<Record<never, never>> = {
     lookup,
     known,
+    colors: new Set(),
     homes: variableHomes(lookup, edits.map((edit) => edit.component)),
     flaws,
     out,

@@ -7,7 +7,7 @@ import type { SkinHalf, SkinValue } from "./types.js";
 
 export type { SkinHalf, SkinValue, ValueOrigin } from "./types.js";
 export { NOT_SEEDED } from "./not-seeded.js";
-export { checkCategorySlots, type CategoryClash } from "./category.js";
+export { checkCategories, type CategoryClash } from "./category.js";
 export { seedRefusals, type SeedRefusal } from "./refusals.js";
 
 export function skinValues(skin: Skin, half: SkinHalf): Map<string, SkinValue> {

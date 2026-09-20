@@ -9,6 +9,7 @@ import type { Flaws } from "../flaws.js";
 export interface Walk<Mark> {
   readonly lookup: PassportLookup;
   readonly known: Set<string>;
+  readonly colors: ReadonlySet<string>;
   readonly homes: Map<string, VariableHome[]>;
   readonly flaws: Flaws;
   readonly out: (CssRule & Mark)[];
