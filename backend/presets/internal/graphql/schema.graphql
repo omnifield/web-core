@@ -107,6 +107,9 @@ type Assembly implements Preset {
 """Конверт записи/замены — тот же смысл, что у сегодняшнего REST-конверта (label/name/description/
 kind/state), state валидируется по kinds-registry вида."""
 input PresetInput {
+  """Айди клиента (client-supplied-id, ROADMAP.yaml): не задан — выдаёт служба; задан — запись
+  рождается с ним, занятый отвергается. У replacePreset обязан совпадать с айди аргумента."""
+  id: ID
   kind: String!
   label: String!
   name: String

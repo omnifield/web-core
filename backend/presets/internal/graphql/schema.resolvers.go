@@ -43,6 +43,9 @@ func (r *mutationResolver) ReplacePreset(ctx context.Context, id string, input m
 	if err != nil {
 		return nil, err
 	}
+	if normalized.ID != "" && normalized.ID != id {
+		return nil, fmt.Errorf("presets: айди в конверте (%q) не тот, что у заменяемой записи (%q)", normalized.ID, id)
+	}
 
 	record, err := r.store.Replace(id, normalized)
 	if err != nil {

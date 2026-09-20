@@ -20,6 +20,17 @@ func (e *NameTakenError) Error() string {
 	return fmt.Sprintf("presets: имя %q уже занято в виде %q", e.Name, e.Kind)
 }
 
+// IDTakenError — присланный клиентом айди уже занят другой записью. Отдельно от NameTakenError:
+// имя уникально в пределах вида, айди — ключ всего хранилища, без разбора вида.
+type IDTakenError struct {
+	ID string
+}
+
+// Error называет занятый айди.
+func (e *IDTakenError) Error() string {
+	return fmt.Sprintf("presets: айди %q уже занят другой записью", e.ID)
+}
+
 // StorageFullError — хранилище заполнено. Reason называет, ЧТО кончилось: место в списке вида
 // ("records") или место на диске ("bytes") — оба отвечают одним кодом наружу, различается
 // только текст для человека.

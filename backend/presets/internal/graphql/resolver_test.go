@@ -251,6 +251,83 @@ func TestPresetEnvelopeValidation(t *testing.T) {
 
 func ptr(s string) *string { return &s }
 
+// TestCreatePresetKeepsClientSuppliedID — айди рождается у клиента ДО всякой сети
+// (client-supplied-id, ROADMAP.yaml): служба обязана положить запись под ним, а не под своим,
+// иначе ссылки внутри других записей начинают врать молча.
+func TestCreatePresetKeepsClientSuppliedID(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	const given = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+	preset, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr(given),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	})
+	if err != nil {
+		t.Fatalf("CreatePreset: %v", err)
+	}
+	palette, ok := preset.(*model.Palette)
+	if !ok || palette.ID != given {
+		t.Fatalf("айди клиента не сохранён: %+v", preset)
+	}
+
+	found, err := resolver.Query().Preset(ctx, given)
+	if err != nil || found == nil {
+		t.Fatalf("запись не читается по айди клиента: found=%v err=%v", found, err)
+	}
+
+	// Тот же айди второй раз — отказ store, а не молчаливая перезапись чужой записи.
+	if _, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr(given),
+		Kind:  "outfit",
+		Label: "Чужой",
+		State: model.JSON(`{"name":"other","palette":"brand","forms":[]}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на занятый айди")
+	}
+}
+
+func TestPresetIDEnvelopeValidation(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	// Форма айди проверяется в конверте, до похода в store.
+	if _, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr("не-uuid"),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на айди не той формы")
+	}
+
+	record := create(t, s, "palette", "brand", `{"name":"brand"}`)
+
+	// Замена с чужим айди в конверте — отказ: два айди на одну запись молча не разъезжаются.
+	if _, err := resolver.Mutation().ReplacePreset(ctx, record.ID, model.PresetInput{
+		ID:    ptr("3f2504e0-4f89-41d3-9a0c-0305e82c3301"),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на чужой айди в конверте замены")
+	}
+
+	// Свой же айди в конверте замены — законно: клиент всегда шлёт запись целиком.
+	if _, err := resolver.Mutation().ReplacePreset(ctx, record.ID, model.PresetInput{
+		ID:    ptr(record.ID),
+		Kind:  "palette",
+		Label: "Бренд v2",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err != nil {
+		t.Fatalf("замена со своим же айди в конверте: %v", err)
+	}
+}
+
 func TestQueryPresetByIDFoundAndNotFound(t *testing.T) {
 	s := openTestStore(t)
 	record := create(t, s, "palette", "brand", `{"name":"brand"}`)

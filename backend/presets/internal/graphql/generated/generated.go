@@ -895,6 +895,9 @@ type Assembly implements Preset {
 """Конверт записи/замены — тот же смысл, что у сегодняшнего REST-конверта (label/name/description/
 kind/state), state валидируется по kinds-registry вида."""
 input PresetInput {
+  """Айди клиента (client-supplied-id, ROADMAP.yaml): не задан — выдаёт служба; задан — запись
+  рождается с ним, занятый отвергается. У replacePreset обязан совпадать с айди аргумента."""
+  id: ID
   kind: String!
   label: String!
   name: String
@@ -4601,13 +4604,20 @@ func (ec *executionContext) unmarshalInputPresetInput(ctx context.Context, obj a
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"kind", "label", "name", "description", "state"}
+	fieldsInOrder := [...]string{"id", "kind", "label", "name", "description", "state"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
 		case "kind":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kind"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -6325,6 +6335,24 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = sel
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalID(*v)
 	return res
 }
 
