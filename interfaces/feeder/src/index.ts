@@ -2,13 +2,18 @@ export { TreeForm } from "./features/tree-form";
 export { AdapterMastering } from "./features/adapter-manager";
 export { ExternalSchemaLoader } from "./features/external-schema";
 export {
+  API_USER,
   ApiCatalog,
+  ApiProbe,
   Call,
   Endpoint,
   invokeEndpoint,
+  serve,
   useInvoke,
   type ApiCatalogResult,
   type Invocation,
+  type Serving,
+  type Users,
 } from "./features/api-manager";
 
 export {
@@ -16,9 +21,16 @@ export {
   adapterFor,
   applyAdapter,
   asAdapter,
+  defineUserKind,
   feed,
+  partnersOf,
+  userKindOf,
+  userKinds,
   usedBy,
+  usersOf,
   type FeedResult,
+  type UserKind,
+  type UserPath,
   isFed,
   noFeed,
   type Adapter,

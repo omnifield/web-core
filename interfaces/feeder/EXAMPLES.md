@@ -3,7 +3,7 @@
 Рабочий код, который можно скопировать и сразу погонять. Устройство — [`README.md`](./README.md),
 почему так — [`FAQ.md`](./FAQ.md), что запланировано — [`ROADMAP.yaml`](./ROADMAP.yaml).
 
-Всё ниже сверено с экспортами `src/index.ts` на 2026-09-19.
+Всё ниже сверено с экспортами `src/index.ts` на 2026-09-20.
 
 ## 🧭 Навигация
 
@@ -27,11 +27,17 @@
 **Отладка**
 - [10. Документ не распознался — где смотреть](#кейс-10)
 
+**Сведение и кормление**
+- [11. Свести поля ответа с формой компонента](#кейс-11)
+- [12. Дёрнуть ручку и сразу получить еду (`serve`)](#кейс-12)
+- [13. Собрать объект потребителя из ответа кодом (`feed`)](#кейс-13)
+- [14. Кто с кем связан](#кейс-14)
+
 ---
 
 <h2 id="словарь">0. Словарь</h2>
 
-Пять слов, которые встречаются дальше в каждом примере.
+Слова, которые встречаются дальше в примерах.
 
 | Слово | Что это в коде | Чем опознаётся |
 | --- | --- | --- |
@@ -39,7 +45,9 @@
 | **Документ схемы** | `SchemaDocument { endpoints, groups, defs }` — наш формат API, он и лежит в `content` | — |
 | **Ручка** | `EndpointDescriptor { id, method, url, groupId?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
 | **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа | `id`, uuid при разборе документа |
-| **Адаптер** | `Adapter` — шов «поставщик → потребитель», перекладывает данные в нужную форму | в коде сегодня заготовка, см. `ROADMAP.yaml` |
+| **Адаптер** | `Adapter { root, rules, extra?, providers, consumers }` — шов «поставщик → потребитель»: где записи, как ложатся поля, на ком проверяли | `id` пресета, в котором лежит |
+| **Связь** | `AdapterRule` — одна строка правил: `{ id, target, from }`, это `FieldRule` из `io` плюс выданный айди | `id`, uuid при заведении |
+| **Участник** | путь вида `["api", presetId, endpointId]` — вид первым сегментом, дальше адрес по правилам вида | путём целиком |
 
 Зод из документа не хранится — он строится при отрисовке (`endpointOf`) и живёт ровно столько,
 сколько нужно форме.
@@ -381,3 +389,127 @@ export function Demo() {
 | Ручка есть, а параметров в форме нет | у ручки пустой `params` — документ их не объявил | `endpointOf(descriptor, defs).schema` |
 | Параметр есть, а поле не рисуется | `$ref` указывает в `defs`, которого нет — неизвестная ссылка становится `z.unknown()` | `document.defs` |
 | Вызов молча ничего не вернул | сорванный транспорт — это исключение; `useInvoke` кладёт его текст в `failure()` | `invocation.failure()` |
+
+---
+
+<h2 id="кейс-11">11. Свести поля ответа с формой компонента</h2>
+
+Мастер сведения открывается для ПАРЫ участников: кто даёт данные и кто их ест. Вид участника
+объявляется построителем — руками путь не собирают.
+
+```tsx
+import { AdapterMastering, API_USER, ApiProbe, defineUserKind } from "@web-core/feeder";
+import { describeSample, describeSchema } from "@web-core/io";
+import { createSignal } from "@web-core/solid";
+
+const COMPONENT_USER = defineUserKind("component", (name: string) => [name]);
+
+export function Bench(props: { schema: z.ZodType; component: string }) {
+  const [probe, setProbe] = createSignal<ApiCatalogResult>();
+
+  return (
+    <>
+      <ApiProbe onResult={setProbe} />
+
+      <Show when={probe()}>
+        {(shot) => (
+          <AdapterMastering
+            provider={API_USER.path(shot().presetId, shot().endpoint.id)}
+            consumer={COMPONENT_USER.path(props.component)}
+            output={describeSchema(props.schema)}
+            input={describeSample(shot().result.body)}
+          />
+        )}
+      </Show>
+    </>
+  );
+}
+```
+
+Правая колонка строится по ЖИВОМУ ответу — пока ручку не дёрнули, сводить не с чем. Левая берётся
+из паспорта формы потребителя, проба для неё не нужна.
+
+Связи сохраняются сами: мастер ищет запись адаптера этой пары на складе, а при первой связи заводит
+её и записывает обоих участников. Ничего не перетащили — записи нет.
+
+---
+
+<h2 id="кейс-12">12. Дёрнуть ручку и сразу получить еду</h2>
+
+```ts
+import { serve } from "@web-core/feeder";
+
+const shot = await serve(endpoint, { limit: 10 }, {
+  provider: API_USER.path(presetId, endpointId),
+  consumer: COMPONENT_USER.path("user-card"),
+});
+
+shot.result;  // оригинал ответа: status, ok, headers, body — приезжает всегда
+shot.data;    // объект формы потребителя, готовый к показу
+shot.report;  // converted / rejected / unmapped
+shot.error;   // промах корня словами
+```
+
+Адаптера для этой пары ещё нет — `data`, `report` и `error` будут `undefined`, а `result` придёт
+как обычно. Это не отказ: ответ получен, кормить просто нечем.
+
+---
+
+<h2 id="кейс-13">13. Собрать объект потребителя из ответа кодом</h2>
+
+То же, что делает `serve` внутри, но на готовом ответе и готовой записи.
+
+```ts
+import { feed } from "@web-core/feeder";
+
+const response = {
+  meta: { title: "Курсы" },
+  data: [{ code: "USD", rate: 1 }, { code: "EUR", rate: 1.1 }],
+};
+
+const adapter = {
+  root: "/data",
+  rules: [
+    { id: "r0", target: "/title", from: "/meta/title" },
+    { id: "r1", target: "/items/0/label", from: "/code" },
+    { id: "r2", target: "/items/0/value", from: "/rate" },
+  ],
+  providers: {},
+  consumers: {},
+};
+
+feed(response, adapter).value;
+// { title: "Курсы", items: [{ label: "USD", value: 1 }, { label: "EUR", value: 1.1 }] }
+```
+
+Род правила решает позиция цели: `/items/0/label` содержит индекс — значит поле каждой записи
+набора (`root`), `/title` индекса не имеет — значит одно значение, и источник читается от корня
+ответа. Коллекций может быть несколько: правила с `/legend/0/…` соберут второй список из тех же
+записей.
+
+---
+
+<h2 id="кейс-14">14. Кто с кем связан</h2>
+
+```ts
+import { ADAPTER_KIND, asAdapter, partnersOf, presetsStore, usersOf } from "@web-core/feeder";
+
+const adapters = presetsStore.selectors
+  .presetsOf(ADAPTER_KIND)
+  .map((preset) => asAdapter(preset.content))
+  .filter((one) => one !== undefined);
+
+// какие ручки кормят этот компонент
+partnersOf(adapters, "consumers", COMPONENT_USER.path("user-card"));
+// → [["api", "preset-7", "endpoint-3"], …]
+
+// кого кормит эта ручка
+partnersOf(adapters, "providers", API_USER.path(presetId, endpointId));
+// → [["component", "user-card"], …]
+
+// все проверенные поставщики одной записи
+usersOf(adapters[0], "providers");
+```
+
+Пути возвращаются целиком, вместе с видом первым сегментом — по нему `userKindOf(path)` скажет,
+ручка это или компонент. Один и тот же партнёр из двух записей в списке не двоится.

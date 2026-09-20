@@ -1,2 +1,2 @@
-export { invokeEndpoint, useInvoke, type Invocation } from "./lib";
-export { ApiCatalog, Call, Endpoint, type ApiCatalogResult } from "./ui";
+export { API_USER, invokeEndpoint, serve, useInvoke, type Invocation, type Serving, type Users } from "./lib";
+export { ApiCatalog, ApiProbe, Call, Endpoint, type ApiCatalogResult } from "./ui";
