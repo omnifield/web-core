@@ -27,6 +27,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^3.1.0",
     "@web-core/generators": "workspace:*",
     "@web-core/io": "workspace:*",
     "@web-core/query": "workspace:*",

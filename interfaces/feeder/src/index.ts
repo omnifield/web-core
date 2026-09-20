@@ -1,4 +1,5 @@
 export { TreeForm } from "./features/tree-form";
+export { Mastering } from "./features/adapter-manager";
 export { ExternalSchemaLoader } from "./features/external-schema";
 export {
   ApiCatalog,
