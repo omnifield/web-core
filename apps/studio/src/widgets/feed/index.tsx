@@ -6,6 +6,7 @@ import {
   AccordionItem,
 } from "@web-core/ui";
 import { FeedManual } from "#/features/feed/manual";
+import { FeedOpenapi } from "#/features/feed/openapi";
 import { FeedPreset } from "#/features/feed/preset";
 
 /**
@@ -28,6 +29,16 @@ export function FeedPanel() {
         </AccordionControl>
         <AccordionContent>
           <FeedPreset />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="openapi">
+        <AccordionControl>
+          Ручка API
+          <AccordionControlIndicator>▾</AccordionControlIndicator>
+        </AccordionControl>
+        <AccordionContent>
+          <FeedOpenapi />
         </AccordionContent>
       </AccordionItem>
 

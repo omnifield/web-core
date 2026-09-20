@@ -1,15 +1,9 @@
 import { Show } from "solid-js";
-import { AdapterMastering } from "@web-core/feeder";
+import { AdapterMastering, API_USER } from "@web-core/feeder";
 import { describeSample, describeSchema } from "@web-core/io";
 import { Typography } from "@web-core/ui";
-import { useComponent } from "#/entities/component";
+import { COMPONENT_USER, useComponent } from "#/entities/component";
 import { useEndpoint } from "#/entities/endpoint";
-
-// Вид участника в пути закреплён на стороне `@web-core/feeder` (там же живут адаптеры и поиск по
-// ним). Пока построителей путей он наружу не отдаёт, пары собираются здесь — заменить на его
-// вызовы, когда приедут.
-const COMPONENT_USER = "component";
-const API_USER = "api";
 
 /** Сведение полей: слева поля выбранного компонента, справа — поля ответа дёрнутой ручки.
  *
@@ -36,8 +30,8 @@ export function KitchenPage() {
     >
       {(probe) => (
         <AdapterMastering
-          provider={[API_USER, probe().presetId, probe().endpointId]}
-          consumer={[COMPONENT_USER, component.name]}
+          provider={API_USER.path(probe().presetId, probe().endpointId)}
+          consumer={COMPONENT_USER.path(component.name)}
           output={output()}
           input={describeSample(probe().sample)}
         />
