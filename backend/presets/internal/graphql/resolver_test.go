@@ -154,7 +154,7 @@ func TestMenuResolvesAdaptersByNameAndSkipsDangling(t *testing.T) {
 		"providers": {},
 		"consumers": {}
 	}`)
-	menuRecord := create(t, s, "menu", "studio", `{"name":"studio","adapters":["users-list","нет-такого"]}`)
+	menuRecord := create(t, s, "menu", "studio", `{"adapters":["users-list","нет-такого"]}`)
 
 	resolver := New(s, limits.Default)
 	ctx := ctxWithLoaders(s)
