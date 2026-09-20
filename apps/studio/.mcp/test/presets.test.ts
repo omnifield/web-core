@@ -266,6 +266,57 @@ describe("check_palette", () => {
     );
     expect(body.ok).toBe(false);
   });
+
+  it("keeps an obligatory five clean — categoryClashes is empty, not absent", async () => {
+    const client = await connectedClient();
+    const body = await readJson(
+      await client.callTool({
+        name: "check_palette",
+        arguments: { palette: PALETTE },
+      }),
+    );
+    expect(body.categoryClashes).toEqual([]);
+  });
+
+  it("names both categories of a pair a human cannot tell apart", async () => {
+    const client = await connectedClient();
+    const alike = {
+      ...PALETTE,
+      scales: { ...PALETTE.scales, brand: PALETTE.scales.accent },
+    };
+
+    const body = await readJson(
+      await client.callTool({
+        name: "check_palette",
+        arguments: { palette: alike },
+      }),
+    );
+
+    expect(body.ok).toBe(false);
+    // Словарь ролей закрыт — своя категория сверх пятёрки его не ломает, отчёт падает именно
+    // на неразличимости.
+    expect(body.flaws).toEqual([]);
+
+    // Одна запись на ПАРУ, не на каждое измерение: движок отдаёт по записи на ступень каждой
+    // половины (пять ступеней × две), и пересказывает в каждой одну и ту же фразу.
+    expect(body.categoryClashes).toHaveLength(1);
+    const clash = body.categoryClashes[0];
+    expect(clash.categories).toEqual(["accent", "brand"]);
+    expect(clash.means).toContain("brand");
+
+    // Измерения не потеряны — все на месте, каждое со своим числом.
+    expect(clash.places.length).toBeGreaterThan(1);
+    for (const place of clash.places) {
+      expect(place.half).toMatch(/^(light|dark)$/);
+      expect(typeof place.step).toBe("string");
+      expect(place.distance).toBeLessThan(0.02);
+    }
+    // Фраза — про самое тесное место пары, а не про случайное.
+    const closest = Math.min(
+      ...clash.places.map((place: { distance: number }) => place.distance),
+    );
+    expect(clash.means).toContain(closest.toFixed(3));
+  });
 });
 
 describe("save_preset — author ownership", () => {

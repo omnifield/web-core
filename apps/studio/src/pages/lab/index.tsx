@@ -9,7 +9,7 @@ import {
 
 import { ComponentProvider, tree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
-import { ApiConfiguration } from "#/features/lab-manager";
+import { ApiSetup } from "#/features/api-setup";
 import { RailPanel } from "#/widgets/rail";
 import {
   NavigationTabs,
@@ -39,7 +39,7 @@ export function LabPage() {
             content={{
               api: () => (
                 <RailPanel>
-                  <ApiConfiguration />
+                  <ApiSetup />
                 </RailPanel>
               ),
             }}

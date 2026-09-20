@@ -23,11 +23,13 @@ export {
 } from "./registry.js";
 export { createPackRegistry, type PackRegistry } from "./packs.js";
 export {
+  assign,
   describeSample,
   describeSchema,
   discoverPaths,
   lookup,
   pointerOf,
+  segmentsOf,
   type FieldRef,
   type Lookup,
   type PathType,

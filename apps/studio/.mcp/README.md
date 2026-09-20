@@ -76,7 +76,7 @@ recipe с нуля по одной схеме паспорта.
 | `get_io_schema` | `read` | io-схема компонента `{input, output}` — своя ручка, не часть паспорта |
 | `list_presets` | `read` | Перечень по виду, с пагинацией; без вида — по одной странице каждого из пяти, не всё разом |
 | `get_preset` | `read` | Содержимое одной сохранённой записи по имени |
-| `check_palette` | `read` | Проверка палитры ДО сохранения |
+| `check_palette` | `read` | Проверка палитры ДО сохранения — роли, шкалы и различимость категорий |
 | `check_form` | `read` | Проверка формы (рецепта компонента) в два прохода |
 | `check_assembly` | `read` | Проверка дерева сборки: структура + данные (`bind`/`repeat.path`) |
 | `check_outfit` | `read` | Проверка наряда (палитра+формы+теги) целиком |
@@ -201,6 +201,21 @@ FAQ.md). Здесь, в `engine/validate.ts` и `tools/index.ts`, остался
 `["default"]`, неизвестный — флав `unknown-tag` (для формы — с адресом `variantTags.<имя>`, чтобы
 было видно, у какого именно значения проблема). Запись может состоять в нескольких тегах разом.
 
+🎨 **Категории палитры проверяются на различимость, а не только на полноту.** Палитра вправе
+объявить свои роли-цвета сверх обязательной пятёрки (`accent`/`neutral`/`danger`/`success`/
+`warning`) — и вместе с этим правом появился способ сломать её молча: два похожих семени дают два
+бейджа, которые глазом на ревью не разводятся, а вёрстка при этом рабочая. `check_palette` (и
+`save_preset` с `kind:"palette"`, он зовёт ту же проверку) кроме словаря ролей гоняет
+`checkCategories` из `@web-core/skin`: она перестраивает лестницы обеих половин и меряет расхождение
+каждой пары на ступенях, где различимость обещана. Найденное едет своим массивом `categoryClashes` — одна
+запись на ПАРУ (`{categories:[имя,имя], places:[{half, step, distance}], means}`), а не на каждое
+измерение: движок меряет каждую ступень обеих половин отдельно (десять записей на пару) и в каждой
+пересказывает одну и ту же фразу, поэтому `means` здесь держится один раз — про самое тесное место
+пары, — а сами измерения идут списком `places`, все до одного. Рядом с `flaws`, а не внутри них:
+это другой класс находки, у него свои поля. В `check_outfit`
+этой проверки нет намеренно — она перестраивает обе лестницы целиком, а `checkOutfit` выполняется
+на каждый лениво догружаемый компонент.
+
 Устройство на каталоги — свой стиль подгруппы `mcp`: в корне `src/` только барель `index.ts`
 (`export * from "./server"`, заодно и точка входа `pnpm start`), у каждого каталога своя роль и
 свой `index.ts` как публичная поверхность.
@@ -215,7 +230,8 @@ FAQ.md). Здесь, в `engine/validate.ts` и `tools/index.ts`, остался
 MCP, `mechanics.ts` связка с источником паспортов, `presets.ts` Node-клиент службы пресетов
 (`createPresetsClient` из `@web-core/skin/presets`, GraphQL — не самописный HTTP-провод, как было
 раньше в `store.ts`, см. `ROADMAP.yaml`'s `retire-engine-store`), `validate.ts` проверка ОДНОЙ
-палитры/формы синтетическим нарядом — своей функции для этого у механики нет, плюс `checkTags` —
+палитры/формы синтетическим нарядом — своей функции для этого у механики нет; у палитры к этому
+добавлена `checkCategories` пакета (различимость категорий), плюс `checkTags` —
 тонкая И/О-обёртка над чистым `checkTags` из `@web-core/skin/tags`) — они друг другу соседи, не
 публикуются напрямую, только через `engine/index.ts`. `sortTags`/`groupByTag` в `tools/index.ts`
 зовутся напрямую из `@web-core/skin/tags`, минуя `engine/` — они не про домен skin-mcp, это готовая
@@ -297,6 +313,7 @@ MCP-тулы (`list_presets`/`get_preset` локально, `save_preset` на �
 | Состояние | Метка | Где |
 |---|---|---|
 | Проверка нашла флавы | `isError: false`, флавы — часть данных ответа | `check_*`, `save_preset` при отказе валидации |
+| Две категории палитры неразличимы | `ok: false`, пары — в `categoryClashes`, `flaws` при этом может быть пуст | `check_palette`, `save_preset` (`kind: "palette"`) |
 | Наряд не собрался (`OutfitRefused`) | `isError: false`, `{flaws}` в ответе | `assemble_preview` |
 | `tags`/`variantTags[x]` не переданы/пусто | молча подставляется `["default"]` | `check_outfit`/`check_form`, `save_preset` |
 | Тег не найден в словаре | флав `unknown-tag`, `isError: false` | `check_outfit`/`check_form`, `save_preset` |
@@ -336,7 +353,7 @@ MCP-тулы (`list_presets`/`get_preset` локально, `save_preset` на �
 | `get_passport` | `{ component, root, parts, variantAxis, settings, selfAssembly }` — без анатомии-дубля/editor-слайса/сборок/io (те — `list_components`/`get_assemblies`/`get_io_schema`) |
 | `list_presets` | `{ items: [{label, name, savedAt}], nextCursor? }` (с `kind` в аргументе) / `{palette:[...], form:[...], ...}` (без `kind` — обзор пяти видов, каждая группа той же формы) — без `id`/`kind` в самой записи, мёртвый вес и дубль контекста, см. `ROADMAP.yaml` |
 | `get_preset` | конверт записи целиком (`{id, label, name, kind, savedAt, state}`) |
-| `check_*` | отчёт с флавами (форма своя у каждого — см. `packages/skin` README); `check_form` при `ok:true` дополнительно отдаёт `tagGroups` (`variantTags` наоборот — тег → варианты, из `@web-core/skin/tags`) — готовая раскладка под свайперы витрины |
+| `check_*` | отчёт с флавами (форма своя у каждого — см. `packages/skin` README); `check_palette` рядом с `flaws` отдаёт `categoryClashes` (`{categories, places:[{half, step, distance}], means}` — одна запись на пару); `check_form` при `ok:true` дополнительно отдаёт `tagGroups` (`variantTags` наоборот — тег → варианты, из `@web-core/skin/tags`) — готовая раскладка под свайперы витрины |
 | `assemble_preview` | `{report, gaps}` инлайном + CSS отдельным `resource_link` (`skin-css://<uuid>`, читать `resources/read`) — не `{report, gaps, css}` одним телом |
 | `save_preset` | `{ saved }` — сохранённый конверт (`PresetRecord`, не булево) |
 | `list_feedback` | `{ items: [{id, label, tool, sign, status, at}], nextCursor? }` — без тела заявки, оно в `get_feedback(id)` |
@@ -353,6 +370,7 @@ MCP-тулы (`list_presets`/`get_preset` локально, `save_preset` на �
 | `assemble_preview` — CSS через `resource_link`, не инлайном | Реальный `omnifield`, `resources/read` по вернувшемуся `uri` | инлайн-тело 47539 символов (было 202281), CSS отдельно — 134395 символов через `resources/read` |
 | `gaps` группируются по тексту сообщения | Реальный `omnifield` | 205 групп вместо 229 плоских записей, до 3 адресов под одним сообщением |
 | `check_palette` — `missing` несёт полный список ролей | Заведомо неполная палитра (только `accent`) | `missing.length === 141`, `means` резюмирует первые 12 текстом |
+| `check_palette` ловит неразличимые категории и складывает их по парам | Палитра с дублем `accent` под вторым именем | `ok:false` при пустом `flaws`; одна пара — 10 записей движка (3706 знаков) сворачиваются в 1 (1185), три пары — 30 (11452) в 3 (3943), ни одно измерение не потеряно |
 | `browser_navigate`→`browser_snapshot`→`browser_click`→`browser_snapshot` — настоящий клик, не переход по URL | реальная кнопка на `data:` странице меняет текст по клику | второй снимок несёт изменённый текст, `uid` кнопки после клика — другой (DOM обновился) |
 | `check_form` ловит опечатку в имени `variantTags` | `variantTags:{"no-such-variant":[...]}` на форме без такого варианта | `ok:false`, `unknown-variant` с адресом `variantTags.no-such-variant`; тот же вызов с реальным именем — чисто |
 | `limit` — единая `limitSchema`, не предел языка | `client.listTools()`, `inputSchema.properties.limit` любой листинг-ручки | `{"maximum":100}`, не `9007199254740991` |

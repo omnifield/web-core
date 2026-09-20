@@ -6,7 +6,7 @@ import { useEndpoint } from "#/entities/endpoint";
  *  Результат вызова не остаётся здесь: ответ ручки — образец, по которому сводят поля, а экран
  *  сведения живёт в главной области и этой панели не видит. Проба уходит в сущность, оттуда её
  *  и берут. */
-export function ApiConfiguration() {
+export function ApiSetup() {
   const endpoint = useEndpoint();
 
   return (

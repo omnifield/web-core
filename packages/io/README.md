@@ -40,7 +40,7 @@
 | L2 — правила полей        | `src/engine/field-rules.ts`| `applyFieldRules`, `collectFieldRuleReport`, `convertRecord`, `FieldRule`, `OnFail`, `ExtraPolicy`, `FieldRuleIssue`, `FieldRuleReport`, `RecordIssue` |
 | L3 — форма целиком (повторы) | `src/engine/rows.ts`    | `discoverRowSets`, `discoverRowPaths`, `collectRowsReport`, `RowsResult`                                |
 | Действия над значением    | `src/engine/steps.ts`      | `runStep`, `runSteps`, `isBlank`, `MAX_STEPS`, `Step` и 13 его вариантов (`TrimStep`, `DateStep`, …)   |
-| Пути (JSON Pointer)       | `src/engine/paths.ts`      | `discoverPaths`, `describeSample`, `describeSchema`, `lookup`, `pointerOf`, `FieldRef`, `Lookup`, `PathType` (`assign` — внутренний, не в поверхности) |
+| Пути (JSON Pointer)       | `src/engine/paths.ts`      | `discoverPaths`, `describeSample`, `describeSchema`, `lookup`, `assign`, `pointerOf`, `segmentsOf`, `FieldRef`, `Lookup`, `PathType` |
 | Подбор совместимых записей| `src/engine/compatible.ts` | `compatibleItems`                                                                                      |
 | Реестр заготовок по теме  | `src/engine/packs.ts`      | `createPackRegistry`, `PackRegistry`                                                                    |
 
@@ -49,7 +49,7 @@
 
 <h2 id="использование">🚀 Использование</h2>
 
-✅ Восемь сценариев покрывают весь путь от объявления паспорта до отчёта по чужим данным.
+✅ Девять сценариев покрывают весь путь от объявления паспорта до отчёта по чужим данным.
 
 **Паспорт формы — регистрация и чтение:**
 
@@ -144,6 +144,23 @@ describeSchema(z.object({ id: z.string(), items: z.array(z.object({ title: z.str
 Pointer, что у `FieldRule.from`/`.target`: значение из дропдауна поля сразу валидный `FieldRef`,
 без конвертации формата туда-обратно.
 
+**Путь как данные — разобрать на сегменты и положить значение обратно:**
+
+```ts
+import { assign, pointerOf, segmentsOf } from "@web-core/io";
+
+segmentsOf("/items/0/label"); // ["items", "0", "label"] — обратная к pointerOf, экранирование снято
+pointerOf(["a/b", "c~d"]); // "/a~1b/c~0d"
+
+const row: Record<string, unknown> = {};
+assign(row, "/user/name", "Ada"); // row === { user: { name: "Ada" } }
+```
+
+Вложенность `assign` достраивает ОБЪЕКТАМИ: `assign({}, "/items/0/label", "x")` даёт
+`{ items: { "0": { label: "x" } } }`, а не массив — числовой сегмент для него обычный ключ.
+Аккумулятор мутируется на месте, поэтому сюда передают свой, уже скопированный объект, а не чужие
+данные как есть (см. [`FAQ.md`](./FAQ.md)).
+
 **Подбор совместимых заготовок:**
 
 ```ts
@@ -215,7 +232,8 @@ packs.require("status-colors");
 | `discoverRowSets`                                               | `(input: unknown, depth?: number)`                                         |
 | `discoverRowPaths`                                              | `(input: unknown, rows: FieldRef, depth?: number)`                         |
 | `runStep` / `runSteps`                                          | `(step(s): Step, value: unknown, source: unknown)`                         |
-| `lookup` / `assign` / `pointerOf`                               | `(source/row, pointer: FieldRef, ...)`                                     |
+| `lookup` / `assign`                                             | `(source/row, pointer: FieldRef, ...)`                                     |
+| `pointerOf` / `segmentsOf`                                      | `(path: readonly string[])` / `(pointer: FieldRef)`                        |
 | `discoverPaths`                                                 | `(sample: unknown, depth?: number)`                                        |
 | `describeSample`                                                | `(sample: unknown, depth?: number)`                                        |
 | `describeSchema`                                                | `(schema: z.ZodType, depth?: number)`                                      |
@@ -234,6 +252,8 @@ packs.require("status-colors");
 | `discoverRowSets` / `discoverRowPaths`         | `FieldRef[]`                                                              |
 | `runStep` / `runSteps`                         | `StepResult`                                                              |
 | `lookup`                                       | `Lookup`                                                                  |
+| `assign`                                       | тот же `row`, что пришёл, — уже с положенным значением (мутация на месте) |
+| `pointerOf` / `segmentsOf`                     | `FieldRef` / `string[]`                                                   |
 | `discoverPaths`                                | `FieldRef[]`                                                              |
 | `describeSample` / `describeSchema`            | `PathType[]`                                                              |
 | `compatibleItems`                              | `z.infer<Schema>[]`                                                       |
@@ -252,6 +272,7 @@ packs.require("status-colors");
 | `discoverRowSets` → `discoverRowPaths` → `collectRowsReport` — L3 целиком | путь до завёрнутого набора находится по образцу, пути внутри записи — по выбранному пути, дальше работает L2; путь мимо набора — явная структурная ошибка, не пустой отчёт | `test/rows.test.ts` |
 | `renameKeysCodec` round-trip (`decode∘encode`, `encode∘decode`) | обратный словарь строится сам из прямого; round-trip восстанавливает исходное | `test/codecs.test.ts` |
 | `compatibleItems` по смешанной теме                   | из записей разной формы — только реально проходящие схему, в исходном порядке      | `test/compatible.test.ts`       |
+| `pointerOf` → `segmentsOf` → `assign` — путь собран, разобран и использован для записи | разбор — обратная сторона сборки, экранирование `~0`/`~1` переживает round-trip; `assign` достраивает вложенность объектами (числовой сегмент — обычный ключ, не индекс массива) и возвращает ТОТ ЖЕ аккумулятор | `test/paths.test.ts`            |
 | `describeSample` / `describeSchema` — сэмпл и схема одной формой | результат содержит только скалярные листья (объекты/массивы не появляются сами по себе); путь — JSON Pointer с индексом (`/a/0`, не голое `[]`); `$ref`-цикл схемы → `"recursive"`, не бесконечный обход; `depth` глушит обход молча, как у `discoverPaths` | `test/paths.test.ts` |
 
 <h2 id="рецепт">🎨 Рецепт</h2>

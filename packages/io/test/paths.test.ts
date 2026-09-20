@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { describeSample, describeSchema, discoverPaths, lookup, pointerOf } from "../src/index.js";
-import { assign } from "../src/engine/paths.js";
+import {
+  assign,
+  describeSample,
+  describeSchema,
+  discoverPaths,
+  lookup,
+  pointerOf,
+  segmentsOf,
+} from "../src/index.js";
 
 describe("lookup", () => {
   it("находит вложенное значение по JSON Pointer", () => {
@@ -25,6 +32,19 @@ describe("lookup", () => {
   });
 });
 
+describe("segmentsOf", () => {
+  it("режет путь на сегменты, пустой путь — пустой список", () => {
+    expect(segmentsOf("/items/0/label")).toEqual(["items", "0", "label"]);
+    expect(segmentsOf("")).toEqual([]);
+  });
+
+  it("снимает экранирование ~0/~1 — round-trip с pointerOf", () => {
+    const path = ["a/b", "c~d"];
+    expect(segmentsOf(pointerOf(path))).toEqual(path);
+    expect(segmentsOf("/a~1b/c~0d")).toEqual(["a/b", "c~d"]);
+  });
+});
+
 describe("assign", () => {
   it("достраивает вложенность — мутирует и возвращает ТОТ ЖЕ аккумулятор (свой, не чужие данные)", () => {
     const row = { a: { x: 1 } };
@@ -32,6 +52,20 @@ describe("assign", () => {
 
     expect(result).toBe(row);
     expect(row).toEqual({ a: { x: 1, y: 2 } });
+  });
+
+  it("пустой путь — некуда класть, аккумулятор не тронут", () => {
+    const row = { a: 1 };
+    expect(assign(row, "", 2)).toBe(row);
+    expect(row).toEqual({ a: 1 });
+  });
+
+  it("числовой сегмент достраивается ОБЪЕКТОМ, а не массивом", () => {
+    expect(assign({}, "/items/0/label", "x")).toEqual({ items: { "0": { label: "x" } } });
+  });
+
+  it("экранированный ключ кладётся как есть, без разбора на сегменты", () => {
+    expect(assign({}, pointerOf(["a/b"]), 1)).toEqual({ "a/b": 1 });
   });
 });
 

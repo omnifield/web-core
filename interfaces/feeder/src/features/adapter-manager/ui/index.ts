@@ -1,1 +1,1 @@
-export { Mastering } from "./mastering";
+export { AdapterMastering } from "./adapter-mastering";

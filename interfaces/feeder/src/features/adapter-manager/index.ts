@@ -1,1 +1,1 @@
-export { Mastering } from "./ui";
+export { AdapterMastering } from "./ui";

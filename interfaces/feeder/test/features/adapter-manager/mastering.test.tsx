@@ -3,7 +3,7 @@ import { createSignal } from "@web-core/solid";
 import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Mastering } from "../../../src/features/adapter-manager";
+import { Mastering } from "../../../src/features/adapter-manager/ui/mastering";
 import { cancelDrag, dragTo, startDrag } from "../../support/drag";
 
 let dispose: (() => void) | undefined;

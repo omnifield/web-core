@@ -1,5 +1,5 @@
 export { TreeForm } from "./features/tree-form";
-export { Mastering } from "./features/adapter-manager";
+export { AdapterMastering } from "./features/adapter-manager";
 export { ExternalSchemaLoader } from "./features/external-schema";
 export {
   ApiCatalog,
@@ -13,8 +13,12 @@ export {
 
 export {
   ADAPTER_KIND,
+  adapterFor,
   applyAdapter,
   asAdapter,
+  feed,
+  usedBy,
+  type FeedResult,
   isFed,
   noFeed,
   type Adapter,

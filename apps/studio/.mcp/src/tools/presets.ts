@@ -157,7 +157,8 @@ export function registerPresetTools(server: McpServer): void {
   registerTool(server, {
     name: "check_palette",
     title: "Проверить палитру",
-    description: "Закрытие словаря ролей, легальность шкал — ДО сохранения.",
+    description:
+      "Закрытие словаря ролей, легальность шкал, различимость категорий — ДО сохранения.",
     access: "read",
     input: z.object({
       palette: looseRecord.describe("Palette целиком, включая name"),

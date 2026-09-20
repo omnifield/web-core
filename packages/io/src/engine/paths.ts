@@ -27,13 +27,9 @@ export function lookup(source: unknown, pointer: FieldRef): Lookup {
   return { found: value !== undefined, value };
 }
 
-function tokens(pointer: FieldRef): string[] {
-  return pointer === "" ? [] : pointer.slice(1).split("/").map(unescapePathComponent);
-}
-
-/** Положить значение по пути, достраивая вложенность. МУТИРУЕТ `row` — см. FAQ.md. */
+/** Положить значение по пути, достраивая вложенность ОБЪЕКТАМИ. МУТИРУЕТ `row` — см. FAQ.md. */
 export function assign(row: Record<string, unknown>, pointer: FieldRef, value: unknown): Record<string, unknown> {
-  const path = tokens(pointer);
+  const path = segmentsOf(pointer);
   if (path.length === 0) return row;
 
   let cursor: Record<string, unknown> = row;
@@ -59,6 +55,11 @@ export function assign(row: Record<string, unknown>, pointer: FieldRef, value: u
 /** Собрать путь из сегментов с экранированием — обратная сторона разбора. */
 export function pointerOf(path: readonly string[]): FieldRef {
   return path.map((name) => `/${escapePathComponent(name)}`).join("");
+}
+
+/** Разобрать путь на сегменты со снятием экранирования — обратная к `pointerOf`; пустой путь — `[]`. */
+export function segmentsOf(pointer: FieldRef): string[] {
+  return pointer === "" ? [] : pointer.slice(1).split("/").map(unescapePathComponent);
 }
 
 /** Перечислить пути, которые есть в образце данных (для отчёта о непойманных чужих полях). */
