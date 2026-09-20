@@ -9,7 +9,8 @@ import {
 
 import { tree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
-import { Api } from "#/widgets/lab-manager";
+import { ApiConfiguration } from "#/features/lab-manager";
+import { RailPanel } from "#/widgets/rail";
 import {
   NavigationTabs,
   useRouterNavigationSelection,
@@ -34,7 +35,13 @@ export function LabPage() {
       </WorkspaceMain>
       <WorkspaceRightbar style={{ width: railVar("rail-lg"), padding: 0 }}>
         <NavigationTabs
-          content={{ api: () => <Api /> }}
+          content={{
+            api: () => (
+              <RailPanel>
+                <ApiConfiguration />
+              </RailPanel>
+            ),
+          }}
           value={feature.value ?? ""}
           onValueChange={feature.onValueChange}
         />
