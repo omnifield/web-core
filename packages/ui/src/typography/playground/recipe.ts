@@ -33,6 +33,20 @@ export const recipe: SlotRecipe = {
     },
   },
   defaultVariant: "body",
+  settings: {
+    truncated: {
+      true: {
+        root: {
+          props: {
+            minWidth: "0",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          },
+        },
+      },
+    },
+  },
 };
 
 export const form: Form = { name: "typography-sample", component: "typography", recipe };
