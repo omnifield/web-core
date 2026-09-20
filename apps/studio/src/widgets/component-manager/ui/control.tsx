@@ -5,8 +5,6 @@ import {
   AccordionControlIndicator,
   AccordionItem,
   Flow,
-  Grid,
-  GridCell,
 } from "@web-core/ui";
 import {
   FeedManual,
@@ -17,36 +15,17 @@ import {
   SwitchViewMode,
 } from "#/features/component-manager";
 
-// Раскладка переключателей задана здесь, а не вариантом формы `omnifield-grid`: она про ЭТУ панель
-// (кто с кем в ряду), а не про сетку вообще. Устоится — переедет в форму отдельным вариантом,
-// пока вариант ради одного места плодить незачем. Ключи kebab-case — нативный `style`, как в
-// `layoutSelf`/`layoutGroup`.
-const switchGrid = {
-  "grid-template-columns": "repeat(2, minmax(0, 1fr))",
-  "justify-items": "center",
-};
-
-const wholeRow = { "grid-column": "1 / -1" };
-
 export function Control() {
   return (
     <Flow data-variant="column">
-      <Grid data-variant="gallery" style={switchGrid}>
-        <GridCell style={wholeRow}>
-          <SwitchViewMode scope="global" />
-        </GridCell>
-        <GridCell style={wholeRow}>
-          <SwitchFilterMode />
-        </GridCell>
-        <GridCell>
-          <SwitchLayoutMode />
-        </GridCell>
-        <GridCell>
-          <SwitchAxisMode />
-        </GridCell>
-      </Grid>
+      <Flow data-variant="row">
+        <SwitchViewMode scope="global" />
+        <SwitchFilterMode />
+        <SwitchLayoutMode />
+        <SwitchAxisMode />
+      </Flow>
 
-      <Accordion collapsible defaultValue={["preset"]}>
+      <Accordion multiple defaultValue={["preset"]}>
         <AccordionItem value="preset">
           <AccordionControl>
             Пресет

@@ -1,15 +1,7 @@
 import { For } from "solid-js";
-import {
-  Icon,
-  SegmentGroup,
-  SegmentGroupIndicator,
-  SegmentGroupItem,
-  SegmentGroupItemControl,
-  SegmentGroupItemText,
-} from "@web-core/ui";
+import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
 import {
   FILTER_MODES,
-  type FilterMode,
   filterAppliesTo,
   useStandStore,
 } from "../../../../model";
@@ -20,30 +12,29 @@ export function SwitchFilterMode() {
   const axisMode = store.use((state) => state.axisMode);
 
   return (
-    <SegmentGroup
-      orientation="horizontal"
-      value={filterMode()}
+    <ToggleGroup
+      value={[filterMode()]}
       onValueChange={(details) => {
-        if (details.value) {
-          store.actions.setFilterMode(details.value as FilterMode);
-        }
+        // Повторный клик по нажатому режиму снимает его и приносит пустой список. «Никакого
+        // режима» у фильтра не бывает (без группировки — это `none`), такой клик ничего не меняет.
+        const next = FILTER_MODES.find(
+          (mode) => mode.value === details.value[0],
+        );
+        if (next === undefined) return;
+
+        store.actions.setFilterMode(next.value);
       }}
     >
-      <SegmentGroupIndicator />
-
       <For each={FILTER_MODES}>
         {(mode) => (
-          <SegmentGroupItem
+          <ToggleGroupItem
             value={mode.value}
             disabled={!filterAppliesTo(mode.value, axisMode())}
           >
-            <SegmentGroupItemControl />
-            <SegmentGroupItemText>
-              <Icon name={mode.icon} />
-            </SegmentGroupItemText>
-          </SegmentGroupItem>
+            <Icon name={mode.icon} />
+          </ToggleGroupItem>
         )}
       </For>
-    </SegmentGroup>
+    </ToggleGroup>
   );
 }
