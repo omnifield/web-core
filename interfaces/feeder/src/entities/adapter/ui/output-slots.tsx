@@ -14,7 +14,12 @@ export function OutputSlots(props: {
   onUnlink?: (target: FieldRef) => void;
   empty?: string;
 }) {
-  const dragging = useDragging();
+  const carried = useDragging();
+
+  const carriedType = () => {
+    const type = carried()?.type;
+    return typeof type === "string" ? type : undefined;
+  };
 
   const filling = (target: FieldRef) =>
     props.rules?.find((rule) => rule.target === target)?.from;
@@ -31,7 +36,7 @@ export function OutputSlots(props: {
               path={slot.path}
               type={slot.type}
               from={filling(slot.path)}
-              armed={dragging()}
+              carriedType={carriedType()}
               onDrop={(data) => {
                 const from = data.from;
                 if (typeof from === "string") {

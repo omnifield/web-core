@@ -91,6 +91,32 @@ describe("OutputSlots", () => {
     expect(rows(host)[1].querySelector("button")).toBeNull();
   });
 
+  it("тип показан значком своей категории, а слово остаётся подсказкой", () => {
+    const host = mount(() => <OutputSlots paths={paths} />);
+
+    const marks = [...host.querySelectorAll<HTMLElement>("[data-mark]")];
+
+    expect(marks.map((mark) => mark.getAttribute("title"))).toEqual([
+      "string",
+      "string",
+      "number",
+    ]);
+    expect(marks.map((mark) => mark.getAttribute("data-mark"))).toEqual([
+      "type-string",
+      "type-string",
+      "type-number",
+    ]);
+  });
+
+  it("незнакомый тип честно назван незнакомым, а не покрашен наугад", () => {
+    const host = mount(() => <OutputSlots paths={[{ path: "/loop", type: "recursive" }]} />);
+
+    const mark = host.querySelector<HTMLElement>("[data-mark]")!;
+
+    expect(mark.getAttribute("data-mark")).toBe("type-unknown");
+    expect(mark.getAttribute("title")).toBe("recursive");
+  });
+
   it("слот переносимым себя не объявляет — он принимает, а не отдаёт", () => {
     const host = mount(() => <OutputSlots paths={paths} />);
 

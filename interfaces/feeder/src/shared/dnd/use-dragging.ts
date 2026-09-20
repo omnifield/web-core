@@ -1,15 +1,15 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { createSignal, onCleanup, type Accessor } from "@web-core/solid";
 
-export function useDragging(): Accessor<boolean> {
-  const [active, setActive] = createSignal(false);
+export function useDragging(): Accessor<Record<string, unknown> | undefined> {
+  const [carried, setCarried] = createSignal<Record<string, unknown>>();
 
   onCleanup(
     monitorForElements({
-      onDragStart: () => setActive(true),
-      onDrop: () => setActive(false),
+      onDragStart: ({ source }) => setCarried(() => source.data),
+      onDrop: () => setCarried(undefined),
     }),
   );
 
-  return active;
+  return carried;
 }

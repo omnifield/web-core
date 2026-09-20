@@ -4,7 +4,7 @@ import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Mastering } from "../../../src/features/adapter-manager";
-import { dragTo } from "../../support/drag";
+import { cancelDrag, dragTo, startDrag } from "../../support/drag";
 
 let dispose: (() => void) | undefined;
 
@@ -45,6 +45,8 @@ function mount(props?: {
   );
   return host;
 }
+
+const frame = () => new Promise((done) => setTimeout(done, 50));
 
 function columns(host: HTMLElement): [Element, Element] {
   const slots = host.querySelector('[data-block="output"]')!;
@@ -103,6 +105,29 @@ describe("Mastering", () => {
     expect(items(slots)[1].hasAttribute("data-filled")).toBe(true);
     expect(items(slots)[1].textContent).toContain("/name");
     expect(items(slots)[0].hasAttribute("data-filled")).toBe(false);
+  });
+
+  it("пока поле тащат, каждый слот говорит, чем для него обернётся бросок", async () => {
+    const host = mount();
+    const [slots, fields] = columns(host);
+
+    startDrag(items(fields)[0]);
+    await frame();
+
+    expect(items(slots).map((slot) => slot.getAttribute("data-fit"))).toEqual([
+      "exact",
+      "exact",
+    ]);
+
+    cancelDrag(items(fields)[0]);
+    await frame();
+
+    expect(items(slots).map((slot) => slot.getAttribute("data-fit"))).toEqual([null, null]);
+
+    startDrag(items(fields)[1]);
+    await frame();
+
+    expect(items(slots).map((slot) => slot.getAttribute("data-fit"))).toEqual(["safe", "safe"]);
   });
 
   it("связь снимается крестиком — наружу едет слот, который освободили", () => {
