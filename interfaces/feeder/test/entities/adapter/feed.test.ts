@@ -109,3 +109,83 @@ describe("feed", () => {
     expect(result.error).toBe("по пути «/rows» набора записей нет");
   });
 });
+
+describe("корень набора", () => {
+  it("берётся из источника связи — человек уже показал его мышью", () => {
+    const result = feed(
+      response,
+      adapter({
+        rules: [
+          { id: "r1", target: "/items/0/label", from: "/data/0/code" },
+          { id: "r2", target: "/items/0/value", from: "/data/0/rate" },
+        ],
+      }),
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.value).toEqual({
+      items: [
+        { label: "USD", value: 1 },
+        { label: "EUR", value: 1.1 },
+      ],
+    });
+  });
+
+  it("заданный на записи корень берётся, когда источник уже относителен записи", () => {
+    const result = feed(
+      { rows: [{ code: "USD" }], data: [{ code: "нет" }] },
+      adapter({
+        root: "/rows",
+        rules: [{ id: "r1", target: "/items/0/label", from: "/code" }],
+      }),
+    );
+
+    expect(result.value).toEqual({ items: [{ label: "USD" }] });
+  });
+
+  it("источник из чужого набора отбрасывается и при заданном корне", () => {
+    const result = feed(
+      { rows: [{ code: "USD" }], data: [{ code: "нет" }] },
+      adapter({
+        root: "/rows",
+        rules: [{ id: "r1", target: "/items/0/label", from: "/data/0/code" }],
+      }),
+    );
+
+    expect(result.value).toEqual({});
+    expect(result.report.issues[0]?.reason).toContain("/data");
+  });
+
+  it("связь без индекса в источнике идёт мимо набора", () => {
+    const result = feed(
+      response,
+      adapter({
+        rules: [
+          { id: "r0", target: "/title", from: "/meta/title" },
+          { id: "r1", target: "/items/0/label", from: "/data/0/code" },
+        ],
+      }),
+    );
+
+    expect(result.value).toEqual({
+      title: "Курсы",
+      items: [{ label: "USD" }, { label: "EUR" }],
+    });
+  });
+
+  it("чужой корень не проходит молча — поле остаётся пустым, а отчёт называет причину", () => {
+    const result = feed(
+      { data: [{ code: "USD" }], archived: [{ code: "SUR" }] },
+      adapter({
+        rules: [
+          { id: "r1", target: "/items/0/label", from: "/data/0/code" },
+          { id: "r2", target: "/items/0/old", from: "/archived/0/code" },
+        ],
+      }),
+    );
+
+    expect(result.value).toEqual({ items: [{ label: "USD" }] });
+    expect(result.report.issues).toHaveLength(1);
+    expect(result.report.issues[0]?.reason).toContain("/archived");
+  });
+});

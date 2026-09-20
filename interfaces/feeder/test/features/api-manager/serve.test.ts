@@ -26,6 +26,8 @@ const body = {
   ],
 };
 
+const sweep = { total: 3, data: [{ id: 1, login: "ada" }, { id: 2, login: "bob" }] };
+
 beforeEach(() => {
   presetsStore.actions.hydrate([]);
 
@@ -94,5 +96,40 @@ describe("serve", () => {
     const shot = await serve(endpoint, {}, USERS);
 
     expect(shot.report?.converted).toBe(3);
+  });
+});
+
+describe("сквозной прогон: связи сведены мышью, корень никто не задавал", () => {
+  it("витрина получает записи, а не пустой список", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify(sweep), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+      ),
+    );
+
+    presetsStore.actions.add(ADAPTER_KIND, "select", {
+      root: "",
+      rules: [
+        { id: "r1", target: "/items/0/value", from: "/data/0/id" },
+        { id: "r2", target: "/items/0/label", from: "/data/0/login" },
+      ],
+      providers: { api: { "preset-7": { "endpoint-3": {} } } },
+      consumers: { component: { "user-card": {} } },
+    });
+
+    const shot = await serve(endpoint, {}, USERS);
+
+    expect(shot.error).toBeNull();
+    expect(shot.data).toEqual({
+      items: [
+        { value: 1, label: "ada" },
+        { value: 2, label: "bob" },
+      ],
+    });
   });
 });
