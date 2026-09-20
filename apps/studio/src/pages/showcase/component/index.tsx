@@ -1,5 +1,5 @@
-import { Stand } from "#/widgets/component-manager";
+import { PreviewArea } from "#/widgets/preview";
 
 export function ComponentPage() {
-  return <Stand />;
+  return <PreviewArea />;
 }

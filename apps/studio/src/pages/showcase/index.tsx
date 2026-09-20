@@ -8,7 +8,8 @@ import {
 } from "@web-core/ui";
 import { ComponentProvider, tree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
-import { Control } from "#/widgets/component-manager";
+import { FeedPanel } from "#/widgets/feed";
+import { PreviewControls } from "#/widgets/preview";
 import { RailPanel } from "#/widgets/rail";
 
 export function ShowcasePage() {
@@ -25,7 +26,8 @@ export function ShowcasePage() {
         </WorkspaceMain>
         <WorkspaceRightbar style={{ width: railVar("rail-lg"), padding: 0 }}>
           <RailPanel>
-            <Control />
+            <PreviewControls />
+            <FeedPanel />
           </RailPanel>
         </WorkspaceRightbar>
       </ComponentProvider>

@@ -2,7 +2,7 @@ import { Passport, Distributor } from "#/features/preview";
 import { Flow, FlowItem, Surface } from "@web-core/ui";
 import { layoutGroup, layoutSelf } from "@web-core/skin";
 
-export function Stand() {
+export function PreviewArea() {
   return (
     <Surface data-variant="filled">
       <Flow data-variant="column-center">
