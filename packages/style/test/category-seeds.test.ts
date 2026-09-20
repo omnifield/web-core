@@ -10,6 +10,7 @@ import {
   CATEGORY_NO_TELLING,
   CATEGORY_TELLING,
   CATEGORY_TELLING_LIMIT,
+  CATEGORY_TELLING_MARGIN,
   buildCategorySeeds,
   buildScale,
   type ScaleKey,
@@ -21,6 +22,7 @@ const MODES: ScaleMode[] = ["light", "dark"];
 // Стартовый угол обходится по всему кругу: узкое место переезжает по оттенкам, и пять
 // любимых семян его не ловят — на count 14 провал нашёлся на старте 65°, а не на них.
 const STARTS = Array.from({ length: 72 }, (_, index) => index * 5);
+const COARSE_STARTS = Array.from({ length: 24 }, (_, index) => index * 15);
 const seedAt = (hue: number): string => formatOklch({ l: 0.5, c: 0.1, h: hue });
 
 const ladders = (seed: string, count: number, mode: ScaleMode) =>
@@ -91,12 +93,15 @@ describe("семена категорий — точки цвета, а не г�
 });
 
 describe("различимость — измерена по всему кругу, обещана до объявленного предела", () => {
+  // Перебор идёт ДО предела включительно, а не по трём любимым числам: прежняя форма
+  // проверяла [2, 7, предел] и потому пропустила предел, уехавший вниз до пятёрки —
+  // семёрка в списке проходила, и расхождение константы с доками ничем не ловилось.
   it.each(CATEGORY_TELLING)(
-    `на ступени %s любые две категории расходятся не меньше JND — до ${CATEGORY_TELLING_LIMIT} категорий`,
+    `на ступени %s любые две категории расходятся не меньше JND — на любом числе до ${CATEGORY_TELLING_LIMIT}`,
     (step) => {
-      for (const count of [2, 7, CATEGORY_TELLING_LIMIT]) {
+      for (let count = 2; count <= CATEGORY_TELLING_LIMIT; count += 1) {
         for (const mode of MODES) {
-          for (const start of STARTS) {
+          for (const start of COARSE_STARTS) {
             expect(
               worstPair(ladders(seedAt(start), count, mode), step),
               `${count} категорий, старт ${start}°, режим ${mode}, ступень ${step}`,
@@ -107,10 +112,23 @@ describe("различимость — измерена по всему круг
     },
   );
 
-  it("за пределом обещание и правда кончается — предел не перестраховка", () => {
+  it("на самом пределе запас над порогом ещё осязаем, а не считанные проценты", () => {
+    let worst = Infinity;
+    for (const mode of MODES) {
+      for (const start of STARTS) {
+        for (const step of CATEGORY_TELLING) {
+          worst = Math.min(worst, worstPair(ladders(seedAt(start), CATEGORY_TELLING_LIMIT, mode), step));
+        }
+      }
+    }
+
+    expect(worst).toBeGreaterThanOrEqual(OKLAB_JND * (1 + CATEGORY_TELLING_MARGIN));
+  });
+
+  it("предел стоит там, где обещание кончается: двумя категориями дальше расхождение проваливается", () => {
     let worst = Infinity;
     for (const start of STARTS) {
-      worst = Math.min(worst, worstPair(ladders(seedAt(start), 14, "light"), "6"));
+      worst = Math.min(worst, worstPair(ladders(seedAt(start), CATEGORY_TELLING_LIMIT + 2, "light"), "6"));
     }
 
     expect(worst).toBeLessThan(OKLAB_JND);

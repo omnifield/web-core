@@ -245,7 +245,9 @@ export const CATEGORY_LIGHTNESS = 0.74;
 
 export const CATEGORY_CHROMA = 0.12;
 
-export const CATEGORY_TELLING_LIMIT = 5;
+export const CATEGORY_TELLING_LIMIT = 12;
+
+export const CATEGORY_TELLING_MARGIN = 0.1;
 
 export function buildCategorySeeds(seed: string | Oklch, count: number): string[] {
   const done = trace(`buildCategorySeeds(${count})`);
