@@ -2,8 +2,8 @@ import type { DispatchedEvent } from "@web-core/assembly";
 import type { PassportAssembly } from "@web-core/skin/editor";
 import { toast } from "@web-core/ui";
 import { Renderer } from "#/shared/ui/renderer";
-import type { Cell } from "../../../lib/cell";
-import { useStand } from "../../../model";
+import type { Cell } from "../../lib/cell";
+import { useStand } from "../../model";
 
 export function Form(props: {
   cell: Cell;

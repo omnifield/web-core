@@ -1,4 +1,4 @@
-// Чем накормлен стенд (`features/component-manager/model/store.ts`).
+// Чем накормлен стенд (`features/demo-stand/model/store.ts`).
 //
 // Ловим здесь одно свойство, и оно не про удобство, а про владение: в сторе стенда не должно
 // оказываться чужих объектов. Пресеты живут в кэше запросов, `solid-query` отдаёт их реактивными
@@ -7,11 +7,11 @@
 // рефетче. Поэтому пресет хранится ссылкой (именем), а ручная правка берётся себе копией.
 
 import { describe, expect, it } from "vitest";
-import { componentManagerStoreOf } from "#/features/component-manager";
+import { demoStandStoreOf } from "#/features/demo-stand";
 
 describe("пресет хранится ссылкой, а не телом", () => {
   it("в состоянии лежит имя пресета — данных там нет", () => {
-    const store = componentManagerStoreOf("пресет-ссылкой");
+    const store = demoStandStoreOf("пресет-ссылкой");
 
     store.actions.setFeedPreset("delivery");
 
@@ -22,7 +22,7 @@ describe("пресет хранится ссылкой, а не телом", () 
   });
 
   it("ручная правка вытесняет пресет, а не ложится рядом", () => {
-    const store = componentManagerStoreOf("корм-один");
+    const store = demoStandStoreOf("корм-один");
 
     store.actions.setFeedPreset("delivery");
     store.actions.setFeedData({ label: "своё" });
@@ -35,7 +35,7 @@ describe("пресет хранится ссылкой, а не телом", () 
 
 describe("ручные данные стор забирает себе", () => {
   it("исходный объект не попадает в состояние и не мёрзнет", () => {
-    const store = componentManagerStoreOf("ручное-своё");
+    const store = demoStandStoreOf("ручное-своё");
     const fromCache = { label: "из кэша", items: [{ value: "a" }] };
 
     store.actions.setFeedData(fromCache);
@@ -49,7 +49,7 @@ describe("ручные данные стор забирает себе", () => {
   });
 
   it("правка одной ячейки не трогает корм всего стенда", () => {
-    const store = componentManagerStoreOf("ячейка-и-стенд");
+    const store = demoStandStoreOf("ячейка-и-стенд");
     const cell = { primary: 1, group: "" };
 
     store.actions.setFeedPreset("delivery");

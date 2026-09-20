@@ -13,7 +13,7 @@ import {
   SwitchFilterMode,
   SwitchLayoutMode,
   SwitchViewMode,
-} from "#/features/component-manager";
+} from "#/features/demo-stand";
 
 export function Control() {
   return (

@@ -1,4 +1,4 @@
-// Разрешение «ячейка → показанный элемент» (`features/component-manager/lib/axes.ts`) и адресация
+// Разрешение «ячейка → показанный элемент» (`features/demo-stand/lib/axes.ts`) и адресация
 // хранимого выбора (`model/store.ts`). Два разных вопроса, и с недавних пор они разведены по
 // разным местам: списки принадлежат компоненту (`entities/component`), а `axisMode`/`secondaryIndex`
 // — стенду. Поэтому арифметика здесь проверяется чистой, без стора, а стор — без списков.
@@ -11,13 +11,13 @@
 
 import { describe, expect, it } from "vitest";
 import { componentDescriptorOf } from "@web-core/ui/component-info";
-import { componentManagerStoreOf } from "#/features/component-manager";
+import { demoStandStoreOf } from "#/features/demo-stand";
 import {
   type Axes,
   assemblyIn,
   secondaryIndexIn,
   variantIn,
-} from "#/features/component-manager/lib/axes";
+} from "#/features/demo-stand/lib/axes";
 
 /** Настоящие сборки из кита, размноженные до нужной длины: форма данных боевая, длина под
  *  контролем теста — ровно то, что он проверяет. Варианты структурны, их можно написать руками. */
@@ -90,7 +90,7 @@ describe("по primary-оси ячейка стоит на своём месте
 
 describe("стор адресует хранимый выбор, ничего не зная о списках", () => {
   it("ячейка и группа — разные адреса, даже если тег назван как позиция", () => {
-    const store = componentManagerStoreOf("ключ-не-сталкивается");
+    const store = demoStandStoreOf("ключ-не-сталкивается");
     const tagged = { primary: 0, group: "0" };
 
     store.actions.setSecondaryIndexOfCell(1, tagged);
@@ -106,7 +106,7 @@ describe("стор адресует хранимый выбор, ничего н
   });
 
   it("смена оси не переносит выбор в чужой список и возвращает свой обратно", () => {
-    const store = componentManagerStoreOf("смена-оси");
+    const store = demoStandStoreOf("смена-оси");
     store.actions.setSecondaryIndexOfCell(2, cell);
 
     store.actions.setAxisMode("assembly");
@@ -117,7 +117,7 @@ describe("стор адресует хранимый выбор, ничего н
   });
 
   it("выбор на обёртке доезжает до всех её слайдов и не трогает соседнюю", () => {
-    const store = componentManagerStoreOf("обёртка-адресует-группу");
+    const store = demoStandStoreOf("обёртка-адресует-группу");
     store.actions.setLayoutMode("matrix");
 
     store.actions.setSecondaryIndexOfGroup(2, "primary");
@@ -134,7 +134,7 @@ describe("стор адресует хранимый выбор, ничего н
   });
 
   it("групповой выбор виден контролу обёртки без единой ячейки на руках", () => {
-    const store = componentManagerStoreOf("контрол-без-ячейки");
+    const store = demoStandStoreOf("контрол-без-ячейки");
 
     store.actions.setSecondaryIndexOfGroup(1, "primary");
 

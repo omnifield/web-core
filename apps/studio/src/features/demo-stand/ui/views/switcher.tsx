@@ -1,6 +1,6 @@
 import { Match, Show, Switch } from "solid-js";
-import type { Cell } from "../../../lib/cell";
-import { useStand } from "../../../model";
+import type { Cell } from "../../lib/cell";
+import { useStand } from "../../model";
 import { Assembly } from "./assembly";
 import { Feed } from "./feed";
 import { Form } from "./form";

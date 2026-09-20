@@ -7,7 +7,7 @@ import {
   variantIn,
 } from "../lib/axes";
 import type { Cell } from "../lib/cell";
-import { componentManagerStoreOf, type Feed } from "./store";
+import { demoStandStoreOf, type Feed } from "./store";
 
 /**
  * Единственное место, где состояние стенда (стор фичи) встречается с данными компонента
@@ -19,12 +19,12 @@ import { componentManagerStoreOf, type Feed } from "./store";
  * (`keyed`), поэтому инстанс стора здесь стабилен.
  */
 export function useStandStore() {
-  return componentManagerStoreOf(useComponent().name);
+  return demoStandStoreOf(useComponent().name);
 }
 
 export function useStand() {
   const component = useComponent();
-  const store = componentManagerStoreOf(component.name);
+  const store = demoStandStoreOf(component.name);
 
   const axes: Accessor<Axes> = createMemo(() => ({
     variants: component.variants(),

@@ -10,4 +10,4 @@ export {
   VIEW_MODES,
 } from "./modes";
 export { useStand, useStandStore } from "./stand";
-export { ALL_CELLS, componentManagerStoreOf } from "./store";
+export { ALL_CELLS, demoStandStoreOf } from "./store";

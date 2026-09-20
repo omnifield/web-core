@@ -1,5 +1,5 @@
 import { Icon, type IconProps, Toggle, ToggleIndicator } from "@web-core/ui";
-import { AXIS_MODES, useStandStore } from "../../../../model";
+import { LAYOUT_MODES, useStandStore } from "../../../model";
 
 type IconName = IconProps["name"];
 
@@ -10,19 +10,19 @@ function iconOf<Value extends string>(
   return items.find((item) => item.value === value)!.icon;
 }
 
-export function SwitchAxisMode() {
+export function SwitchLayoutMode() {
   const store = useStandStore();
-  const axisMode = store.use((state) => state.axisMode);
+  const layoutMode = store.use((state) => state.layoutMode);
 
   return (
     <Toggle
-      pressed={axisMode() === "assembly"}
+      pressed={layoutMode() === "matrix"}
       onPressedChange={(pressed) =>
-        store.actions.setAxisMode(pressed ? "assembly" : "variant")
+        store.actions.setLayoutMode(pressed ? "matrix" : "grid")
       }
     >
-      <ToggleIndicator fallback={<Icon name={iconOf(AXIS_MODES, "variant")} />}>
-        <Icon name={iconOf(AXIS_MODES, "assembly")} />
+      <ToggleIndicator fallback={<Icon name={iconOf(LAYOUT_MODES, "grid")} />}>
+        <Icon name={iconOf(LAYOUT_MODES, "matrix")} />
       </ToggleIndicator>
     </Toggle>
   );

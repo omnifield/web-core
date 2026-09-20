@@ -3,9 +3,9 @@ import type { PassportAssembly } from "@web-core/skin/editor";
 import type { VariantSummary } from "@web-core/skin/presets";
 import { Typography } from "@web-core/ui";
 import { Loader } from "#/entities/component";
-import type { Cell } from "../../../lib/cell";
-import { groupByTags, noGroup } from "../../../lib/group";
-import { useStand } from "../../../model";
+import type { Cell } from "../../lib/cell";
+import { groupByTags, noGroup } from "../../lib/group";
+import { useStand } from "../../model";
 import { Grid } from "./grid";
 import { Matrix } from "./matrix";
 

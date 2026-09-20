@@ -4,7 +4,7 @@ import {
   FILTER_MODES,
   filterAppliesTo,
   useStandStore,
-} from "../../../../model";
+} from "../../../model";
 
 export function SwitchFilterMode() {
   const store = useStandStore();

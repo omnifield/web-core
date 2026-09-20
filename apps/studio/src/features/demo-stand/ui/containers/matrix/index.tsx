@@ -8,9 +8,9 @@ import {
   PlaneRuler,
   PlaneStack,
 } from "#/shared/ui/plane";
-import { type Cell, cellSize } from "../../../../lib/cell";
-import type { Group } from "../../../../lib/group";
-import { useStand } from "../../../../model";
+import { type Cell, cellSize } from "../../../lib/cell";
+import type { Group } from "../../../lib/group";
+import { useStand } from "../../../model";
 import { Switcher } from "../../views";
 
 type SecondaryItem = { readonly name: string };

@@ -1,4 +1,4 @@
-// Группировка primary-оси и применимость фильтра (`features/component-manager`).
+// Группировка primary-оси и применимость фильтра (`features/demo-stand`).
 //
 // Две стороны, обе тихие:
 //
@@ -15,10 +15,10 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  componentManagerStoreOf,
+  demoStandStoreOf,
   filterAppliesTo,
-} from "#/features/component-manager";
-import { groupByTags } from "#/features/component-manager/lib/group";
+} from "#/features/demo-stand";
+import { groupByTags } from "#/features/demo-stand/lib/group";
 
 describe("фильтр по тегам знает, на какой оси он применим", () => {
   it("на оси вариантов применим, на оси сборок — нет", () => {
@@ -32,7 +32,7 @@ describe("фильтр по тегам знает, на какой оси он �
   });
 
   it("смена оси уносит с собой неприменимый фильтр, а не оставляет его в состоянии", () => {
-    const store = componentManagerStoreOf("фильтр-и-ось");
+    const store = demoStandStoreOf("фильтр-и-ось");
     store.actions.setFilterMode("tags");
     expect(store.get().filterMode).toBe("tags");
 
@@ -42,7 +42,7 @@ describe("фильтр по тегам знает, на какой оси он �
   });
 
   it("применимый фильтр смена оси не трогает", () => {
-    const store = componentManagerStoreOf("фильтр-переживает-ось");
+    const store = demoStandStoreOf("фильтр-переживает-ось");
     store.actions.setAxisMode("assembly");
     store.actions.setFilterMode("none");
 
@@ -82,7 +82,7 @@ describe("ячейка адресуется парой «группа + пози
   const inDangerTag = { primary: 1, group: "danger" };
 
   it("выбор secondary в одной группе не меняет ту же позицию в другой", () => {
-    const store = componentManagerStoreOf("позиция-в-двух-группах");
+    const store = demoStandStoreOf("позиция-в-двух-группах");
 
     store.actions.setSecondaryIndexOfCell(2, inPrimaryTag);
 
@@ -91,7 +91,7 @@ describe("ячейка адресуется парой «группа + пози
   });
 
   it("вид ячейки тоже не протекает между группами", () => {
-    const store = componentManagerStoreOf("вид-в-двух-группах");
+    const store = demoStandStoreOf("вид-в-двух-группах");
 
     store.actions.setViewMode("feed", inPrimaryTag);
 

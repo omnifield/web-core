@@ -1,7 +1,7 @@
 import { For } from "solid-js";
 import { Flow, GridCell, Typography, Grid as UiGrid } from "@web-core/ui";
-import type { Cell } from "../../../../lib/cell";
-import type { Group } from "../../../../lib/group";
+import type { Cell } from "../../../lib/cell";
+import type { Group } from "../../../lib/group";
 import { CellWrapper } from "./cell-wrapper";
 
 type SecondaryItem = { readonly name: string };

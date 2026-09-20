@@ -28,14 +28,14 @@ function cellKeyOf(cell: Cell): CellKey {
  *  как позиция первой ячейки). Обе координаты сидят в ключе, поэтому переключение туда-обратно
  *  возвращает прежний выбор, а не чужой. */
 function groupScopeKey(
-  state: Pick<ComponentManagerState, "axisMode">,
+  state: Pick<DemoStandState, "axisMode">,
   group: string,
 ): CellKey {
   return `${state.axisMode}/group/${group}`;
 }
 
 function cellScopeKey(
-  state: Pick<ComponentManagerState, "axisMode">,
+  state: Pick<DemoStandState, "axisMode">,
   cell: Cell,
 ): CellKey {
   return `${state.axisMode}/cell/${cellKeyOf(cell)}`;
@@ -46,7 +46,7 @@ function cellScopeKey(
  *  сторона (контрол) ничего не угадывает — она с самого начала знает, кто она, и зовёт
  *  `setSecondaryIndexOfCell`/`setSecondaryIndexOfGroup` напрямую. */
 function secondaryScopeOf(
-  state: Pick<ComponentManagerState, "layoutMode" | "axisMode">,
+  state: Pick<DemoStandState, "layoutMode" | "axisMode">,
   cell: Cell,
 ): CellKey {
   return state.layoutMode === "matrix"
@@ -101,7 +101,7 @@ function ownCopy(data: unknown): unknown {
  * списка, а стор их не держит. Разрешение — чистые функции в `lib/axes.ts`, сведённые с этим
  * состоянием в `model/stand.ts`.
  */
-interface ComponentManagerState {
+interface DemoStandState {
   readonly layoutMode: LayoutMode;
   readonly axisMode: AxisMode;
   readonly filterMode: FilterMode;
@@ -110,8 +110,8 @@ interface ComponentManagerState {
   readonly secondaryIndex: Readonly<Record<CellKey, number>>;
 }
 
-export const componentManagerStoreOf = createActionStoreFamily<
-  ComponentManagerState,
+export const demoStandStoreOf = createActionStoreFamily<
+  DemoStandState,
   {
     setLayoutMode(layoutMode: LayoutMode): void;
     setAxisMode(axisMode: AxisMode): void;
@@ -123,17 +123,17 @@ export const componentManagerStoreOf = createActionStoreFamily<
     setSecondaryIndexOfGroup(index: number, group: string): void;
   },
   {
-    viewMode(state: ComponentManagerState, cell: Cell): ViewMode;
-    feed(state: ComponentManagerState, cell: Cell): Feed | undefined;
+    viewMode(state: DemoStandState, cell: Cell): ViewMode;
+    feed(state: DemoStandState, cell: Cell): Feed | undefined;
     /** Корм всего стенда — то, чем кормят панели `ui/feed`. Отдельный селектор, а не `feed` с
      *  необязательной ячейкой: параметризованный селектор узнают по arity сигнатуры, а
      *  необязательный аргумент в неё не считается. */
-    standFeed(state: ComponentManagerState): Feed | undefined;
+    standFeed(state: DemoStandState): Feed | undefined;
     /** Хранимый выбор, БЕЗ приведения к границам списка: списков стор не знает. К границам его
      *  приводит `secondaryIndexIn` (`lib/axes.ts`) — там, где списки есть. */
-    storedSecondaryIndex(state: ComponentManagerState, cell: Cell): number;
+    storedSecondaryIndex(state: DemoStandState, cell: Cell): number;
     storedSecondaryIndexOfGroup(
-      state: ComponentManagerState,
+      state: DemoStandState,
       group: string,
     ): number;
   }
@@ -153,7 +153,7 @@ export const componentManagerStoreOf = createActionStoreFamily<
     function setFeed(feed: Feed, cell?: Cell) {
       const key = cell === undefined ? ALL_CELLS : cellKeyOf(cell);
       setState(
-        mutate<ComponentManagerState>((draft) => {
+        mutate<DemoStandState>((draft) => {
           if (key === ALL_CELLS) {
             draft.feed = { [ALL_CELLS]: castDraft(feed) };
           } else {
@@ -166,14 +166,14 @@ export const componentManagerStoreOf = createActionStoreFamily<
     return {
       setLayoutMode(layoutMode) {
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             draft.layoutMode = layoutMode;
           }),
         );
       },
       setAxisMode(axisMode) {
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             draft.axisMode = axisMode;
 
             // Применимость фильтра зависит от оси (теги есть только у вариантов), поэтому смена оси
@@ -188,7 +188,7 @@ export const componentManagerStoreOf = createActionStoreFamily<
       },
       setFilterMode(filterMode) {
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             draft.filterMode = filterMode;
           }),
         );
@@ -196,7 +196,7 @@ export const componentManagerStoreOf = createActionStoreFamily<
       setViewMode(viewMode, cell) {
         const key = cell === undefined ? ALL_CELLS : cellKeyOf(cell);
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             if (key === ALL_CELLS) {
               draft.viewMode = { [ALL_CELLS]: viewMode };
             } else {
@@ -213,14 +213,14 @@ export const componentManagerStoreOf = createActionStoreFamily<
       },
       setSecondaryIndexOfCell(index, cell) {
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             draft.secondaryIndex[cellScopeKey(draft, cell)] = index;
           }),
         );
       },
       setSecondaryIndexOfGroup(index, group) {
         setState(
-          mutate<ComponentManagerState>((draft) => {
+          mutate<DemoStandState>((draft) => {
             draft.secondaryIndex[groupScopeKey(draft, group)] = index;
           }),
         );

@@ -1,7 +1,7 @@
 import { For } from "solid-js";
 import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
-import type { Cell } from "../../../../lib/cell";
-import { ALL_CELLS, useStandStore, VIEW_MODES } from "../../../../model";
+import type { Cell } from "../../../lib/cell";
+import { ALL_CELLS, useStandStore, VIEW_MODES } from "../../../model";
 
 /** Адрес вида — размеченный союз, а не необязательная ячейка: «локальный без ячейки» — состояние,
  *  которого не бывает, и запретить его типом дешевле, чем ловить в рантайме. */
