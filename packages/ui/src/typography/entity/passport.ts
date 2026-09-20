@@ -9,5 +9,11 @@ export const passport = definePassport({
   variantAxis: {
     mark: { kind: "attribute", name: "data-variant" },
   },
-  settings: defineSettings<TypographyProps>()({}),
+  settings: defineSettings<TypographyProps>()({
+    truncated: {
+      values: { kind: "flag" },
+      byDefault: false,
+      mark: { kind: "attribute", name: "data-truncated" },
+    },
+  }),
 });
