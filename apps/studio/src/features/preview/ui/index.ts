@@ -7,4 +7,3 @@ export {
   SwitchViewMode,
   type SwitchViewModeProps,
 } from "./controls";
-export * from "./feed";

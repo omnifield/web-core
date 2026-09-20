@@ -1,6 +1,7 @@
 import type { DispatchedEvent } from "@web-core/assembly";
 import type { PassportAssembly } from "@web-core/skin/editor";
 import { toast } from "@web-core/ui";
+import { useFeed } from "#/entities/feed";
 import { Renderer } from "#/shared/ui/renderer";
 import type { Cell } from "../../lib/cell";
 import { usePreview } from "../../model";
@@ -10,7 +11,8 @@ export function Form(props: {
   variant: string;
   assembly: PassportAssembly;
 }) {
-  const { component, feedDataOf } = usePreview();
+  const { component } = usePreview();
+  const feed = useFeed();
 
   function dispatch(event: DispatchedEvent) {
     console.log(event);
@@ -25,7 +27,7 @@ export function Form(props: {
       component={component.name}
       assembly={props.assembly.name}
       variant={props.variant}
-      data={feedDataOf(props.cell)}
+      data={feed.data()}
       dispatch={dispatch}
     />
   );

@@ -6,9 +6,9 @@ import {
   AccordionItem,
   Flow,
 } from "@web-core/ui";
+import { FeedManual } from "#/features/feed/manual";
+import { FeedPreset } from "#/features/feed/preset";
 import {
-  FeedManual,
-  FeedPreset,
   SwitchAxisMode,
   SwitchFilterMode,
   SwitchLayoutMode,
