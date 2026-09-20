@@ -171,10 +171,17 @@ func TestAdapterDecode(t *testing.T) {
 	}
 }
 
+// TestMenuDecode — у вида нет своего имени внутри содержимого (menu-name-is-dead в ROADMAP.yaml):
+// имя записи приезжает конвертом, а присланное в содержимом молча пропускается, как любое чужое.
 func TestMenuDecode(t *testing.T) {
-	menu := decode[Menu](t, "menu", `{"name":"studio","adapters":["users-list","user-card"]}`)
-	if menu.Name != "studio" || len(menu.Adapters) != 2 {
+	menu := decode[Menu](t, "menu", `{"adapters":["users-list","user-card"]}`)
+	if len(menu.Adapters) != 2 {
 		t.Fatalf("имена адаптеров не разобрались как связь: %+v", menu)
+	}
+
+	withName := decode[Menu](t, "menu", `{"name":"studio","adapters":["users-list"]}`)
+	if len(withName.Adapters) != 1 {
+		t.Fatalf("лишнее поле в содержимом не должно мешать разбору: %+v", withName)
 	}
 }
 

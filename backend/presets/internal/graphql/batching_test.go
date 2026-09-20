@@ -145,7 +145,7 @@ func runBatchedMenusQuery(t *testing.T, n int) (listCalls, getManyCalls int) {
 	for i := 0; i < n; i++ {
 		menuName := fmt.Sprintf("menu-%d", i)
 		create(t, s, "menu", menuName, fmt.Sprintf(
-			`{"name":%q,"adapters":[%q,"shared"]}`, menuName, fmt.Sprintf("adapter-%d", i),
+			`{"adapters":[%q,"shared"]}`, fmt.Sprintf("adapter-%d", i),
 		))
 	}
 
