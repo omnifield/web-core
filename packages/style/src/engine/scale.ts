@@ -232,60 +232,41 @@ export function buildScale(seed: string | Oklch, mode: ScaleMode): ScaleValues {
   return values;
 }
 
-export const CHART_SLOTS = 5;
-
-export function buildChartScale(seed: string | Oklch, mode: ScaleMode): string[] {
-  const base = typeof seed === "string" ? parseColor(seed) : seed;
-  const backdrop = formatOklch({
-    l: BACKDROP_L[mode][1],
-    c: base.c * CHROMA_FACTOR["2"],
-    h: base.h,
-  });
-  const chroma = 0.15;
-
-  return Array.from({ length: CHART_SLOTS }, (_, index) => {
-    const hue = (base.h + (360 / CHART_SLOTS) * index) % 360;
-    const l = solveLightness({
-      chroma,
-      hue,
-      background: backdrop,
-      target: AA_NON_TEXT + MARGIN,
-      direction: mode === "light" ? "darker" : "lighter",
-    });
-    return formatOklch({ l, c: chroma, h: hue });
-  });
-}
-
-export const CATEGORY_SLOTS = 7;
-
 export const CATEGORY_TELLING: readonly ScaleKey[] = ["6", "7", "8", "9", "11"];
 
 export const CATEGORY_NO_TELLING: Record<string, string> = {
   "1-5": "фоны категорий почти нейтральны по устройству шкалы — на них категория не опознаётся, опознают рамка и текст",
-  "10": "наведение сдвинуто по светлоте от девятой ступени: при краевом по светлоте семени слоты сходятся",
+  "10": "наведение сдвинуто по светлоте от девятой ступени: при краевом по светлоте семени категории сходятся",
   "12": "текст высокого контраста прижат к общей светлоте — различие остаётся, но не с запасом, обещать нечем",
-  contrast: "подпись на сплошном — почти белая либо почти чёрная у всех слотов сразу, различать её нечем",
+  contrast: "подпись на сплошном — почти белая либо почти чёрная у всех категорий сразу, различать её нечем",
 };
 
-const CATEGORY_CHROMA = 0.15;
+export const CATEGORY_LIGHTNESS = 0.74;
 
-export function buildCategoryScales(seed: string | Oklch, mode: ScaleMode): ScaleValues[] {
-  const done = trace(`buildCategoryScales(${mode})`);
+export const CATEGORY_CHROMA = 0.12;
+
+export const CATEGORY_TELLING_LIMIT = 5;
+
+export function buildCategorySeeds(seed: string | Oklch, count: number): string[] {
+  const done = trace(`buildCategorySeeds(${count})`);
+
+  if (!Number.isInteger(count) || count < 1) {
+    throw new RangeError(
+      `число категорий должно быть целым и не меньше одной, получено «${count}»`,
+    );
+  }
 
   const base = typeof seed === "string" ? parseColor(seed) : seed;
-  const scales = Array.from({ length: CATEGORY_SLOTS }, (_, index) =>
-    buildScale(
-      {
-        l: base.l,
-        c: CATEGORY_CHROMA,
-        h: (base.h + (360 / CATEGORY_SLOTS) * index) % 360,
-      },
-      mode,
-    ),
+  const seeds = Array.from({ length: count }, (_, index) =>
+    formatOklch({
+      l: CATEGORY_LIGHTNESS,
+      c: CATEGORY_CHROMA,
+      h: (base.h + (360 / count) * index) % 360,
+    }),
   );
 
   done();
-  return scales;
+  return seeds;
 }
 
 export type AlphaKey = `a${ScaleStep}`;

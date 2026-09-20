@@ -35,7 +35,7 @@ CSS — плюс **Solid-обвес** (`cn`, `createStyle`, реэкспорт `
 
 | Часть | Адрес | Экспортирует |
 |---|---|---|
-| Ядро (значения) | `@web-core/style` | `buildScale`, `buildAlphaScale`, `buildCategoryScales`, `buildChartScale`, `buildScrim`, `AXES`, `axisOf`, `CONTRAST_PROMISES`, `NO_PROMISE`, `CATEGORY_SLOTS`, `CATEGORY_TELLING`, `CATEGORY_NO_TELLING`, `SCALE_STEPS`, `STEP_PURPOSE`, `STEP_PURPOSE_CLASS`, `DERIVED_SCALES`, `DERIVED_TOKENS`, `FIXED_TOKENS`, `GRID_STEP`, `GRID_NOTE`, `ROUND_SUPPORT_TEST`, `ROUND_FALLBACK_NOTE`, `DENSITY_TOKEN`, `DENSITY_DEFAULT`, `DENSITY_FLOOR`, `DENSITY_CEILING`, `DENSITY_NOTE`, `SPACE_ROLES`, `LAYERS`, `LAYER_TOKENS`, `BASE_MARKER`, `contrastRatio`, `AA_TEXT`, `AA_NON_TEXT`, `deltaEok`, `OKLAB_JND`, `parseColor`, `tryParseColor`, `formatOklch`, `oklchToSrgb`, `srgbToOklch`, `inSrgbGamut`, `toSrgbGamut`, `NAMED_COLORS`, `NAMED_COLOR_COUNT` + типы (`Axis`, `AxisBound`, `BoundKind`, `ScaleMode`, `ScaleKey`, `ScaleStep`, `ScaleValues`, `AlphaKey`, `AlphaValues`, `ContrastPromise`, `StepPurposeClass`, `DerivedScale`, `DerivedStep`, `SpaceRole`, `SpaceRoleEntry`, `Layer`, `BaseMarker`, `Oklch`, `Srgb`, `ColorRefusal`, `ParsedColor`) |
+| Ядро (значения) | `@web-core/style` | `buildScale`, `buildAlphaScale`, `buildCategorySeeds`, `buildScrim`, `AXES`, `axisOf`, `CONTRAST_PROMISES`, `NO_PROMISE`, `CATEGORY_LIGHTNESS`, `CATEGORY_CHROMA`, `CATEGORY_TELLING`, `CATEGORY_TELLING_LIMIT`, `CATEGORY_NO_TELLING`, `SCALE_STEPS`, `STEP_PURPOSE`, `STEP_PURPOSE_CLASS`, `DERIVED_SCALES`, `DERIVED_TOKENS`, `FIXED_TOKENS`, `GRID_STEP`, `GRID_NOTE`, `ROUND_SUPPORT_TEST`, `ROUND_FALLBACK_NOTE`, `DENSITY_TOKEN`, `DENSITY_DEFAULT`, `DENSITY_FLOOR`, `DENSITY_CEILING`, `DENSITY_NOTE`, `SPACE_ROLES`, `LAYERS`, `LAYER_TOKENS`, `BASE_MARKER`, `contrastRatio`, `AA_TEXT`, `AA_NON_TEXT`, `deltaEok`, `OKLAB_JND`, `parseColor`, `tryParseColor`, `formatOklch`, `oklchToSrgb`, `srgbToOklch`, `inSrgbGamut`, `toSrgbGamut`, `NAMED_COLORS`, `NAMED_COLOR_COUNT` + типы (`Axis`, `AxisBound`, `BoundKind`, `ScaleMode`, `ScaleKey`, `ScaleStep`, `ScaleValues`, `AlphaKey`, `AlphaValues`, `ContrastPromise`, `StepPurposeClass`, `DerivedScale`, `DerivedStep`, `SpaceRole`, `SpaceRoleEntry`, `Layer`, `BaseMarker`, `Oklch`, `Srgb`, `ColorRefusal`, `ParsedColor`) |
 | Порождение CSS | `@web-core/style/generate` | `baseCss()` — чистая функция, из которой берётся файл ниже |
 | Готовый сброс | `@web-core/style/base.css` | CSS: **только сброс** — `box-sizing`, `margin`, `appearance: none` на кнопках, ни одного кастом-свойства |
 | Solid-обвес | `@web-core/style/solid` | `cn`, `createStyle`, `type VariantFn`, реэкспорт `cva`, `type VariantProps` |
@@ -67,13 +67,17 @@ const half = buildScale("#0f6fde", "dark"); // одно семя → вся по
 **Неоценочные категории — опознание вида, а не оценка состояния:**
 
 ```ts
-import { CATEGORY_TELLING, buildCategoryScales } from "@web-core/style";
+import { buildCategorySeeds, buildScale } from "@web-core/style";
 
-const slots = buildCategoryScales("#0f6fde", "dark"); // семь полных шкал из того же семени
+const seeds = buildCategorySeeds("#0f6fde", 7); // семь точек цвета, отвёрнутых по кругу
+const enumeration = buildScale(seeds[2], "dark"); // лесенка строится обычным путём, как у danger
 
-slots[2]["7"]; // рамка третьей категории — ступень из CATEGORY_TELLING, слоты здесь различимы
-slots[2]["2"]; // фон: тонировка, а не опознание — различают рамка и текст, см. CATEGORY_NO_TELLING
+enumeration["7"]; // рамка — ступень из CATEGORY_TELLING, здесь категории различимы
+enumeration["2"]; // фон: тонировка, а не опознание — см. CATEGORY_NO_TELLING
 ```
+
+🧭 Семя — обычная строка цвета, и дальше с ним работают как с любым другим семенем палитры.
+Режим семени не нужен: от него зависит лесенка, а не точка, из которой её строят.
 
 **Готовый сброс:**
 
@@ -153,8 +157,9 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 | Ступень красит заливку/границу | `STEP_PURPOSE_CLASS[key] === "fill"` | ступени 1–10 |
 | Ступень красит текст/иконку | `STEP_PURPOSE_CLASS[key] === "ink"` | ступени 11, 12, `contrast` |
 | Контраст не обещан | ступень входит в `NO_PROMISE` | 1–5 (фоны), 6–7 (оформление), 9–10 (верность бренду) |
-| Ступень различает категории | ступень входит в `CATEGORY_TELLING` | 6–9, 11 — расхождение слотов не меньше `OKLAB_JND` |
+| Ступень различает категории | ступень входит в `CATEGORY_TELLING` | 6–9, 11 — расхождение не меньше `OKLAB_JND`, пока категорий не больше `CATEGORY_TELLING_LIMIT` |
 | Различимость категорий не обещана | ступень названа в `CATEGORY_NO_TELLING` | 1–5 (фоны), 10 (наведение), 12, `contrast` |
+| Число категорий отвергнуто | `RangeError` из `buildCategorySeeds` | не целое либо меньше одной |
 
 <h2 id="io">🔌 IO</h2>
 
@@ -167,8 +172,7 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 |---|---|
 | `buildScale(seed, mode)` | `seed: string` (любой разбираемый цвет), `mode: ScaleMode` |
 | `buildAlphaScale(seed, mode)` | то же — параллельный альфа-ряд той же шкалы |
-| `buildCategoryScales(seed, mode)` | семя бренда → `CATEGORY_SLOTS` (7) полных шкал под неоценочные категории |
-| `buildChartScale(seed, mode)` | семя бренда → `CHART_SLOTS` (5) категориальных цветов одним значением, без ступеней |
+| `buildCategorySeeds(seed, count)` | семя бренда + сколько категорий → столько же семян, отвёрнутых по кругу; режим не нужен |
 | `buildScrim(mode)` | режим → сила перекрытия затемнения под модальным слоем |
 | `parseColor(input)` | строка CSS-цвета; бросает `Error` на отказ |
 | `tryParseColor(input)` | то же, не бросает — отдаёт `ParsedColor` с `refusal` |
@@ -184,7 +188,7 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 |---|---|
 | `buildScale` | `ScaleValues` — 12 ступеней + `contrast` |
 | `buildAlphaScale` | `AlphaValues` — `a1…a12` |
-| `buildCategoryScales` | `ScaleValues[]` — семь шкал, каждая полная (12 ступеней + `contrast`) |
+| `buildCategorySeeds` | `string[]` — семена категорий; лесенку из каждого строит обычный `buildScale` |
 | `deltaEok` | `number` — расстояние в Oklab; порог заметности — `OKLAB_JND` |
 | `parseColor`/`tryParseColor` | `Oklch` либо `ParsedColor` с `refusal` |
 | `contrastRatio` | `number` — отношение по WCAG |
@@ -200,7 +204,7 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 | Сборка | Что доказывает | Файл |
 |---|---|---|
 | `SPACE_ROLES` + `DERIVED_SCALES` | каждая роль отступа называет реально существующую ступень шкалы `space`, и у каждой роли есть `means` для человека | `test/spacing-roles.test.ts` |
-| `buildCategoryScales` + `deltaEok` + `contrastRatio` | семь слотов на пяти краевых семенах в обоих режимах: на каждой ступени из `CATEGORY_TELLING` любые два слота расходятся не меньше `OKLAB_JND`, текст 11 читается на фонах 1–3 по AA, серое семя даёт те же слоты, что насыщенное, а снятые обещания (`CATEGORY_NO_TELLING`) не пересекаются с выданными | `test/category-scales.test.ts` |
+| `buildCategorySeeds` + `buildScale` + `deltaEok` + `contrastRatio` | семьдесят две стартовые точки по всему кругу в обоих режимах: заявленная цветность доживает до строки семени (не срезается гамутом), на каждой ступени из `CATEGORY_TELLING` любые две категории расходятся не меньше `OKLAB_JND` вплоть до `CATEGORY_TELLING_LIMIT`, за пределом обещание кончается, текст 11 читается на фонах 1–3 по AA, а снятые обещания (`CATEGORY_NO_TELLING`) не пересекаются с выданными | `test/category-seeds.test.ts` |
 | `createStyle` + `cva` | варианты и дефолты применяются, конфликт утилит разрешается, `class` идёт последним и не удваивается, реактивность доходит до варианта и до `class`, принимает рукописную вариант-функцию | `test/solid/create-style.test.ts` |
 | `cn` (`clsx` + `tailwind-merge`) | конфликт групп разрешается по правому аргументу, неконфликтующие утилиты остаются обе, модификаторы состояний не конфликтуют с базой, произвольные классы проходят насквозь | `test/solid/cn.test.ts` |
 
