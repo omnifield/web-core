@@ -256,6 +256,38 @@ export function buildChartScale(seed: string | Oklch, mode: ScaleMode): string[]
   });
 }
 
+export const CATEGORY_SLOTS = 7;
+
+export const CATEGORY_TELLING: readonly ScaleKey[] = ["6", "7", "8", "9", "11"];
+
+export const CATEGORY_NO_TELLING: Record<string, string> = {
+  "1-5": "фоны категорий почти нейтральны по устройству шкалы — на них категория не опознаётся, опознают рамка и текст",
+  "10": "наведение сдвинуто по светлоте от девятой ступени: при краевом по светлоте семени слоты сходятся",
+  "12": "текст высокого контраста прижат к общей светлоте — различие остаётся, но не с запасом, обещать нечем",
+  contrast: "подпись на сплошном — почти белая либо почти чёрная у всех слотов сразу, различать её нечем",
+};
+
+const CATEGORY_CHROMA = 0.15;
+
+export function buildCategoryScales(seed: string | Oklch, mode: ScaleMode): ScaleValues[] {
+  const done = trace(`buildCategoryScales(${mode})`);
+
+  const base = typeof seed === "string" ? parseColor(seed) : seed;
+  const scales = Array.from({ length: CATEGORY_SLOTS }, (_, index) =>
+    buildScale(
+      {
+        l: base.l,
+        c: CATEGORY_CHROMA,
+        h: (base.h + (360 / CATEGORY_SLOTS) * index) % 360,
+      },
+      mode,
+    ),
+  );
+
+  done();
+  return scales;
+}
+
 export type AlphaKey = `a${ScaleStep}`;
 
 export type AlphaValues = Record<AlphaKey, string>;

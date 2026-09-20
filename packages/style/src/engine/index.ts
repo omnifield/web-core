@@ -1,5 +1,8 @@
 export { BASE_MARKER, type BaseMarker } from "./marker.js";
 export {
+  CATEGORY_NO_TELLING,
+  CATEGORY_SLOTS,
+  CATEGORY_TELLING,
   CHART_SLOTS,
   CONTRAST_PROMISES,
   NO_PROMISE,
@@ -7,6 +10,7 @@ export {
   STEP_PURPOSE,
   STEP_PURPOSE_CLASS,
   buildAlphaScale,
+  buildCategoryScales,
   buildChartScale,
   buildScale,
   buildScrim,
@@ -42,6 +46,7 @@ export {
 } from "./dimension.js";
 
 export { AA_NON_TEXT, AA_TEXT, contrastRatio } from "./color/contrast.js";
+export { OKLAB_JND, deltaEok } from "./color/distance.js";
 export {
   formatOklch,
   inSrgbGamut,
