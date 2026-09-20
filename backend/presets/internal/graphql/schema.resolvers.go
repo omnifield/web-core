@@ -107,7 +107,7 @@ func (r *outfitResolver) Tags(ctx context.Context, obj *model.Outfit) ([]*model.
 }
 
 // Presets is the resolver for the presets field.
-func (r *queryResolver) Presets(ctx context.Context, kind *string, component []string) ([]model.Preset, error) {
+func (r *queryResolver) Presets(ctx context.Context, kind *string, component []string, name []string) ([]model.Preset, error) {
 	if kind != nil && !kinds.Known(*kind) {
 		return nil, fmt.Errorf("presets: неизвестный вид %q", *kind)
 	}
@@ -122,16 +122,23 @@ func (r *queryResolver) Presets(ctx context.Context, kind *string, component []s
 		return nil, errLoadersNotAttached
 	}
 
-	ids := make([]string, len(metas))
-	for i, meta := range metas {
-		ids[i] = meta.ID
+	// Имя живёт в model.Meta — отбор по нему проходит ДО чтения записей: в батч едут только
+	// названные, а не весь вид (presets-by-name, ROADMAP.yaml).
+	wantedNames := wantedSet(name)
+
+	ids := make([]string, 0, len(metas))
+	for _, meta := range metas {
+		if wantedNames != nil && (meta.Name == "" || !wantedNames[meta.Name]) {
+			continue
+		}
+		ids = append(ids, meta.ID)
 	}
 	records, err := ls.Record.LoadAll(ctx, ids)
 	if err := firstFatal(err); err != nil {
 		return nil, err
 	}
 
-	wanted := componentSet(component)
+	wanted := wantedSet(component)
 
 	presets := make([]model.Preset, 0, len(records))
 	for _, record := range records {

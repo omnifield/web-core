@@ -123,8 +123,10 @@ type Query {
   полей). component — доп. сужение (presets-component-filter, ROADMAP.yaml): совпадение по ЛЮБОМУ
   компоненту из списка (OR). Смысл только у видов, несущих поле component (Form/Assembly/Content)
   — записи остальных видов (Palette/Outfit/Tag) при заданном component в выдачу не попадают, это
-  не ошибка. kind и component независимы, комбинируются или задаются по отдельности."""
-  presets(kind: String, component: [String!]): [Preset!]!
+  не ошибка. kind и component независимы, комбинируются или задаются по отдельности. name —
+  отбор по машинному имени (presets-by-name, ROADMAP.yaml), тоже по ЛЮБОМУ из списка: запись без
+  имени в такую выдачу не попадает — её нечем адресовать."""
+  presets(kind: String, component: [String!], name: [String!]): [Preset!]!
   preset(id: ID!): Preset
 }
 

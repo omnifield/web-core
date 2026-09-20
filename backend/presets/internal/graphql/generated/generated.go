@@ -128,7 +128,7 @@ type ComplexityRoot struct {
 	Query struct {
 		Feedback func(childComplexity int, status *string, sign *string) int
 		Preset   func(childComplexity int, id string) int
-		Presets  func(childComplexity int, kind *string, component []string) int
+		Presets  func(childComplexity int, kind *string, component []string, name []string) int
 	}
 
 	Tag struct {
@@ -160,7 +160,7 @@ type OutfitResolver interface {
 	Tags(ctx context.Context, obj *model.Outfit) ([]*model.Tag, error)
 }
 type QueryResolver interface {
-	Presets(ctx context.Context, kind *string, component []string) ([]model.Preset, error)
+	Presets(ctx context.Context, kind *string, component []string, name []string) ([]model.Preset, error)
 	Preset(ctx context.Context, id string) (model.Preset, error)
 	Feedback(ctx context.Context, status *string, sign *string) ([]*model.FeedbackEntry, error)
 }
@@ -650,7 +650,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.Presets(childComplexity, args["kind"].(*string), args["component"].([]string)), true
+		return e.ComplexityRoot.Query.Presets(childComplexity, args["kind"].(*string), args["component"].([]string), args["name"].([]string)), true
 
 	case "Tag.author":
 		if e.ComplexityRoot.Tag.Author == nil {
@@ -911,8 +911,10 @@ type Query {
   полей). component — доп. сужение (presets-component-filter, ROADMAP.yaml): совпадение по ЛЮБОМУ
   компоненту из списка (OR). Смысл только у видов, несущих поле component (Form/Assembly/Content)
   — записи остальных видов (Palette/Outfit/Tag) при заданном component в выдачу не попадают, это
-  не ошибка. kind и component независимы, комбинируются или задаются по отдельности."""
-  presets(kind: String, component: [String!]): [Preset!]!
+  не ошибка. kind и component независимы, комбинируются или задаются по отдельности. name —
+  отбор по машинному имени (presets-by-name, ROADMAP.yaml), тоже по ЛЮБОМУ из списка: запись без
+  имени в такую выдачу не попадает — её нечем адресовать."""
+  presets(kind: String, component: [String!], name: [String!]): [Preset!]!
   preset(id: ID!): Preset
 }
 
@@ -1348,6 +1350,14 @@ func (ec *executionContext) field_Query_presets_args(ctx context.Context, rawArg
 		return nil, err
 	}
 	args["component"] = arg1
+	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "name",
+		func(ctx context.Context, v any) ([]string, error) {
+			return ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["name"] = arg2
 	return args, nil
 }
 
@@ -3094,7 +3104,7 @@ func (ec *executionContext) _Query_presets(ctx context.Context, field graphql.Co
 		},
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().Presets(ctx, fc.Args["kind"].(*string), fc.Args["component"].([]string))
+			return ec.Resolvers.Query().Presets(ctx, fc.Args["kind"].(*string), fc.Args["component"].([]string), fc.Args["name"].([]string))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []model.Preset) graphql.Marshaler {

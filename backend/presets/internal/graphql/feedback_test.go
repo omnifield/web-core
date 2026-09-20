@@ -134,7 +134,7 @@ func TestFeedbackDoesNotAppearAmongPresets(t *testing.T) {
 	}
 	create(t, s, "palette", "brand", `{"name":"brand"}`)
 
-	presets, err := resolver.Query().Presets(ctx, nil, nil)
+	presets, err := resolver.Query().Presets(ctx, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Presets: %v", err)
 	}

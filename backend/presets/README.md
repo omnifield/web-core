@@ -51,7 +51,7 @@
 
 🔌 Схема (`internal/graphql/schema.graphql`) — интерфейс `Preset` (общие поля: `id`/`label`/`name`/
 `description`/`kind`/`savedAt`) и шесть конкретных типов по видам реестра —
-`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`. `Query.presets(kind, component)`/`Query.preset(id)` —
+`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`. `Query.presets(kind, component, name)`/`Query.preset(id)` —
 чтение; `Mutation.createPreset`/`replacePreset`/`deletePreset` — запись, конверт (`PresetInput`) по
 смыслу тот же, что раньше нёс REST-конверт (`kind`/`label`/`name`/`description`/`state`), плюс
 необязательный `id`: запись, родившаяся у клиента, кладётся под своим айди, а не под выданным
@@ -132,6 +132,15 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 ```sh
 curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
   "query": "{ presets(kind: \"outfit\") { name ... on Outfit { palette { name } forms { name component } } } }"
+}'
+```
+
+**Взять запись по имени** — приложение и рантайм оперируют именем (`wear("omnifield")`), айди у них
+нет вовсе:
+
+```sh
+curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
+  "query": "{ presets(kind: \"outfit\", name: [\"omnifield\"]) { name ... on Outfit { palette { name } } } }"
 }'
 ```
 
@@ -231,7 +240,7 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 
 | Запрос | Отдаёт |
 |---|---|
-| `Query.presets(kind, component)` | `[Preset!]!` — записи целиком, типизированные по виду (не `Meta` без `state`, как раньше отдавал индекс REST). `component: [String!]` — доп. сужение по ЛЮБОМУ (OR) из списка, смысл только у видов с полем `component` (`Form`/`Assembly`/`Content`) — записи `Palette`/`Outfit`/`Tag` при заданном фильтре в выдачу не попадают |
+| `Query.presets(kind, component, name)` | `[Preset!]!` — записи целиком, типизированные по виду (не `Meta` без `state`, как раньше отдавал индекс REST). `component: [String!]` — доп. сужение по ЛЮБОМУ (OR) из списка, смысл только у видов с полем `component` (`Form`/`Assembly`/`Content`) — записи `Palette`/`Outfit`/`Tag` при заданном фильтре в выдачу не попадают. `name: [String!]` — отбор по машинному имени, тоже по ЛЮБОМУ из списка; безымянная запись в такую выдачу не попадает |
 | `Query.preset(id)` | `Preset` — запись или `null`, если такой нет |
 | `Mutation.createPreset`/`replacePreset` | `Preset!` — только что созданная/делённая запись |
 | `Mutation.deletePreset` | `Boolean!` — было ли что удалять |
