@@ -128,6 +128,93 @@ func runBatchedOutfitsQuery(t *testing.T, n int) (listCalls, getManyCalls int) {
 	return counting.listCalls, counting.getManyCalls
 }
 
+// runBatchedMenusQuery — то же измерение для связи меню → адаптеры (feeder-kinds, ROADMAP.yaml):
+// n меню, у каждого свой адаптер плюс общий на всех, один запрос за всеми меню с адаптерами.
+func runBatchedMenusQuery(t *testing.T, n int) (listCalls, getManyCalls int) {
+	t.Helper()
+
+	s := openTestStore(t)
+	adapter := func(name string) string {
+		return fmt.Sprintf(`{"name":%q,"root":"/data/items","rules":[],"providers":{},"consumers":{}}`, name)
+	}
+	create(t, s, "adapter", "shared", adapter("shared"))
+	for i := 0; i < n; i++ {
+		name := fmt.Sprintf("adapter-%d", i)
+		create(t, s, "adapter", name, adapter(name))
+	}
+	for i := 0; i < n; i++ {
+		menuName := fmt.Sprintf("menu-%d", i)
+		create(t, s, "menu", menuName, fmt.Sprintf(
+			`{"name":%q,"adapters":[%q,"shared"]}`, menuName, fmt.Sprintf("adapter-%d", i),
+		))
+	}
+
+	counting := &countingStore{Store: s}
+	resolver := New(counting, limits.Default)
+	gqlServer := gqlhandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolver}))
+
+	mux := http.NewServeMux()
+	mux.Handle("/graphql", gqlServer)
+	server := httptest.NewServer(loaders.Middleware(counting)(mux))
+	defer server.Close()
+
+	query := `{ presets(kind: "menu") { name ... on Menu { adapters { name root } } } }`
+	reqBody, err := json.Marshal(map[string]string{"query": query})
+	if err != nil {
+		t.Fatalf("marshal query: %v", err)
+	}
+
+	resp, err := http.Post(server.URL+"/graphql", "application/json", bytes.NewReader(reqBody))
+	if err != nil {
+		t.Fatalf("POST /graphql: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var parsed struct {
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
+		Data struct {
+			Presets []struct {
+				Name     string `json:"name"`
+				Adapters []struct {
+					Name string `json:"name"`
+					Root string `json:"root"`
+				} `json:"adapters"`
+			} `json:"presets"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if len(parsed.Errors) > 0 {
+		t.Fatalf("GraphQL-запрос вернул ошибки: %+v", parsed.Errors)
+	}
+	if len(parsed.Data.Presets) != n {
+		t.Fatalf("ожидалось %d меню, получено %d", n, len(parsed.Data.Presets))
+	}
+	for _, menu := range parsed.Data.Presets {
+		if len(menu.Adapters) != 2 || menu.Adapters[0].Root != "/data/items" {
+			t.Errorf("%s: связь на адаптеры разошлась: %+v", menu.Name, menu.Adapters)
+		}
+	}
+
+	t.Logf("меню N=%d: List() вызван %d раз, GetMany() вызван %d раз", n, counting.listCalls, counting.getManyCalls)
+	return counting.listCalls, counting.getManyCalls
+}
+
+// TestMenuAdaptersBatchAcrossMenus — та же проверка O(1) для новой связи: меню, резолвящие свои
+// адаптеры одновременно, обязаны сложиться в те же вызовы store, что и одно меню.
+func TestMenuAdaptersBatchAcrossMenus(t *testing.T) {
+	smallList, smallGetMany := runBatchedMenusQuery(t, 5)
+	largeList, largeGetMany := runBatchedMenusQuery(t, 50)
+
+	if smallList != largeList || smallGetMany != largeGetMany {
+		t.Errorf("меню: %d List + %d GetMany при N=5 против %d + %d при N=50 — растёт с N, не батчится",
+			smallList, smallGetMany, largeList, largeGetMany)
+	}
+}
+
 // TestBatchingCollapsesToConstantCalls — доказывает O(1), а не просто "мало при одном N": гоняет
 // запрос при ДВУХ разных N и требует РАВНОГО числа вызовов store. Число вызовов, растущее вместе
 // с N (даже медленно), провалило бы это сравнение — в отличие от проверки "меньше потолка при

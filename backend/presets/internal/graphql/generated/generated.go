@@ -28,6 +28,7 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
+	Menu() MenuResolver
 	Mutation() MutationResolver
 	Outfit() OutfitResolver
 	Query() QueryResolver
@@ -37,6 +38,32 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Adapter struct {
+		Consumers   func(childComplexity int) int
+		Description func(childComplexity int) int
+		Extra       func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Kind        func(childComplexity int) int
+		Label       func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Providers   func(childComplexity int) int
+		Root        func(childComplexity int) int
+		Rules       func(childComplexity int) int
+		SavedAt     func(childComplexity int) int
+	}
+
+	Api struct {
+		Defs        func(childComplexity int) int
+		Description func(childComplexity int) int
+		Endpoints   func(childComplexity int) int
+		Groups      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Kind        func(childComplexity int) int
+		Label       func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SavedAt     func(childComplexity int) int
+	}
+
 	Assembly struct {
 		Assembly    func(childComplexity int) int
 		Author      func(childComplexity int) int
@@ -87,6 +114,16 @@ type ComplexityRoot struct {
 		Recipe      func(childComplexity int) int
 		SavedAt     func(childComplexity int) int
 		VariantTags func(childComplexity int) int
+	}
+
+	Menu struct {
+		Adapters    func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Kind        func(childComplexity int) int
+		Label       func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SavedAt     func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -147,6 +184,9 @@ type ComplexityRoot struct {
 
 // region    ************************** generated!.gotpl **************************
 
+type MenuResolver interface {
+	Adapters(ctx context.Context, obj *model.Menu) ([]*model.Adapter, error)
+}
 type MutationResolver interface {
 	CreatePreset(ctx context.Context, input model.PresetInput) (model.Preset, error)
 	ReplacePreset(ctx context.Context, id string, input model.PresetInput) (model.Preset, error)
@@ -182,6 +222,128 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Adapter.consumers":
+		if e.ComplexityRoot.Adapter.Consumers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Consumers(childComplexity), true
+	case "Adapter.description":
+		if e.ComplexityRoot.Adapter.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Description(childComplexity), true
+	case "Adapter.extra":
+		if e.ComplexityRoot.Adapter.Extra == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Extra(childComplexity), true
+	case "Adapter.id":
+		if e.ComplexityRoot.Adapter.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.ID(childComplexity), true
+	case "Adapter.kind":
+		if e.ComplexityRoot.Adapter.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Kind(childComplexity), true
+	case "Adapter.label":
+		if e.ComplexityRoot.Adapter.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Label(childComplexity), true
+	case "Adapter.name":
+		if e.ComplexityRoot.Adapter.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Name(childComplexity), true
+	case "Adapter.providers":
+		if e.ComplexityRoot.Adapter.Providers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Providers(childComplexity), true
+	case "Adapter.root":
+		if e.ComplexityRoot.Adapter.Root == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Root(childComplexity), true
+	case "Adapter.rules":
+		if e.ComplexityRoot.Adapter.Rules == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.Rules(childComplexity), true
+	case "Adapter.savedAt":
+		if e.ComplexityRoot.Adapter.SavedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Adapter.SavedAt(childComplexity), true
+
+	case "Api.defs":
+		if e.ComplexityRoot.Api.Defs == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Defs(childComplexity), true
+	case "Api.description":
+		if e.ComplexityRoot.Api.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Description(childComplexity), true
+	case "Api.endpoints":
+		if e.ComplexityRoot.Api.Endpoints == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Endpoints(childComplexity), true
+	case "Api.groups":
+		if e.ComplexityRoot.Api.Groups == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Groups(childComplexity), true
+	case "Api.id":
+		if e.ComplexityRoot.Api.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.ID(childComplexity), true
+	case "Api.kind":
+		if e.ComplexityRoot.Api.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Kind(childComplexity), true
+	case "Api.label":
+		if e.ComplexityRoot.Api.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Label(childComplexity), true
+	case "Api.name":
+		if e.ComplexityRoot.Api.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.Name(childComplexity), true
+	case "Api.savedAt":
+		if e.ComplexityRoot.Api.SavedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Api.SavedAt(childComplexity), true
 
 	case "Assembly.assembly":
 		if e.ComplexityRoot.Assembly.Assembly == nil {
@@ -426,6 +588,49 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Form.VariantTags(childComplexity), true
+
+	case "Menu.adapters":
+		if e.ComplexityRoot.Menu.Adapters == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.Adapters(childComplexity), true
+	case "Menu.description":
+		if e.ComplexityRoot.Menu.Description == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.Description(childComplexity), true
+	case "Menu.id":
+		if e.ComplexityRoot.Menu.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.ID(childComplexity), true
+	case "Menu.kind":
+		if e.ComplexityRoot.Menu.Kind == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.Kind(childComplexity), true
+	case "Menu.label":
+		if e.ComplexityRoot.Menu.Label == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.Label(childComplexity), true
+	case "Menu.name":
+		if e.ComplexityRoot.Menu.Name == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.Name(childComplexity), true
+	case "Menu.savedAt":
+		if e.ComplexityRoot.Menu.SavedAt == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Menu.SavedAt(childComplexity), true
 
 	case "Mutation.createPreset":
 		if e.ComplexityRoot.Mutation.CreatePreset == nil {
@@ -892,6 +1097,51 @@ type Assembly implements Preset {
   author: String
 }
 
+"""Документ описания чужого API в уже разобранном виде (не сырьё свагера) — запись движка
+кормления (interfaces/feeder). endpoints/groups/defs — именованные JSON-поля: внутри произвольная
+JSON Schema. Связей на другие записи у вида нет, человеческое имя документа едет в label."""
+type Api implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  endpoints: JSON!
+  groups: JSON
+  defs: JSON
+}
+
+"""Шов «поставщик → потребитель»: root — где в ответе лежит набор записей, rules — правила
+перекладки, providers/consumers — деревья участников (витринная отметка, не связь и не проверка).
+Машинное name у записи этого вида — то, чем её адресует разметка приложения (adapter="users-list"),
+как data-variant одевает компонент."""
+type Adapter implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  root: String!
+  rules: JSON!
+  extra: String
+  providers: JSON
+  consumers: JSON
+}
+
+"""Какие адаптеры берёт одно приложение. adapters — связь по имени, симметрично Outfit.forms:
+один запрос отдаёт меню вместе со всеми его адаптерами, батчем."""
+type Menu implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  adapters: [Adapter!]!
+}
+
 """Конверт записи/замены — тот же смысл, что у сегодняшнего REST-конверта (label/name/description/
 kind/state), state валидируется по kinds-registry вида."""
 input PresetInput {
@@ -972,6 +1222,34 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // childFields_* functions provide shared child field context lookups.
 // Each function is generated once per unique object type, deduplicating the
 // switch statements that were previously inlined in every fieldContext_* function.
+
+func (ec *executionContext) childFields_Adapter(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+	switch field.Name {
+	case "id":
+		return ec.fieldContext_Adapter_id(ctx, field)
+	case "label":
+		return ec.fieldContext_Adapter_label(ctx, field)
+	case "name":
+		return ec.fieldContext_Adapter_name(ctx, field)
+	case "description":
+		return ec.fieldContext_Adapter_description(ctx, field)
+	case "kind":
+		return ec.fieldContext_Adapter_kind(ctx, field)
+	case "savedAt":
+		return ec.fieldContext_Adapter_savedAt(ctx, field)
+	case "root":
+		return ec.fieldContext_Adapter_root(ctx, field)
+	case "rules":
+		return ec.fieldContext_Adapter_rules(ctx, field)
+	case "extra":
+		return ec.fieldContext_Adapter_extra(ctx, field)
+	case "providers":
+		return ec.fieldContext_Adapter_providers(ctx, field)
+	case "consumers":
+		return ec.fieldContext_Adapter_consumers(ctx, field)
+	}
+	return nil, fmt.Errorf("no field named %q was found under type Adapter", field.Name)
+}
 
 func (ec *executionContext) childFields_FeedbackEntry(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
@@ -1420,6 +1698,466 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ***************************** args.gotpl *****************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Adapter_id(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_label(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_name(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_description(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_kind(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_kind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Kind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_savedAt(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_savedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SavedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_savedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_root(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_root(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Root, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_root(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_rules(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_rules(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Rules, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalNJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_rules(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_extra(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_extra(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Extra, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *string) graphql.Marshaler {
+			return ec.marshalOString2ᚖstring(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_extra(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_providers(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_providers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Providers, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalOJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_providers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
+
+func (ec *executionContext) _Adapter_consumers(ctx context.Context, field graphql.CollectedField, obj *model.Adapter) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Adapter_consumers(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Consumers, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalOJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Adapter_consumers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Adapter", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
+
+func (ec *executionContext) _Api_id(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Api_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Api_label(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Api_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Api_name(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Api_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Api_description(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Api_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Api_kind(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_kind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Kind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Api_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Api_savedAt(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_savedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SavedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Api_savedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Api_endpoints(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_endpoints(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Endpoints, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalNJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Api_endpoints(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
+
+func (ec *executionContext) _Api_groups(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_groups(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Groups, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalOJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Api_groups(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
+
+func (ec *executionContext) _Api_defs(ctx context.Context, field graphql.CollectedField, obj *model.Api) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Api_defs(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Defs, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v model.JSON) graphql.Marshaler {
+			return ec.marshalOJSON2presetsᚋinternalᚋgraphqlᚋmodelᚐJSON(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Api_defs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Api", field, false, false, errors.New("field of type JSON does not have child fields"))
+}
 
 func (ec *executionContext) _Assembly_id(ctx context.Context, field graphql.CollectedField, obj *model.Assembly) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
@@ -2339,6 +3077,176 @@ func (ec *executionContext) _Form_author(ctx context.Context, field graphql.Coll
 }
 func (ec *executionContext) fieldContext_Form_author(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Form", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_id(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_label(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_label(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Label, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_label(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_name(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_name(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Name, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_description(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_description(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Description, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalOString2string(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_kind(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_kind(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Kind, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_savedAt(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_savedAt(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.SavedAt, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_savedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Menu", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Menu_adapters(ctx context.Context, field graphql.CollectedField, obj *model.Menu) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Menu_adapters(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Menu().Adapters(ctx, obj)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Adapter) graphql.Marshaler {
+			return ec.marshalNAdapter2ᚕᚖpresetsᚋinternalᚋgraphqlᚋmodelᚐAdapterᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Menu_adapters(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Menu",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Adapter(ctx, field)
+		},
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Mutation_createPreset(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4697,6 +5605,13 @@ func (ec *executionContext) _Preset(ctx context.Context, sel ast.SelectionSet, o
 			return graphql.Null
 		}
 		return ec._Outfit(ctx, sel, obj)
+	case model.Menu:
+		return ec._Menu(ctx, sel, &obj)
+	case *model.Menu:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Menu(ctx, sel, obj)
 	case model.Form:
 		return ec._Form(ctx, sel, &obj)
 	case *model.Form:
@@ -4718,6 +5633,20 @@ func (ec *executionContext) _Preset(ctx context.Context, sel ast.SelectionSet, o
 			return graphql.Null
 		}
 		return ec._Assembly(ctx, sel, obj)
+	case model.Api:
+		return ec._Api(ctx, sel, &obj)
+	case *model.Api:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Api(ctx, sel, obj)
+	case model.Adapter:
+		return ec._Adapter(ctx, sel, &obj)
+	case *model.Adapter:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Adapter(ctx, sel, obj)
 	default:
 		if typedObj, ok := obj.(graphql.Marshaler); ok {
 			return typedObj
@@ -4730,6 +5659,172 @@ func (ec *executionContext) _Preset(ctx context.Context, sel ast.SelectionSet, o
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var adapterImplementors = []string{"Adapter", "Preset"}
+
+func (ec *executionContext) _Adapter(ctx context.Context, sel ast.SelectionSet, obj *model.Adapter) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, adapterImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Adapter")
+		case "id":
+			out.Values[i] = ec._Adapter_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._Adapter_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Adapter_name(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Adapter_description(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "kind":
+			out.Values[i] = ec._Adapter_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "savedAt":
+			out.Values[i] = ec._Adapter_savedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "root":
+			out.Values[i] = ec._Adapter_root(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "rules":
+			out.Values[i] = ec._Adapter_rules(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "extra":
+			out.Values[i] = ec._Adapter_extra(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "providers":
+			out.Values[i] = ec._Adapter_providers(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "consumers":
+			out.Values[i] = ec._Adapter_consumers(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var apiImplementors = []string{"Api", "Preset"}
+
+func (ec *executionContext) _Api(ctx context.Context, sel ast.SelectionSet, obj *model.Api) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, apiImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Api")
+		case "id":
+			out.Values[i] = ec._Api_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "label":
+			out.Values[i] = ec._Api_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Api_name(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Api_description(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "kind":
+			out.Values[i] = ec._Api_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "savedAt":
+			out.Values[i] = ec._Api_savedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "endpoints":
+			out.Values[i] = ec._Api_endpoints(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "groups":
+			out.Values[i] = ec._Api_groups(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		case "defs":
+			out.Values[i] = ec._Api_defs(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
 
 var assemblyImplementors = []string{"Assembly", "Preset"}
 
@@ -5042,6 +6137,107 @@ func (ec *executionContext) _Form(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(min(len(deferLabelToView), math.MaxInt32)))
+
+	ec.ProcessDeferredGroup(graphql.DeferredGroup{
+		Defers:   deferLabelToView,
+		Path:     graphql.GetPath(ctx),
+		FieldSet: deferredFieldSet,
+		Context:  ctx,
+	})
+
+	return out
+}
+
+var menuImplementors = []string{"Menu", "Preset"}
+
+func (ec *executionContext) _Menu(ctx context.Context, sel ast.SelectionSet, obj *model.Menu) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, menuImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferredFieldSet := graphql.NewFieldSet(nil)
+	deferLabelToView := make(map[string]*graphql.FieldSetView)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Menu")
+		case "id":
+			out.Values[i] = ec._Menu_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "label":
+			out.Values[i] = ec._Menu_label(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Menu_name(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Menu_description(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "kind":
+			out.Values[i] = ec._Menu_kind(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "savedAt":
+			out.Values[i] = ec._Menu_savedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "adapters":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Menu_adapters(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.IsDeferred() {
+				deferredFieldSet.AddField(field)
+				fieldIndex := len(deferredFieldSet.Values) - 1
+				deferredFieldSet.Concurrently(fieldIndex, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, deferredFieldSet)
+				})
+
+				for _, deferrable := range field.Deferrables {
+					view, ok := deferLabelToView[deferrable.Label]
+					if !ok {
+						view = deferredFieldSet.NewView()
+						deferLabelToView[deferrable.Label] = view
+					}
+					view.AddIndices(fieldIndex)
+				}
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5999,6 +7195,32 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAdapter2ᚕᚖpresetsᚋinternalᚋgraphqlᚋmodelᚐAdapterᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Adapter) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNAdapter2ᚖpresetsᚋinternalᚋgraphqlᚋmodelᚐAdapter(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNAdapter2ᚖpresetsᚋinternalᚋgraphqlᚋmodelᚐAdapter(ctx context.Context, sel ast.SelectionSet, v *model.Adapter) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Adapter(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)

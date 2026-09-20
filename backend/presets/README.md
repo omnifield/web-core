@@ -24,7 +24,8 @@
 встаёт СНАРУЖИ, на границе GraphQL-схемы (`internal/kinds` — реестр видов), а не внутри store.
 Разбор ФОРМАТА содержимого (что значит конкретное поле конкретного вида для рендера/логики)
 по-прежнему у владельца вида, не у этой службы — просто теперь у каждого вида есть Go-структура на
-границе API, а не голый blob.
+границе API, а не голый blob. Владелец видов не один: сегодня в реестре шесть видов скина и три
+вида движка кормления (`interfaces/feeder`).
 
 📢 Сервис — не только про пресеты скина. Второй, независимый смысл — фидбэк: сигнал по любой
 ручке любого продукта ("сработало"/"не сработало"), не дизайн-настройка. У фидбэка своя причина
@@ -50,8 +51,11 @@
 | Живость | `GET /healthz` | Не проксируется наружу — только докеру и тому, кто разворачивает |
 
 🔌 Схема (`internal/graphql/schema.graphql`) — интерфейс `Preset` (общие поля: `id`/`label`/`name`/
-`description`/`kind`/`savedAt`) и шесть конкретных типов по видам реестра —
-`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`. `Query.presets(kind, component, name)`/`Query.preset(id)` —
+`description`/`kind`/`savedAt`) и девять конкретных типов по видам реестра: шесть у скина —
+`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly` — и три у движка кормления (`interfaces/feeder`) —
+`Api` (разобранный документ чужого API), `Adapter` (шов «поставщик → потребитель», адресуется
+машинным именем из разметки приложения) и `Menu` (какие адаптеры берёт одно приложение;
+`Menu.adapters` — связь по имени, как `Outfit.forms`). `Query.presets(kind, component, name)`/`Query.preset(id)` —
 чтение; `Mutation.createPreset`/`replacePreset`/`deletePreset` — запись, конверт (`PresetInput`) по
 смыслу тот же, что раньше нёс REST-конверт (`kind`/`label`/`name`/`description`/`state`), плюс
 необязательный `id`: запись, родившаяся у клиента, кладётся под своим айди, а не под выданным
@@ -73,7 +77,9 @@ in, byte out — не в курсе типизации); `internal/store/feedbac
 `ReplaceFeedbackState`), ничего общего с `bucketMeta`/`bucketState`/`bucketNames` Preset'а — у
 заявки нет ни `kind`, ни машинного имени, нечего адресовать по имени.
 `internal/kinds` — реестр видов Preset: по файлу на вид, Go-структура `state` + запись в карте
-`kind → тип`, точка расширения для новых владельцев (`tables` заведёт свой `filter` тут же).
+`kind → тип`, точка расширения для новых владельцев — второй владелец уже пришёл (`api`/`adapter`/
+`menu` движка кормления завелись тремя файлами, без правки существующих видов и резолверов),
+`tables` заведёт свой `filter` тут же.
 Фидбэк мимо этого реестра — своя форма (`internal/graphql/feedback_convert.go`), не Go-структура
 канона.
 `internal/graphql` — схема (`schema.graphql` + `feedback.graphql`), резолверы, конвертация
@@ -189,7 +195,7 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 | `PRESETS_DB` | `./db/presets.db` | Путь к файлу базы (bbolt) |
 | `PRESETS_PORT` | `8787` | Порт |
 | `PRESETS_HOST` | `0.0.0.0` | Адрес |
-| `PRESETS_MAX_RECORD_BYTES` | `1048576` (1 МиБ) | Предел размера ОДНОЙ записи |
+| `PRESETS_MAX_RECORD_BYTES` | `1048576` (1 МиБ) | Предел размера ОДНОЙ записи. Умолчание мало для вида `api`: разобранный swagger Kubernetes весит ~1.2 МБ (измерено зоной кормушки 2026-09-20) — на стенде поднимается окружением |
 | `PRESETS_MAX_RECORDS_PER_KIND` | `200` | Предел числа записей ОДНОГО вида — список выбирают глазами |
 | `PRESETS_MAX_TOTAL_BYTES` | `67108864` (64 МиБ) | Предел занятого объёма всего хранилища |
 | `PRESETS_MAX_LABEL_CHARS` | `120` | Предел длины `label` |
@@ -230,7 +236,7 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 | Поле | Обязательно | Форма |
 |---|---|---|
 | `id` | нет | UUID в каноническом виде строчными (`8-4-4-4-12`); не задан — айди выдаёт служба, задан и занят — отказ. У `replacePreset` обязан совпадать с айди аргумента |
-| `kind` | да | зарегистрированный вид (`palette`/`form`/`outfit`/`content`/`tag`/`assembly` сегодня) |
+| `kind` | да | зарегистрированный вид (сегодня `palette`/`form`/`outfit`/`content`/`tag`/`assembly` у скина и `api`/`adapter`/`menu` у кормушки) |
 | `label` | да | непустая строка, ≤ `LabelChars` |
 | `name` | нет | `^[a-z0-9][a-z0-9-]{0,31}$` |
 | `description` | нет | строка, ≤ `DescriptionChars` |
@@ -247,8 +253,8 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 | `GET /healthz` | `{ ok, presets, bytes, limits }` — как было |
 
 `Preset` (общие поля любого вида) — `{ id, label, name?, description?, kind, savedAt }`, где
-`savedAt` — RFC3339 с наносекундами; конкретные поля `state` — свои у каждого из шести типов
-(`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`), см. схему.
+`savedAt` — RFC3339 с наносекундами; конкретные поля `state` — свои у каждого из девяти типов
+(`Palette`/`Form`/`Outfit`/`Content`/`Tag`/`Assembly`, `Api`/`Adapter`/`Menu`), см. схему.
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
@@ -261,10 +267,10 @@ bbolt-хранилище и реальной сети (54 теста, 7 файл
 |---|---|
 | `internal/store/store_test.go` | CRUD, атомарность `Replace`, пределы (запись/вид/объём целиком), opaque-проход `state`, `GetMany`-батч (пропуск отсутствующего id, не отказ), айди клиента (сохраняется как прислан, занятый отбивается, 20 одновременных укладок одного айди оставляют ровно одну), конкурентные создания под гонкой (`-race`) |
 | `internal/store/feedback_test.go` | Свой бакет: create/get/list (новые сверху), `ReplaceFeedbackState` держит id и обновляет `savedAt`, отказ на несуществующую заявку, фидбэк считается в ОБЩИЙ `TotalBytes` (диск общий с пресетами) |
-| `internal/kinds/kinds_test.go` | Все шесть видов зарегистрированы, каждый разбирается по своей форме (включая `tag` — по форме живой записи прода, не выдумке), двойная регистрация одного `kind` паникует |
-| `internal/graphql/resolver_test.go` | Типизация по видам вперемешку, отказ на незарегистрированный/неверной формы `state`, резолв связей `Outfit.palette/forms/tags` с тихим пропуском dangling-ссылки, `create`/`replace`/`delete`-роундтрип, проверка конверта (label/name/description/id), айди клиента доживает до чтения, чужой айди в конверте замены отбивается, проход store-ошибки (`NameTakenError`) через резолвер не глотается |
+| `internal/kinds/kinds_test.go` | Все девять видов зарегистрированы, каждый разбирается по своей форме (включая `tag` — по форме живой записи прода, не выдумке, и три вида кормушки — по формам её живого кода), двойная регистрация одного `kind` паникует |
+| `internal/graphql/resolver_test.go` | Типизация по видам вперемешку, отказ на незарегистрированный/неверной формы `state`, резолв связей `Outfit.palette/forms/tags` с тихим пропуском dangling-ссылки, `create`/`replace`/`delete`-роундтрип, проверка конверта (label/name/description/id), айди клиента доживает до чтения, чужой айди в конверте замены отбивается, отбор по имени (OR по списку, сужение видом, безымянная запись мимо), связь `Menu.adapters` резолвится по имени и тихо пропускает ссылку в никуда, документ `api` доезжает целиком, вместе с полями, о которых служба ничего не знает, проход store-ошибки (`NameTakenError`) через резолвер не глотается |
 | `internal/graphql/feedback_test.go` | `sign`/`status` по умолчанию на создании, фильтр `Query.feedback` по status/sign, `resolveFeedback` не трогает остальные поля и отказывает на повторный резолв, фидбэк НЕ появляется среди `Query.presets` (свой бакет — не Preset) |
-| `internal/graphql/batching_test.go` | **Измерено, не прочитано по коду**: реальный GraphQL-запрос (`generated.NewExecutableSchema` + `handler.NewDefaultServer`, тот же стек, что в `cmd/presets`) через `httptest`-сервер со считающей обёрткой (`countingStore`) поверх `internal/graphql.Store`/`loaders.Store` — число вызовов `store.List`/`GetMany` ОДИНАКОВОЕ при N=5 и N=50 нарядов, каждый со своей формой и общей палитрой. Доказывает O(1), не просто «мало при одном N» |
+| `internal/graphql/batching_test.go` | **Измерено, не прочитано по коду**: реальный GraphQL-запрос (`generated.NewExecutableSchema` + `handler.NewDefaultServer`, тот же стек, что в `cmd/presets`) через `httptest`-сервер со считающей обёрткой (`countingStore`) поверх `internal/graphql.Store`/`loaders.Store` — число вызовов `store.List`/`GetMany` ОДИНАКОВОЕ при N=5 и N=50 нарядов, каждый со своей формой и общей палитрой (3 `List` + 2 `GetMany`), и так же для меню с их адаптерами (2 + 2). Доказывает O(1), не просто «мало при одном N» |
 | `cmd/presets/main_test.go` | `/healthz`-ответ, CORS-preflight (204 без похода до GraphQL-обработчика) и что не-preflight запрос доходит |
 | Мутация: изоляция предела по виду | Снял фильтр по `kind` в счётчике — проба `TestRecordsPerKindLimitDoesNotStarveOtherKinds` покраснела |
 | Мутация: изоляция имени по виду | Снял `kind` из ключа индекса имён — проба `TestNameUniquePerKindNotGlobal` покраснела |
@@ -295,5 +301,8 @@ type Outfit struct {
 func init() { Register(Kind{Label: "outfit", New: func() any { return &Outfit{} }}) }
 ```
 
-Второй вид (например, `filter` у зоны `tables`) — второй такой же файл в `internal/kinds/`, плюс
-свой тип в `schema.graphql` — с нулём правок в существующих файлах видов или резолверах.
+Вид второго владельца — такой же файл в `internal/kinds/`, плюс свой тип в `schema.graphql`, с
+нулём правок в существующих файлах видов или резолверах. Это уже проверено делом: `api`/`adapter`/
+`menu` движка кормления завелись ровно так, и единственным кодом сверх трёх файлов вида стал
+полевой резолвер связи `Menu.adapters` — потому что у этого вида есть ссылки на другие записи, а
+не потому, что реестру понадобилась правка.
