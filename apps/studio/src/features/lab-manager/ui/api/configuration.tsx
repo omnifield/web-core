@@ -1,17 +1,21 @@
-import { ExternalSchemaLoader, ApiCatalog } from "@web-core/feeder";
+import { ApiCatalog, ExternalSchemaLoader } from "@web-core/feeder";
+import { useEndpoint } from "#/entities/endpoint";
 
-/** Настройка API выбранного компонента: откуда он берёт еду и какая ручка за это отвечает.
+/** Настройка API: загрузка документа схемы и каталог ручек с их правкой и вызовом.
  *
- *  Пока заглушка — место занято намеренно. Правый рейл кухни монтирует фичу по вкладке `api`,
- *  и без этого экспорта половина экрана молча пустеет. Заглушка говорит это вслух. */
+ *  Результат вызова не остаётся здесь: ответ ручки — образец, по которому сводят поля, а экран
+ *  сведения живёт в главной области и этой панели не видит. Проба уходит в сущность, оттуда её
+ *  и берут. */
 export function ApiConfiguration() {
+  const endpoint = useEndpoint();
+
   return (
     <>
       <ExternalSchemaLoader />
       <ApiCatalog
-        onResult={(e) => {
-          console.log(e);
-        }}
+        onResult={(event) =>
+          endpoint.remember(event.presetId, event.endpoint.id, event.result.body)
+        }
       />
     </>
   );
