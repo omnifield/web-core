@@ -1,5 +1,12 @@
 
-import { buildAlphaScale, buildChartScale, buildScale, buildScrim, tryParseColor } from "@web-core/style";
+import {
+  buildAlphaScale,
+  buildCategoryScales,
+  buildChartScale,
+  buildScale,
+  buildScrim,
+  tryParseColor,
+} from "@web-core/style";
 import type { SeededScale, SkinVariables } from "../recipe/index.js";
 import { declared } from "./declare.js";
 import type { SkinHalf, SkinValue } from "./types.js";
@@ -18,6 +25,12 @@ function scaleValues(name: string, scale: SeededScale, mode: SkinHalf): Map<stri
 
   if (scale.chart) {
     buildChartScale(scale.seed, mode).forEach((value, index) => put(`chart-${index + 1}`, value));
+  }
+
+  if (scale.category) {
+    buildCategoryScales(scale.seed, mode).forEach((slot, index) => {
+      for (const [step, value] of Object.entries(slot)) put(`category-${index + 1}-${step}`, value);
+    });
   }
 
   if (scale.scrim) put("scrim", buildScrim(scale.seed));

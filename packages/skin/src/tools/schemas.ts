@@ -74,6 +74,7 @@ export const SeededScaleSchema: z.ZodType<SeededScale> = z.object({
   seed: z.string(),
   alpha: z.boolean().optional(),
   chart: z.boolean().optional(),
+  category: z.boolean().optional(),
   scrim: z.boolean().optional(),
 });
 

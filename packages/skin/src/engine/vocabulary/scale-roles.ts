@@ -15,7 +15,18 @@ const COLOR_STEP_PURPOSE: ReadonlyMap<string, StepPurposeClass> = new Map(
   ),
 );
 
+// Слот категории несёт ту же лестницу, что и сама шкала (`seeds/build.ts`), поэтому класс ступени
+// берётся из того же словаря — снятием номера слота, а не вторым перебором на 455 имён.
+const CATEGORY_SLOT = /^(--[^-]+)-category-\d+-(.+)$/;
+
 /** Класс назначения ступени по полному имени переменной (`--accent-9` → `fill`). Не имя цветовой шкалы — `undefined`. */
 export function colorStepPurpose(name: string): StepPurposeClass | undefined {
-  return COLOR_STEP_PURPOSE.get(name.startsWith("--") ? name : `--${name}`);
+  const full = name.startsWith("--") ? name : `--${name}`;
+  const direct = COLOR_STEP_PURPOSE.get(full);
+
+  if (direct !== undefined) return direct;
+
+  const slot = CATEGORY_SLOT.exec(full);
+
+  return slot ? COLOR_STEP_PURPOSE.get(`${slot[1]}-${slot[2]}`) : undefined;
 }
