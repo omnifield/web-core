@@ -12,16 +12,14 @@ export {
 } from "./features/api-manager";
 
 export {
+  ADAPTER_KIND,
   applyAdapter,
-  adapterBy,
-  sourceKey,
-  adapterStoreOf,
+  asAdapter,
   isFed,
   noFeed,
   type Adapter,
-  type AdaptersState,
-  type FeedSource,
-  type Consumer,
+  type AdapterRule,
+  type UserTree,
 } from "./entities/adapter";
 export {
   presetConfigOf,

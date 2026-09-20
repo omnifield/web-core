@@ -2,16 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { applyAdapter, type Adapter } from "../../../src/entities/adapter";
 
-const source = { apiId: "main", endpointId: "GET /users" };
-
 function adapter(patch: Partial<Adapter> = {}): Adapter {
   return {
-    source,
     root: "",
     rules: [
-      { target: "/id", from: "/id" },
-      { target: "/label", from: "/name" },
+      { id: "rule-id", target: "/id", from: "/id" },
+      { id: "rule-label", target: "/label", from: "/name" },
     ],
+    providers: {},
+    consumers: {},
     ...patch,
   };
 }

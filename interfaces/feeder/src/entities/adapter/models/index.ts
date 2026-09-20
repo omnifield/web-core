@@ -1,4 +1,6 @@
-export { sourceKey, isFed, type Adapter, type FeedSource, type Consumer } from "./types";
+export { isFed, type Adapter, type AdapterRule, type UserTree } from "./types";
 export { applyAdapter, noFeed } from "./apply";
+export { asAdapter } from "./record";
 export { fitOf, type Fit } from "./fit";
-export { adapterBy, adapterStoreOf, type AdaptersState } from "./store";
+export * from "./edit";
+export { ADAPTER_KIND } from "./kind";
