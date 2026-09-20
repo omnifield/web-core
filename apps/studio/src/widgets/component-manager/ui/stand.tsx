@@ -1,4 +1,4 @@
-import { Passport, Distributor } from "#/features/demo-stand";
+import { Passport, Distributor } from "#/features/preview";
 import { Flow, FlowItem, Surface } from "@web-core/ui";
 import { layoutGroup, layoutSelf } from "@web-core/skin";
 
