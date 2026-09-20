@@ -1,4 +1,4 @@
-import { createResource, Show, Suspense, splitProps } from "solid-js";
+import { createResource, Show, Suspense, splitProps, untrack } from "solid-js";
 import { Dynamic } from "solid-js/web";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
@@ -49,7 +49,7 @@ export function Icon(props: IconProps) {
   // его pending при перемонтировании. Для холодной иконки (первый показ где-либо на странице)
   // `initialValue` пуст, и разовый pending — ожидаемый, единственный поход за сетевым чанком.
   const [resolved] = createResource(() => local.name, resolveIcon, {
-    initialValue: loaded.get(local.name),
+    initialValue: untrack(() => loaded.get(local.name)),
   });
 
   // Solid регистрирует pending-ресурс на БЛИЖАЙШЕЙ границе `<Suspense>` по дереву чтения, а не по
