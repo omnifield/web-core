@@ -46,6 +46,53 @@ categories:
           Означает: держатель сборок — срез редактора (`PassportEditorInfo.assemblies`), не поле
           паспорта; паспорт остался про форму компонента, не про витрину случаев.
 
+      - id: truncated-setting-name
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "`truncated` — новое имя в закрытом перечне настроек, флаг обрезки текста"
+        description: |
+          Заявка от архитектора продукта: `Typography` (`packages/ui`) должен уметь обрезать текст
+          по ширине многоточием, и обрезка ортогональна виду — она может понадобиться при ЛЮБОМ
+          варианте (body, heading, caption и любом, который человек заведёт в редакторе). Ось
+          вариаций под это не годится: она несёт вид целиком, а обрезка виду перпендикулярна. В
+          `base` рецепта тоже нельзя — `Typography` рисует и абзацы, `white-space: nowrap` в базе
+          убил бы перенос строк у всего текста кита разом. Остаётся настройка, то есть имя в
+          перечне, который закрыт дважды: типом (`PassportSettings<Props>`) и рантайм-проверкой
+          `definePassport` («settings outside the list»).
+
+          Ни одно из пяти существующих имён (`orientation`, `multiple`, `collapsible`, `outlined`,
+          `filled`) по смыслу не подходит, обойти перечень на стороне кита нечем — он закрыт
+          осознанно. Новой механики при этом не потребовалось: флаг с атрибутной меткой уже живой
+          в ките (`Workspace`'s `outlined`/`filled` — `{ values: { kind: "flag" }, byDefault, mark:
+          { kind: "attribute", name: "data-outlined" } }`), печать по нему идёт обычной веткой
+          рецепта. Правка — буквально расширение словаря.
+
+          СДЕЛАНО (2026-09-20): одна строка `truncated: "Truncated"` в `SETTINGS`
+          (`engine/passport/form/settings.ts`). Подпись в манере соседних флагов (причастие), ключ
+          — тот, что заложен в план правки кита. Добавление аддитивно: `PassportSettingName`
+          расширяется, ни один существующий паспорт не задет ни одним полем. Исчерпывающего
+          перебора `SETTINGS` в репозитории нет — все читатели идут через `Object.keys`/
+          `Object.hasOwn` (`editor/define.ts`, `passport/form/passport.ts`), сверено грепом по
+          `packages/`/`apps/`/`interfaces/`.
+
+          Форма значения — флаг да/нет, решение user. Многострочная обрезка (по N строк) сознательно
+          НЕ входит: произвольное N закрытым перечнем значений не выражается, это другая механика.
+          Рынок здесь с решением совпадает — `canons/ui-skin/sources/css-overflow.md` (CSS Overflow
+          L3, Working Draft 07.10.2025, сверено 2026-08-15): `text-overflow: ellipsis` нормирован в
+          L3, а `line-clamp`/`max-lines`/`block-ellipsis` отложены в Level 4 и «not yet fully
+          validated by implementation experience».
+
+          Тесты — `test/passport-settings.test.ts` (2 кейса, новый файл): паспорт с `truncated` и
+          атрибутной меткой проходит `definePassport`; имя вне словаря по-прежнему отбивается —
+          словарь расширен, но не открыт. Проверено: `lint`/`typecheck`/`test` (180/180, было
+          178)/`build` пакета — зелёные.
+
+          Что делает кит дальше (зона `packages/ui`, не входит сюда): свой проп `truncated` в
+          `TypographyProps`, настройка в паспорте с меткой `data-truncated`, правило обрезки в форме
+          и тест на реальном DOM.
+
       - id: no-validation-axis-on-passport
         type: decision
         status: Rejected

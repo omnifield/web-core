@@ -7,6 +7,7 @@ export const SETTINGS = {
   collapsible: "Can close all",
   outlined: "Outlined",
   filled: "Filled",
+  truncated: "Truncated",
 } as const satisfies Readonly<Record<string, string>>;
 
 export type PassportSettingName = keyof typeof SETTINGS;
