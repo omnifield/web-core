@@ -25,9 +25,8 @@
 //     120 КБ порождённого мусора в исходниках ради имён, которых кит не называет.
 //     У `lucide-solid` своего `./dynamic` нет — сверено с exports-картой версии 1.43.0.
 //
-// Здесь — только те имена, которые кит реально называет: шесть в сборках playground плюс
-// ближайшие соседи по механике компонентов, у которых есть слот под иконку (22 компонента).
-// Специфер ЛИТЕРАЛЬНЫЙ и ПАКЕТНЫЙ — его резолвит exports-карта самой `lucide-solid`, одинаково
+// Здесь — имена, которые кит называет сам (сборки playground, слоты под иконку у компонентов),
+// и имена, пришедшие заявкой потребителя. Специфер ЛИТЕРАЛЬНЫЙ и ПАКЕТНЫЙ — его резолвит exports-карта самой `lucide-solid`, одинаково
 // у Vite, Rollup, webpack и в `node`; ни макроса, ни шаблонной строки, ни пути в `node_modules`.
 //
 // НУЖНОЙ ИКОНКИ НЕТ — добавь строку сюда. Это не обход механизма, это и есть механизм: словарь
@@ -85,6 +84,30 @@ export const catalog = {
   // Режимы раскладки: демо-стенд переключает matrix/grid.
   "grid-3x3": () => import("lucide-solid/icons/grid-3x3"),
   "layout-grid": () => import("lucide-solid/icons/layout-grid"),
+
+  // Типы данных: вид поля значком вместо текстового бейджа.
+  "type": () => import("lucide-solid/icons/type"),
+  "hash": () => import("lucide-solid/icons/hash"),
+  "toggle-left": () => import("lucide-solid/icons/toggle-left"),
+  "list": () => import("lucide-solid/icons/list"),
+  "braces": () => import("lucide-solid/icons/braces"),
+  "brackets": () => import("lucide-solid/icons/brackets"),
+  "circle-question-mark": () => import("lucide-solid/icons/circle-question-mark"),
+
+  // Связи между полями: наличие связи, её направление, правило на ней и запрет.
+  "link": () => import("lucide-solid/icons/link"),
+  "unlink": () => import("lucide-solid/icons/unlink"),
+  "arrow-right": () => import("lucide-solid/icons/arrow-right"),
+  "corner-down-right": () => import("lucide-solid/icons/corner-down-right"),
+  "zap": () => import("lucide-solid/icons/zap"),
+  "ban": () => import("lucide-solid/icons/ban"),
+  "asterisk": () => import("lucide-solid/icons/asterisk"),
+  "sliders-horizontal": () => import("lucide-solid/icons/sliders-horizontal"),
+
+  // Работа с длинным списком: отбор, группировка по структуре, подбор автоматом.
+  "funnel": () => import("lucide-solid/icons/funnel"),
+  "list-tree": () => import("lucide-solid/icons/list-tree"),
+  "wand-sparkles": () => import("lucide-solid/icons/wand-sparkles"),
 } as const satisfies Readonly<Record<string, IconLoader>>;
 
 /** Словарь кита — то, что `<Icon name>` принимает. Не `string`: список свой, и он проверяется. */
