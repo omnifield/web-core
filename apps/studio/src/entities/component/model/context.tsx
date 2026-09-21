@@ -28,6 +28,8 @@ export interface ComponentFacts {
   /** Имя компонента, оно же `data-scope` на каждом его узле. Простая строка, а не аксессор:
    *  провайдер пересоздаёт поддерево по `keyed`, так что внутри имя не меняется. */
   readonly name: string;
+  /** Машинная половина среза: части, состояния, настройки с их умолчаниями и зависимостями. */
+  readonly passport: Accessor<ComponentDescriptor["passport"]>;
   readonly editorInfo: Accessor<ComponentDescriptor["editorInfo"]>;
   readonly io: Accessor<ComponentDescriptor["io"]>;
   readonly variants: Accessor<Awaited<ReturnType<typeof variantsOf>>>;
@@ -54,6 +56,7 @@ export function ComponentProvider(props: {
 
         const facts: ComponentFacts = {
           name,
+          passport: () => descriptor.passport,
           editorInfo: () => descriptor.editorInfo,
           io: () => descriptor.io,
           variants: () => variants.data ?? [],

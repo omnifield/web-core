@@ -7,8 +7,9 @@ import {
   WorkspaceSidebar,
 } from "@web-core/ui";
 import { ComponentProvider, tree } from "#/entities/component";
+import { ComponentSettings } from "#/features/settings";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
-import { feedSections } from "#/widgets/feed";
+import { FeedPanel } from "#/widgets/feed";
 import { PreviewControls } from "#/widgets/preview";
 import { RailPanel, RailSections } from "#/widgets/rail";
 
@@ -34,7 +35,17 @@ export function ShowcasePage() {
                   label: "Показ",
                   children: <PreviewControls />,
                 },
-                ...feedSections(),
+                {
+                  value: "settings",
+                  label: "Настройки",
+                  children: <ComponentSettings />,
+                },
+                {
+                  value: "feed",
+                  label: "Данные",
+                  open: true,
+                  children: <FeedPanel />,
+                },
               ]}
             />
           </RailPanel>
