@@ -12,20 +12,27 @@ const ROW = {
 };
 
 export function FieldRow(props: {
+  name: string;
   path: string;
   type: string;
+  depth: number;
   ref?: (element: HTMLElement) => void;
 }) {
   return (
     <FlowItem
       ref={props.ref}
       data-type={props.type}
-      style={{ ...layoutSelf({ align: "stretch" }), ...ROW }}
+      title={props.path}
+      style={{
+        ...layoutSelf({ align: "stretch" }),
+        ...ROW,
+        "margin-inline-start": `calc(var(--space-4) * ${props.depth})`,
+      }}
     >
       <Flow style={layoutGroup({ align: "center", gap: "space-2", wrap: false })}>
         <Icon name="grip-vertical" />
         <TypeMark type={props.type} />
-        <Typography>{props.path}</Typography>
+        <Typography>{props.name}</Typography>
       </Flow>
     </FlowItem>
   );

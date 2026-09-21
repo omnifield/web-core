@@ -10,11 +10,12 @@ import {
 import {
   API_KIND,
   asSchemaDocument,
-  Endpoints,
+  endpointLabel,
   type EndpointDescriptor,
-  type SchemaDocument,
+  type SchemaNode,
 } from "../../../../entities/openapi";
-import { Presets, recordsOf } from "../../../../entities/preset";
+import { recordsOf } from "../../../../entities/preset";
+import { Box } from "../../../../shared";
 import { API_USER } from "../../lib";
 import type { Serving } from "../../lib";
 import { Endpoint } from "../endpoint";
@@ -25,74 +26,72 @@ export interface ApiProbeResult {
   readonly serving: Serving;
 }
 
-const NOTHING = "Ручек, связанных с этим потребителем, нет";
-
-function narrow(document: SchemaDocument, keep: ReadonlySet<string>): SchemaDocument {
-  const endpoints = document.endpoints.filter((endpoint) => keep.has(endpoint.id));
-  const groups = document.groups.filter((group) =>
-    endpoints.some((endpoint) => endpoint.groupId === group.id),
-  );
-
-  return { endpoints, groups, defs: document.defs };
+interface Linked {
+  readonly presetId: string;
+  readonly endpoint: EndpointDescriptor;
+  readonly defs: Readonly<Record<string, SchemaNode>>;
 }
+
+const NOTHING = "Ручек, связанных с этим потребителем, нет";
 
 export function ApiProbe(props: {
   consumer: UserPath;
   onServing?: (event: ApiProbeResult) => void;
 }) {
-  const linked = createMemo(() => {
+  const linked = createMemo<Linked[]>(() => {
     const adapters = recordsOf(ADAPTER_KIND, asAdapter).map((one) => one.content);
     const paths = partnersOf(adapters, "consumers", props.consumer);
 
-    const byPreset = new Map<string, Set<string>>();
+    const wanted = new Map<string, Set<string>>();
     for (const [kind, presetId, endpointId] of paths) {
       if (kind !== API_USER.kind || presetId === undefined || endpointId === undefined) continue;
 
-      const known = byPreset.get(presetId) ?? new Set<string>();
+      const known = wanted.get(presetId) ?? new Set<string>();
       known.add(endpointId);
-      byPreset.set(presetId, known);
+      wanted.set(presetId, known);
     }
 
-    return byPreset;
+    const found: Linked[] = [];
+
+    for (const { preset, content } of recordsOf(API_KIND, asSchemaDocument)) {
+      const keep = wanted.get(preset.id);
+      if (keep === undefined) continue;
+
+      for (const endpoint of content.endpoints) {
+        if (!keep.has(endpoint.id)) continue;
+
+        found.push({ presetId: preset.id, endpoint, defs: content.defs });
+      }
+    }
+
+    return found;
   });
 
   return (
-    <Show when={linked().size > 0} fallback={<Typography>{NOTHING}</Typography>}>
-      <Presets
-        kind={API_KIND}
-        as={asSchemaDocument}
-        empty={NOTHING}
-        broken="Пресет не похож на схему API"
+    <Show when={linked().length > 0} fallback={<Typography>{NOTHING}</Typography>}>
+      <Box
+        items={linked()}
+        itemKey={(one) => one.endpoint.id}
+        itemLabel={(one) => endpointLabel(one.endpoint)}
       >
-      {(preset, document) => {
-        const keep = () => linked().get(preset().id);
-        const narrowed = () => narrow(document(), keep() ?? new Set());
-
-        return (
-          <Show when={narrowed().endpoints.length > 0}>
-            <Endpoints label={preset().name} document={narrowed()}>
-              {(endpoint) => (
-                <Endpoint
-                  endpoint={endpoint()}
-                  defs={document().defs}
-                  users={{
-                    provider: API_USER.path(preset().id, endpoint().id),
-                    consumer: props.consumer,
-                  }}
-                  onServing={(serving) =>
-                    props.onServing?.({
-                      presetId: preset().id,
-                      endpoint: endpoint(),
-                      serving,
-                    })
-                  }
-                />
-              )}
-            </Endpoints>
-          </Show>
-        );
-      }}
-      </Presets>
+        {(one) => (
+          <Endpoint
+            endpoint={one().endpoint}
+            defs={one().defs}
+            users={{
+              provider: API_USER.path(one().presetId, one().endpoint.id),
+              consumer: props.consumer,
+            }}
+            onServing={(serving) =>
+              props.onServing?.({
+                presetId: one().presetId,
+                endpoint: one().endpoint,
+                serving,
+              })
+            }
+          />
+        )}
+      </Box>
     </Show>
   );
 }

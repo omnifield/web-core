@@ -5,9 +5,9 @@ import {
   addEndpoint,
   addGroup,
   NEW_GROUP,
-  NO_GROUP,
   removeEndpoint,
   removeGroup,
+  UNKNOWN_GROUP,
   type EndpointDescriptor,
   type SchemaDocument,
 } from "../../../src/entities/openapi";
@@ -18,11 +18,12 @@ function document(): SchemaDocument {
       { id: "get-pet", method: "GET", url: "/pet", groupId: "g-pet", params: [] },
       { id: "add-pet", method: "POST", url: "/pet", groupId: "g-pet", params: [] },
       { id: "get-order", method: "GET", url: "/store/order", groupId: "g-store", params: [] },
-      { id: "loose", method: "GET", url: "/loose", params: [] },
+      { id: "loose", method: "GET", url: "/loose", groupId: "g-unknown", params: [] },
     ],
     groups: [
       { id: "g-pet", name: "pet" },
       { id: "g-store", name: "store" },
+      { id: "g-unknown", name: UNKNOWN_GROUP },
     ],
     defs: { Pet: { type: "object" } },
   };
@@ -47,7 +48,12 @@ describe("addGroup", () => {
       addGroup(draft, "свежая");
     })(document());
 
-    expect(next.groups.map((group) => group.name)).toEqual(["свежая", "pet", "store"]);
+    expect(next.groups.map((group) => group.name)).toEqual([
+      "свежая",
+      "pet",
+      "store",
+      UNKNOWN_GROUP,
+    ]);
     expect(next.endpoints).toEqual(document().endpoints);
   });
 
@@ -106,13 +112,13 @@ describe("addEndpoint", () => {
     expect(ids(document().endpoints)).not.toContain(added[0]?.id);
   });
 
-  it("в псевдогруппе безгрупповых ручка заводится без группы", () => {
+  it("в группе «unknown» ручка заводится так же, как в любой другой", () => {
     const next = mutate<SchemaDocument>((draft) => {
-      addEndpoint(draft, NO_GROUP);
+      addEndpoint(draft, "g-unknown");
     })(document());
 
     const at = next.endpoints.findIndex((endpoint) => endpoint.url === "");
-    expect(next.endpoints[at]?.groupId).toBeUndefined();
+    expect(next.endpoints[at]?.groupId).toBe("g-unknown");
     expect(at).toBe(3);
   });
 
@@ -163,7 +169,7 @@ describe("removeGroup", () => {
     const next = mutate<SchemaDocument>((draft) => removeGroup(draft, "g-pet"))(document());
 
     expect(ids(next.endpoints)).toEqual(["get-order", "loose"]);
-    expect(next.groups.map((group) => group.id)).toEqual(["g-store"]);
+    expect(next.groups.map((group) => group.id)).toEqual(["g-store", "g-unknown"]);
   });
 
   it("пустая группа уходит без остатка", () => {
@@ -174,16 +180,16 @@ describe("removeGroup", () => {
 
     const next = mutate<SchemaDocument>((draft) => removeGroup(draft, id))(before);
 
-    expect(next.groups.map((group) => group.name)).toEqual(["pet", "store"]);
+    expect(next.groups.map((group) => group.name)).toEqual(["pet", "store", UNKNOWN_GROUP]);
     expect(next.endpoints).toEqual(before.endpoints);
   });
 
-  it("псевдогруппа безгрупповых убирается так же, как названная", () => {
-    const next = mutate<SchemaDocument>((draft) => removeGroup(draft, NO_GROUP))(document());
+  it("группа «unknown» убирается так же, как названная, и уносит свои ручки", () => {
+    const next = mutate<SchemaDocument>((draft) => removeGroup(draft, "g-unknown"))(document());
 
     expect(ids(next.endpoints)).not.toContain("loose");
     expect(next.endpoints).toHaveLength(3);
-    expect(next.groups).toHaveLength(2);
+    expect(next.groups.map((group) => group.name)).toEqual(["pet", "store"]);
   });
 
   it("группы, которой нет, ничего не меняет", () => {

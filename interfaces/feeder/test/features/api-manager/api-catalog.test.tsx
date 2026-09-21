@@ -67,6 +67,15 @@ function saves(): HTMLButtonElement[] {
   );
 }
 
+function type(form: HTMLElement | undefined, text: string): void {
+  const input = form?.querySelector<HTMLInputElement>(
+    'input[data-scope="field"][data-part="input"]',
+  );
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  setter?.call(input, text);
+  input?.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 function endpointsOf(id: string): readonly EndpointDescriptor[] {
   const content = presetsStore.get().presets.find((preset) => preset.id === id)?.content;
   return asSchemaDocument(content)?.endpoints ?? [];
@@ -271,6 +280,28 @@ describe("ApiCatalog", () => {
     saves()[0]?.click();
     settings(host)[1]?.click();
     expect(dialog()?.textContent).toContain("name");
+  });
+
+  it("имя, набранное в диалоге группы, уезжает в документ", () => {
+    const id = presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
+
+    const host = mount();
+    settings(host)[1]?.click();
+    type(dialog(), "питомцы");
+    saves()[0]?.click();
+
+    expect(groupsOf(id)).toEqual([{ id: "g-все", name: "питомцы" }]);
+  });
+
+  it("имя, набранное в диалоге схемы, уезжает в запись склада", () => {
+    const id = presetsStore.actions.add("api", "Свой бэк", oneEndpoint("users"));
+
+    const host = mount();
+    settings(host)[0]?.click();
+    type(dialog(), "Петстор");
+    saves()[0]?.click();
+
+    expect(presetsStore.selectors.presetBy(id)?.name).toBe("Петстор");
   });
 
   it("ответ ручки уходит наружу диспатчем, а не оседает в каталоге", async () => {

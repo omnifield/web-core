@@ -4,6 +4,7 @@ import type { EndpointConfig } from "./types";
 
 export function endpointConfigOf(endpoint: EndpointDescriptor): EndpointConfig {
   return {
+    name: endpoint.name ?? "",
     method: endpoint.method,
     url: endpoint.url,
     params: endpoint.params.map((param) => ({

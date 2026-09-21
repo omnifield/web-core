@@ -226,7 +226,7 @@ import { TreeForm } from "@web-core/feeder";
 группы и отдаёт `SchemaDocument`. Нераспознанный документ — исключение.
 
 ↔️ **Документ.** `SchemaDocument { endpoints, groups, defs }`; ручка —
-`{ id, method, url, groupId?, params }`, группа — `{ id, name }`, где `params[].schema` — JSON
+`{ id, method, url, groupId, params }`, группа — `{ id, name }`, где `params[].schema` — JSON
 Schema, а `defs` держит общие типы. Чистый JSON: сериализуется и уезжает на склад как есть.
 
 ↔️ **Склад.** `Preset { id, kind, name, content }`, `content` непрозрачен. `kind` — ярлык вида,

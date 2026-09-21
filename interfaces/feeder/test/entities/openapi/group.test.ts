@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   groupEndpoints,
-  NO_GROUP,
   type EndpointDescriptor,
   type Group,
   type SchemaDocument,
@@ -10,7 +9,7 @@ import {
 
 let seq = 0;
 
-function endpoint(url: string, groupId?: string): EndpointDescriptor {
+function endpoint(url: string, groupId: string): EndpointDescriptor {
   seq += 1;
   return { id: `id-${seq}`, method: "GET", url, groupId, params: [] };
 }
@@ -53,20 +52,17 @@ describe("groupEndpoints", () => {
     expect(groups[0]).toMatchObject({ id: pet.id, name: "pet", endpoints: [] });
   });
 
-  it("ручки без группы — своя псевдогруппа, и она идёт последней", () => {
+  it("группа «unknown» — обычная запись реестра, а не особый случай перебора", () => {
+    const unknown: Group = { id: "g-unknown", name: "unknown" };
     const groups = groupEndpoints(
-      document([endpoint("/loose"), endpoint("/pet", pet.id), endpoint("/other")], [pet]),
+      document(
+        [endpoint("/loose", unknown.id), endpoint("/pet", pet.id), endpoint("/other", unknown.id)],
+        [pet, unknown],
+      ),
     );
 
-    expect(groups.map((group) => group.id)).toEqual([pet.id, NO_GROUP]);
+    expect(groups.map((group) => group.name)).toEqual(["pet", "unknown"]);
     expect(groups[1]?.endpoints.map((item) => item.url)).toEqual(["/loose", "/other"]);
-  });
-
-  it("ссылка на несуществующую группу не теряет ручку — она падает к безгрупповым", () => {
-    const groups = groupEndpoints(document([endpoint("/lost", "снесённая")], []));
-
-    expect(groups.map((group) => group.id)).toEqual([NO_GROUP]);
-    expect(groups[0]?.endpoints.map((item) => item.url)).toEqual(["/lost"]);
   });
 
   it("пустой документ даёт пустой список групп, а не группу-пустышку", () => {
@@ -76,7 +72,7 @@ describe("groupEndpoints", () => {
   it("ни одна ручка не теряется и не двоится", () => {
     const endpoints = [
       endpoint("/a", pet.id),
-      endpoint("/b"),
+      endpoint("/b", store.id),
       endpoint("/c", store.id),
       endpoint("/d", pet.id),
     ];

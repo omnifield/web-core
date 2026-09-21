@@ -1,5 +1,6 @@
 import { ApiCatalog, ExternalSchemaLoader } from "@web-core/feeder";
 import { useEndpoint } from "#/entities/endpoint";
+import { Flow, FlowItem } from "@web-core/ui";
 
 /** Настройка API: загрузка документа схемы и каталог ручек с их правкой и вызовом.
  *
@@ -10,13 +11,21 @@ export function ApiSetup() {
   const endpoint = useEndpoint();
 
   return (
-    <>
-      <ExternalSchemaLoader />
-      <ApiCatalog
-        onResult={(event) =>
-          endpoint.remember(event.presetId, event.endpoint.id, event.result.body)
-        }
-      />
-    </>
+    <Flow>
+      <FlowItem>
+        <ExternalSchemaLoader />
+      </FlowItem>
+      <FlowItem style={{ width: "100%" }}>
+        <ApiCatalog
+          onResult={(event) =>
+            endpoint.remember(
+              event.presetId,
+              event.endpoint.id,
+              event.result.body,
+            )
+          }
+        />
+      </FlowItem>
+    </Flow>
   );
 }
