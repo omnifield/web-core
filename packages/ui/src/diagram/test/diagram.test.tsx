@@ -133,6 +133,28 @@ describe("форму задаёт сборка, данные — только ч
     expect(asLine.querySelector('[data-part="line"]')?.getAttribute("d")).toMatch(/^M[\d.]+,[\d.]+L/);
   });
 
+  it("сборка bar-horizontal кладёт категории на вертикаль, значения на горизонталь", () => {
+    const categorical: Data = {
+      data: [
+        { quarter: "Q1", revenue: 120 },
+        { quarter: "Q2", revenue: 190 },
+      ],
+      series: [{ x: "quarter", y: "revenue" }],
+    };
+
+    const host = mount(categorical, "bar-horizontal");
+    const rects = [...host.querySelectorAll('[data-part="bar"] rect')];
+    expect(rects).toHaveLength(2);
+
+    // столбцы стоят друг под другом, а не рядом, и начинаются от левого края области построения
+    expect(Number(rects[0]?.getAttribute("y"))).toBeLessThan(Number(rects[1]?.getAttribute("y")));
+    expect(Number(rects[0]?.getAttribute("x"))).toBe(Number(rects[1]?.getAttribute("x")));
+    expect(Number(rects[1]?.getAttribute("width"))).toBeGreaterThan(Number(rects[0]?.getAttribute("width")));
+
+    const yAxis = host.querySelector('[data-part="axis"][data-orientation="y"]')!;
+    expect([...yAxis.querySelectorAll("text")].map((node) => node.textContent)).toEqual(["Q1", "Q2"]);
+  });
+
   it("оси выводит из серий, а явное описание оси их уточняет", () => {
     const both = mount(data, "line");
     expect(both.querySelectorAll('[data-part="axis"]')).toHaveLength(2);
@@ -337,8 +359,8 @@ describe("DiagramBar — direct mount", () => {
       { category: "A", value: 5 },
       { category: "B", value: 10 },
     ];
-    const xScale = scaleBand<string>().domain(["A", "B"]).range([0, 100]).padding(0);
-    const yScale = scaleLinear().domain([0, 10]).range([100, 0]);
+    const categoryScale = scaleBand<string>().domain(["A", "B"]).range([0, 100]).padding(0);
+    const valueScale = scaleLinear().domain([0, 10]).range([100, 0]);
 
     const host = document.createElement("div");
     document.body.append(host);
@@ -346,7 +368,13 @@ describe("DiagramBar — direct mount", () => {
     dispose = render(
       () => (
         <DiagramRoot width={200} height={100}>
-          <DiagramBar data={data} xScale={xScale} yScale={yScale} x={(d) => d.category} y={(d) => d.value} />
+          <DiagramBar
+            data={data}
+            categoryScale={categoryScale}
+            valueScale={valueScale}
+            category={(d) => d.category}
+            value={(d) => d.value}
+          />
         </DiagramRoot>
       ),
       host,
@@ -363,6 +391,43 @@ describe("DiagramBar — direct mount", () => {
     expect(rects[1]?.getAttribute("height")).toBe("100");
   });
 
+  it("горизонтальные столбцы растут вбок: полоса задаёт высоту, значение — ширину", () => {
+    const data = [
+      { category: "A", value: 5 },
+      { category: "B", value: 10 },
+    ];
+    const categoryScale = scaleBand<string>().domain(["A", "B"]).range([0, 100]).padding(0);
+    const valueScale = scaleLinear().domain([0, 10]).range([0, 100]);
+
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    dispose = render(
+      () => (
+        <DiagramRoot width={200} height={100}>
+          <DiagramBar
+            data={data}
+            categoryScale={categoryScale}
+            valueScale={valueScale}
+            category={(d) => d.category}
+            value={(d) => d.value}
+            orientation="horizontal"
+          />
+        </DiagramRoot>
+      ),
+      host,
+    );
+
+    const rects = [...host.querySelectorAll('[data-scope="diagram"][data-part="bar"] rect')];
+    expect(rects).toHaveLength(2);
+    expect(rects[0]?.getAttribute("x")).toBe("0");
+    expect(rects[0]?.getAttribute("y")).toBe("0");
+    expect(rects[0]?.getAttribute("width")).toBe("50");
+    expect(rects[0]?.getAttribute("height")).toBe("50");
+    expect(rects[1]?.getAttribute("y")).toBe("50");
+    expect(rects[1]?.getAttribute("width")).toBe("100");
+  });
+
   it("without data draws a real, addressable, but empty node", () => {
     const host = document.createElement("div");
     document.body.append(host);
@@ -370,7 +435,10 @@ describe("DiagramBar — direct mount", () => {
     dispose = render(
       () => (
         <DiagramRoot width={200} height={100}>
-          <DiagramBar<{ category: string; value: number }> x={(d) => d.category} y={(d) => d.value} />
+          <DiagramBar<{ category: string; value: number }>
+            category={(d) => d.category}
+            value={(d) => d.value}
+          />
         </DiagramRoot>
       ),
       host,

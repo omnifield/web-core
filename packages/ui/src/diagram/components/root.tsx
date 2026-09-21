@@ -17,7 +17,12 @@ import { DefaultDiagramBody } from "./default-body.js";
 
 /** Форма графика — она ЖЕ решает, какой частью рисуется серия. Приходит пропом (сборкой), не
  * данными: одни и те же строки должны показываться любым видом (`FAQ.md`). */
-export type DiagramShape = "line" | "area" | "bar" | "point";
+export type DiagramShape = "line" | "area" | "bar" | "bar-horizontal" | "point";
+
+/** Формы, у которых категории идут по вертикали, а значения по горизонтали. */
+function isFlipped(shape: DiagramShape): boolean {
+  return shape === "bar-horizontal";
+}
 
 const DEFAULT_SHAPE: DiagramShape = "line";
 /** Запасной размер системы координат — пока ничего не измерено (первый кадр, среда без раскладки). */
@@ -70,7 +75,8 @@ function inferScaleKind(
   orientation: DiagramAxisOrientation,
   shape: DiagramShape,
 ): DiagramScaleKind {
-  if (orientation === "x" && shape === "bar") return "band";
+  if (shape === "bar" && orientation === "x") return "band";
+  if (shape === "bar-horizontal") return orientation === "y" ? "band" : "linear";
 
   const sample = values[0];
   if (sample instanceof Date) return "time";
@@ -97,7 +103,7 @@ function buildScale(
   kind: DiagramScaleKind,
   values: readonly unknown[],
   range: readonly [number, number],
-  orientation: DiagramAxisOrientation,
+  zeroBased: boolean,
   domain?: readonly [number, number],
 ): DiagramScale {
   if (kind === "band") {
@@ -105,7 +111,7 @@ function buildScale(
   }
 
   const numbers = numbersOf(values);
-  const span = domain ?? extentOf(numbers, orientation === "y");
+  const span = domain ?? extentOf(numbers, zeroBased);
 
   if (kind === "time") {
     return scaleTime().domain([new Date(span[0]), new Date(span[1])]).range([range[0], range[1]]);
@@ -119,8 +125,26 @@ function buildScale(
   return scaleLinear().domain([span[0], span[1]]).range([range[0], range[1]]);
 }
 
-function fieldsOf(series: readonly DiagramSeriesSpec[], orientation: DiagramAxisOrientation): readonly string[] {
-  return [...new Set(series.map((entry) => (orientation === "x" ? entry.x : entry.y)))];
+/** Какое поле серии читает ЭКРАННАЯ ось. У горизонтальных столбцов категория уезжает на
+ * вертикаль, значение на горизонталь — поля меняются местами, описание серии не трогается. */
+function fieldsOf(
+  series: readonly DiagramSeriesSpec[],
+  orientation: DiagramAxisOrientation,
+  shape: DiagramShape,
+): readonly string[] {
+  const own = isFlipped(shape) ? orientation === "y" : orientation === "x";
+  return [...new Set(series.map((entry) => (own ? entry.x : entry.y)))];
+}
+
+function rangeFor(
+  plot: DiagramPlot,
+  orientation: DiagramAxisOrientation,
+  kind: DiagramScaleKind,
+): readonly [number, number] {
+  if (orientation === "x") return [plot.left, plot.right];
+
+  // Значения по вертикали растут вверх (диапазон перевёрнут), категории читаются сверху вниз.
+  return kind === "band" ? [plot.top, plot.bottom] : [plot.bottom, plot.top];
 }
 
 function scaleFor(
@@ -128,13 +152,16 @@ function scaleFor(
   series: readonly DiagramSeriesSpec[],
   shape: DiagramShape,
   orientation: DiagramAxisOrientation,
-  range: readonly [number, number],
+  plot: DiagramPlot,
   spec: DiagramAxisSpec | undefined,
 ): DiagramScale {
-  const values = fieldsOf(series, orientation).flatMap((field) => valuesOf(data, field));
+  const values = fieldsOf(series, orientation, shape).flatMap((field) => valuesOf(data, field));
   const kind = spec?.scale ?? inferScaleKind(values, orientation, shape);
 
-  return buildScale(kind, values, range, orientation, spec?.domain);
+  // Ось значений считается от нуля — иначе столбец начинается не от базовой линии, а от минимума.
+  const valueAxis = isFlipped(shape) ? orientation === "x" : orientation === "y";
+
+  return buildScale(kind, values, rangeFor(plot, orientation, kind), valueAxis, spec?.domain);
 }
 
 function axisViews(
@@ -226,22 +253,8 @@ export function DiagramRoot(props: DiagramRootProps) {
       bottom: height() - insets.bottom,
     };
     const specs = local.axes ?? [];
-    const xScale = scaleFor(
-      data,
-      series,
-      shape,
-      "x",
-      [plot.left, plot.right],
-      specs.find((entry) => entry.orientation === "x"),
-    );
-    const yScale = scaleFor(
-      data,
-      series,
-      shape,
-      "y",
-      [plot.bottom, plot.top],
-      specs.find((entry) => entry.orientation === "y"),
-    );
+    const xScale = scaleFor(data, series, shape, "x", plot, specs.find((entry) => entry.orientation === "x"));
+    const yScale = scaleFor(data, series, shape, "y", plot, specs.find((entry) => entry.orientation === "y"));
 
     return {
       shape,

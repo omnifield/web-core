@@ -5,15 +5,20 @@ import { traceLife } from "../../../shared/utils/trace.js";
 import { anatomyParts } from "../../entity/anatomy.js";
 import { place, type DiagramBandScale, type DiagramContinuousScale } from "./axis.js";
 
+export type DiagramBarOrientation = "vertical" | "horizontal";
+
 export type DiagramBarProps<T> = Omit<JSX.SvgSVGAttributes<SVGGElement>, "children" | "x" | "y"> & {
   data?: readonly T[];
-  /** Категориальная шкала (полосы) — даёт положение и ширину каждого столбца. */
-  xScale?: DiagramBandScale;
-  yScale?: DiagramContinuousScale;
+  /** Категориальная шкала (полосы) — даёт положение и толщину каждого столбца. */
+  categoryScale?: DiagramBandScale;
+  /** Шкала значений — по ней считается длина столбца от базовой линии. */
+  valueScale?: DiagramContinuousScale;
   /** Достаёт категорию (ключ полосы) из одной точки данных. */
-  x: (datum: T) => string;
+  category: (datum: T) => string;
   /** Достаёт значение из одной точки данных. */
-  y: (datum: T) => number;
+  value: (datum: T) => number;
+  /** Вертикальные столбцы растут снизу вверх, горизонтальные — от базовой линии вбок. */
+  orientation?: DiagramBarOrientation;
   /** Готовое CSS-значение на всю серию; не задано — красит рецепт (`FAQ.md`). */
   color?: string;
   /** Цвет ОТДЕЛЬНОГО столбца из данных — сильнее, чем `color`. */
@@ -32,34 +37,45 @@ interface BarRect {
 export function DiagramBar<T>(props: DiagramBarProps<T>) {
   traceLife("ui.diagram-bar");
 
-  const [local, rest] = splitProps(props, ["data", "xScale", "yScale", "x", "y", "color", "colorOf"]);
+  const [local, rest] = splitProps(props, [
+    "data",
+    "categoryScale",
+    "valueScale",
+    "category",
+    "value",
+    "orientation",
+    "color",
+    "colorOf",
+  ]);
 
   const bars = (): readonly BarRect[] => {
     const data = local.data;
-    const xScale = local.xScale;
-    const yScale = local.yScale;
-    const x = local.x;
-    const y = local.y;
+    const categoryScale = local.categoryScale;
+    const valueScale = local.valueScale;
+    const category = local.category;
+    const value = local.value;
 
-    if (!data || !xScale || !yScale) return [];
+    if (!data || !categoryScale || !valueScale) return [];
 
-    const baseline = yScale.range()[0];
+    const horizontal = local.orientation === "horizontal";
+    const baseline = valueScale.range()[0] ?? 0;
+    const thickness = categoryScale.bandwidth();
 
     return data.flatMap((datum) => {
-      const key = x(datum);
-      const bandX = xScale(key);
-      if (bandX === undefined) return [];
+      const key = category(datum);
+      const band = categoryScale(key);
+      if (band === undefined) return [];
 
-      const barY = place(yScale, y(datum));
+      const at = place(valueScale, value(datum));
+      const near = Math.min(at, baseline);
+      const span = Math.abs(baseline - at);
+      const color = local.colorOf?.(datum);
 
-      return [{
-        key,
-        x: bandX,
-        y: Math.min(barY, baseline),
-        width: xScale.bandwidth(),
-        height: Math.abs(baseline - barY),
-        color: local.colorOf?.(datum),
-      }];
+      return [
+        horizontal
+          ? { key, x: near, y: band, width: span, height: thickness, color }
+          : { key, x: band, y: near, width: thickness, height: span, color },
+      ];
     });
   };
 

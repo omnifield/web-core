@@ -44,6 +44,10 @@ function colorOf(spec: DiagramSeriesSpec): ((row: DiagramRow) => string | undefi
 export function DefaultDiagramBody(props: { frame: DiagramFrame; grid?: boolean }): JSX.Element {
   const bandX = () =>
     isBandScale(props.frame.xScale) ? (props.frame.xScale as DiagramBandScale) : undefined;
+  const bandY = () =>
+    isBandScale(props.frame.yScale) ? (props.frame.yScale as DiagramBandScale) : undefined;
+  const continuousX = () =>
+    isBandScale(props.frame.xScale) ? undefined : (props.frame.xScale as DiagramContinuousScale);
   const continuousY = () =>
     isBandScale(props.frame.yScale) ? undefined : (props.frame.yScale as DiagramContinuousScale);
 
@@ -101,19 +105,42 @@ export function DefaultDiagramBody(props: { frame: DiagramFrame; grid?: boolean 
                     />
                 </Show>
                 <Show when={props.frame.shape === "bar" && bandX()}>
-                  {(xScale) => (
-                    <DiagramBar
+                  {(categoryScale) => (
+                    <DiagramBar<DiagramRow>
                       data={props.frame.data}
-                      xScale={xScale()}
-                      yScale={yScale()}
-                      x={(row) => String(row[spec.x])}
-                      y={(row) => readNumber(row, spec.y)}
+                      categoryScale={categoryScale()}
+                      valueScale={yScale()}
+                      category={(row) => String(row[spec.x])}
+                      value={(row) => readNumber(row, spec.y)}
                       color={spec.color}
                       colorOf={colorOf(spec)}
                     />
                   )}
                 </Show>
               </>
+            )}
+          </Show>
+        )}
+      </For>
+
+      <For each={props.frame.series}>
+        {(spec) => (
+          <Show when={props.frame.shape === "bar-horizontal" && bandY()}>
+            {(categoryScale) => (
+              <Show when={continuousX()}>
+                {(valueScale) => (
+                  <DiagramBar<DiagramRow>
+                    data={props.frame.data}
+                    categoryScale={categoryScale()}
+                    valueScale={valueScale()}
+                    category={(row) => String(row[spec.x])}
+                    value={(row) => readNumber(row, spec.y)}
+                    orientation="horizontal"
+                    color={spec.color}
+                    colorOf={colorOf(spec)}
+                  />
+                )}
+              </Show>
             )}
           </Show>
         )}
