@@ -53,4 +53,9 @@ export const parts: Readonly<Record<DiagramPart, PassportPartEditorInfo<DiagramP
     states: {},
     accepts: [],
   },
+  arc: {
+    means: "сектор круговой диаграммы — доля значения в целом, угол считается от суммы серии",
+    states: {},
+    accepts: [],
+  },
 };

@@ -12,7 +12,8 @@ import { DiagramBar } from "./cartesian/bar.js";
 import { DiagramGrid } from "./cartesian/grid.js";
 import { DiagramLine } from "./cartesian/line.js";
 import { DiagramPoint } from "./cartesian/point.js";
-import type { DiagramFrame } from "./root.js";
+import { DiagramArc } from "./radial/arc.js";
+import { isRadial, type DiagramFrame } from "./root.js";
 
 function readNumber(row: DiagramRow, field: string): number {
   const value = row[field];
@@ -41,7 +42,12 @@ function colorOf(spec: DiagramSeriesSpec): ((row: DiagramRow) => string | undefi
 /** Структура, которую корень растит сам, когда ему не передали `children` — оси, сетка и серии:
  * ЧТО показывать берётся из данных, ЧЕМ рисовать — из формы графика (`frame.shape`). Тот же
  * приём, что `DefaultTableBody` у таблицы. */
-export function DefaultDiagramBody(props: { frame: DiagramFrame; grid?: boolean }): JSX.Element {
+export function DefaultDiagramBody(props: {
+  frame: DiagramFrame;
+  grid?: boolean;
+  innerRatio?: number;
+}): JSX.Element {
+  const radial = () => isRadial(props.frame.shape);
   const bandX = () =>
     isBandScale(props.frame.xScale) ? (props.frame.xScale as DiagramBandScale) : undefined;
   const bandY = () =>
@@ -53,7 +59,7 @@ export function DefaultDiagramBody(props: { frame: DiagramFrame; grid?: boolean 
 
   return (
     <>
-      <Show when={props.grid ?? true}>
+      <Show when={(props.grid ?? true) && !radial()}>
         <DiagramGrid
           scale={props.frame.xScale}
           orientation="x"
@@ -146,9 +152,26 @@ export function DefaultDiagramBody(props: { frame: DiagramFrame; grid?: boolean 
         )}
       </For>
 
+      <For each={props.frame.series}>
+        {(spec) => (
+          <Show when={radial()}>
+            <DiagramArc<DiagramRow>
+              data={props.frame.data}
+              value={(row) => readNumber(row, spec.y)}
+              cx={props.frame.disc.cx}
+              cy={props.frame.disc.cy}
+              radius={props.frame.disc.radius}
+              innerRatio={props.innerRatio}
+              color={spec.color}
+              colorOf={colorOf(spec)}
+            />
+          </Show>
+        )}
+      </For>
+
       <For each={props.frame.axes}>
         {(axis) => (
-          <Show when={axis.hidden !== true}>
+          <Show when={axis.hidden !== true && !radial()}>
             <DiagramAxis
               scale={axis.scale}
               orientation={axis.orientation}

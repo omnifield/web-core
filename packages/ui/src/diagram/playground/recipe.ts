@@ -29,6 +29,9 @@ export const recipe: SlotRecipe = {
     point: {
       props: { color: "var(--accent-11)" },
     },
+    arc: {
+      props: { color: "var(--accent-11)" },
+    },
   },
 };
 

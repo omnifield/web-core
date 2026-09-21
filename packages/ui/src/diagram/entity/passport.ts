@@ -16,6 +16,7 @@ export const passport = definePassport({
     { name: "area", states: [] },
     { name: "bar", states: [] },
     { name: "point", states: [] },
+    { name: "arc", states: [] },
   ],
   variantAxis: { mark: { kind: "attribute", name: "data-variant" } },
   settings: defineSettings<DiagramRootProps>()({}),

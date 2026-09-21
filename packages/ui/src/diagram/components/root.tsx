@@ -17,7 +17,12 @@ import { DefaultDiagramBody } from "./default-body.js";
 
 /** Форма графика — она ЖЕ решает, какой частью рисуется серия. Приходит пропом (сборкой), не
  * данными: одни и те же строки должны показываться любым видом (`FAQ.md`). */
-export type DiagramShape = "line" | "area" | "bar" | "bar-horizontal" | "point";
+export type DiagramShape = "line" | "area" | "bar" | "bar-horizontal" | "point" | "pie";
+
+/** Радиальные формы живут в полярных координатах — осей и сетки у них нет вовсе. */
+export function isRadial(shape: DiagramShape): boolean {
+  return shape === "pie";
+}
 
 /** Формы, у которых категории идут по вертикали, а значения по горизонтали. */
 function isFlipped(shape: DiagramShape): boolean {
@@ -48,6 +53,13 @@ export interface DiagramAxisView {
   readonly hidden?: boolean;
 }
 
+/** Центр и радиус круга — геометрия радиальных форм, у декартовых не используется. */
+export interface DiagramDisc {
+  readonly cx: number;
+  readonly cy: number;
+  readonly radius: number;
+}
+
 /** Всё, что корень посчитал по данным: геометрия, шкалы, выведенные оси. */
 export interface DiagramFrame {
   readonly shape: DiagramShape;
@@ -55,6 +67,7 @@ export interface DiagramFrame {
   readonly height: number;
   readonly insets: Required<DiagramInsets>;
   readonly plot: DiagramPlot;
+  readonly disc: DiagramDisc;
   readonly data: readonly DiagramRow[];
   readonly series: readonly DiagramSeriesSpec[];
   readonly xScale: DiagramScale;
@@ -136,6 +149,14 @@ function fieldsOf(
   return [...new Set(series.map((entry) => (own ? entry.x : entry.y)))];
 }
 
+function discOf(plot: DiagramPlot): DiagramDisc {
+  return {
+    cx: (plot.left + plot.right) / 2,
+    cy: (plot.top + plot.bottom) / 2,
+    radius: Math.max(Math.min(plot.right - plot.left, plot.bottom - plot.top) / 2, 0),
+  };
+}
+
 function rangeFor(
   plot: DiagramPlot,
   orientation: DiagramAxisOrientation,
@@ -203,6 +224,8 @@ export type DiagramRootProps = Omit<
   insets?: DiagramInsets;
   /** Фоновая сетка стандартной структуры; на рукописный путь не влияет. */
   grid?: boolean;
+  /** Дырка в центре круговой формы: 0 — пирог, доля радиуса — бублик. */
+  innerRatio?: number;
   /** Функция — рукописный путь с готовым фреймом; готовое поддерево — превьюер сборки. */
   children?: JSX.Element | ((frame: DiagramFrame) => JSX.Element);
 };
@@ -219,6 +242,7 @@ export function DiagramRoot(props: DiagramRootProps) {
     "axes",
     "insets",
     "grid",
+    "innerRatio",
     "children",
   ]);
 
@@ -262,6 +286,7 @@ export function DiagramRoot(props: DiagramRootProps) {
       height: height(),
       insets,
       plot,
+      disc: discOf(plot),
       data,
       series,
       xScale,
@@ -277,7 +302,7 @@ export function DiagramRoot(props: DiagramRootProps) {
     if (children) return children;
     if (frame().series.length === 0) return undefined;
 
-    return <DefaultDiagramBody frame={frame()} grid={local.grid ?? true} />;
+    return <DefaultDiagramBody frame={frame()} grid={local.grid ?? true} innerRatio={local.innerRatio} />;
   };
 
   return (

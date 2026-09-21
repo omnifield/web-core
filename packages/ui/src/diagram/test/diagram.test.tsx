@@ -155,6 +155,48 @@ describe("форму задаёт сборка, данные — только ч
     expect([...yAxis.querySelectorAll("text")].map((node) => node.textContent)).toEqual(["Q1", "Q2"]);
   });
 
+  it("сборка pie рисует по сектору на запись и не заводит ни осей, ни сетки", () => {
+    const host = mount(
+      {
+        data: [
+          { quarter: "Q1", revenue: 120 },
+          { quarter: "Q2", revenue: 190 },
+          { quarter: "Q3", revenue: 90 },
+        ],
+        series: [{ x: "quarter", y: "revenue" }],
+      },
+      "pie",
+    );
+
+    const arc = host.querySelector('[data-scope="diagram"][data-part="arc"]')!;
+    expect(arc.querySelectorAll("path")).toHaveLength(3);
+    expect(arc.getAttribute("transform")).toMatch(/^translate\(/);
+
+    expect(host.querySelectorAll('[data-part="axis"]')).toHaveLength(0);
+    expect(host.querySelectorAll('[data-part="grid"]')).toHaveLength(0);
+  });
+
+  it("сборка donut — тот же круг с дыркой: сектор рисуется кольцом, а не от центра", () => {
+    const data: Data = {
+      data: [
+        { quarter: "Q1", revenue: 120 },
+        { quarter: "Q2", revenue: 190 },
+      ],
+      series: [{ x: "quarter", y: "revenue" }],
+    };
+
+    const solid = mount(data, "pie");
+    const solidPath = solid.querySelector('[data-part="arc"] path')?.getAttribute("d") ?? "";
+
+    const ring = remount(data, "donut");
+    const ringPath = ring.querySelector('[data-part="arc"] path')?.getAttribute("d") ?? "";
+
+    // у сплошного сектора путь идёт в центр (L0,0), у кольца — по внутренней дуге
+    expect(solidPath).toContain("L0,0");
+    expect(ringPath).not.toContain("L0,0");
+    expect(ringPath.length).toBeGreaterThan(0);
+  });
+
   it("оси выводит из серий, а явное описание оси их уточняет", () => {
     const both = mount(data, "line");
     expect(both.querySelectorAll('[data-part="axis"]')).toHaveLength(2);

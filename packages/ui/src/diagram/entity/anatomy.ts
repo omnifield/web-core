@@ -8,6 +8,7 @@ export const anatomy = createAnatomy("diagram").parts(
   "area",
   "bar",
   "point",
+  "arc",
 );
 
 export const anatomyParts = anatomy.build();

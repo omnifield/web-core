@@ -1,6 +1,9 @@
 export {
   DiagramRoot,
+  isRadial,
   type DiagramAxisView,
+  type DiagramDisc,
+  type DiagramShape,
   type DiagramFrame,
   type DiagramPlot,
   type DiagramRootProps,
@@ -22,6 +25,7 @@ export { DiagramLine, type DiagramLineProps } from "./cartesian/line.js";
 export { DiagramArea, type DiagramAreaProps } from "./cartesian/area.js";
 export { DiagramBar, type DiagramBarProps } from "./cartesian/bar.js";
 export { DiagramPoint, type DiagramPointProps } from "./cartesian/point.js";
+export { DiagramArc, type DiagramArcProps } from "./radial/arc.js";
 
 import { defineKitComponent, type PartComponent } from "../../kit-form.js";
 import { passport } from "../entity/passport.js";
@@ -32,6 +36,7 @@ import { DiagramLine } from "./cartesian/line.js";
 import { DiagramArea } from "./cartesian/area.js";
 import { DiagramBar } from "./cartesian/bar.js";
 import { DiagramPoint } from "./cartesian/point.js";
+import { DiagramArc } from "./radial/arc.js";
 
 export const kit = defineKitComponent(passport, {
   root: DiagramRoot as PartComponent,
@@ -41,4 +46,5 @@ export const kit = defineKitComponent(passport, {
   area: DiagramArea as PartComponent,
   bar: DiagramBar as PartComponent,
   point: DiagramPoint as PartComponent,
+  arc: DiagramArc as PartComponent,
 });
