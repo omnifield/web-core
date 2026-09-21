@@ -23,7 +23,7 @@ const noStretch = { "inline-size": "100%", "min-inline-size": "0" };
 /** Отступ содержимого держит сама поверхность, а не рейл снаружи: иначе полоса прокрутки
  *  оказывается внутри отступа и отъезжает от края. Из двух прежних копий отступ был только у
  *  одной — у панели витрины, и приходил он от `WorkspaceRightbar`; сведение выбирает одно. */
-const inset = { padding: spaceVar("space-3") };
+const inset = { padding: spaceVar("space-1") };
 
 /**
  * Поверхность бокового рейла: место под панель, которое само прокручивается.
@@ -40,7 +40,12 @@ export function RailPanel(props: { children: JSX.Element }) {
     <Flow data-variant="column" style={fillBlock}>
       <ScrollArea data-variant="plain" style={fillBlock}>
         <ScrollAreaViewport style={noStretch}>
-          <ScrollAreaContent style={{ ...noStretch, ...inset }}>
+          <ScrollAreaContent
+            style={{
+              ...noStretch,
+              ...inset,
+            }}
+          >
             {props.children}
           </ScrollAreaContent>
         </ScrollAreaViewport>
