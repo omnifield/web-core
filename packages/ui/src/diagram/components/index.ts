@@ -1,8 +1,21 @@
-export { DiagramRoot, type DiagramRootProps } from "./root.js";
+export {
+  DiagramRoot,
+  type DiagramAxisView,
+  type DiagramFrame,
+  type DiagramPlot,
+  type DiagramRootProps,
+} from "./root.js";
 export {
   DiagramAxis,
+  isBandScale,
+  place,
+  ticksOf,
   type DiagramAxisOrientation,
   type DiagramAxisProps,
+  type DiagramBandScale,
+  type DiagramContinuousScale,
+  type DiagramScale,
+  type DiagramTickValue,
 } from "./cartesian/axis.js";
 export { DiagramGrid, type DiagramGridProps } from "./cartesian/grid.js";
 export { DiagramLine, type DiagramLineProps } from "./cartesian/line.js";

@@ -1,12 +1,9 @@
-import { createRegistry, type ReadableComponent, type Registry } from "@web-core/assembly";
 import { RenderTree } from "@web-core/assembly/render";
-import { admits, baseAssemblyOf } from "@web-core/skin/editor";
-import type { PassportAssembly, PassportEditorInfo } from "@web-core/skin/editor";
-import type { ComponentPassport } from "@web-core/skin/model";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { kitComponentRenderer } from "../../component-registry.jsx";
 import {
   DiagramArea,
   DiagramAxis,
@@ -15,35 +12,9 @@ import {
   DiagramLine,
   DiagramPoint,
   DiagramRoot,
-  kit as diagramKit,
+  isBandScale,
 } from "../components/index.js";
-import { passport as diagramPassport } from "../entity/passport.js";
-import { assemblies } from "../playground/assemblies/index.js";
-import { editorInfo as diagramEditorInfo } from "../playground/index.js";
-
-function readable<Part extends string, Data = unknown>(
-  passport: ComponentPassport<Part>,
-  editorInfo: PassportEditorInfo<Part, string, Data>,
-): ReadableComponent["passport"] {
-  return {
-    component: passport.component,
-    genus: editorInfo.genus,
-    anatomy: passport.anatomy,
-    root: passport.root,
-    parts: passport.parts.map((part) => ({
-      name: part.name,
-      accepts: editorInfo.parts[part.name]?.accepts,
-    })),
-    selfAssembly: passport.selfAssembly as any,
-  };
-}
-
-const REGISTRY: Registry = createRegistry({
-  components: {
-    diagram: { passport: readable(diagramPassport, diagramEditorInfo), parts: diagramKit.parts },
-  },
-  admits,
-});
+import type { Data } from "../entity/io.js";
 
 let dispose: (() => void) | undefined;
 
@@ -53,52 +24,211 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-describe('diagram "basic" — coordinate system, one x-axis and one y-axis, no series', () => {
-  it("renders both axes with real ticks from their own scale", () => {
-    const assembly = assemblies.find((candidate) => candidate.name === "basic")!;
-    const tree = baseAssemblyOf(diagramPassport, assembly as PassportAssembly, "diagram", {});
+/** Настоящий путь потребителя: витрина зовёт `instanceOf(component, rootProps, assembly, data)`. */
+function mount(data: Data, assembly = "line"): HTMLElement {
+  const { registry, instanceOf } = kitComponentRenderer();
+  const host = document.createElement("div");
+  document.body.append(host);
 
-    const host = document.createElement("div");
-    document.body.append(host);
+  dispose = render(
+    () => <RenderTree registry={registry} tree={instanceOf("diagram", {}, assembly, data)} data={data} />,
+    host,
+  );
 
-    dispose = render(() => <RenderTree registry={REGISTRY} tree={tree} data={{}} />, host);
+  return host;
+}
 
-    const axes = [...host.querySelectorAll('[data-scope="diagram"][data-part="axis"]')];
-    expect(axes).toHaveLength(2);
+/** Между двумя показами в одном сценарии — снять предыдущий, иначе в DOM окажутся оба. */
+function remount(data: Data, assembly: string): HTMLElement {
+  dispose?.();
+  document.body.innerHTML = "";
+  return mount(data, assembly);
+}
+
+describe("форму задаёт сборка, данные — только что показывать", () => {
+  const rows = [
+    { day: 0, temperature: 12 },
+    { day: 1, temperature: 15 },
+    { day: 2, temperature: 14 },
+    { day: 3, temperature: 18 },
+  ];
+  const data: Data = { data: rows, series: [{ x: "day", y: "temperature" }] };
+
+  it("одни и те же данные рисуются линией, областью, точками и столбцами", () => {
+    const asLine = mount(data, "line");
+    expect(asLine.querySelector('[data-part="line"]')?.getAttribute("d")).toMatch(/^M/);
+    expect(asLine.querySelector('[data-part="area"]')).toBeNull();
+
+    const asArea = remount(data, "area");
+    expect(asArea.querySelector('[data-part="area"]')?.getAttribute("d")).toMatch(/Z$/);
+    expect(asArea.querySelector('[data-part="line"]')).toBeNull();
+
+    const asPoint = remount(data, "point");
+    expect(asPoint.querySelectorAll('[data-part="point"] circle')).toHaveLength(4);
+
+    const asBar = remount(data, "bar");
+    expect(asBar.querySelectorAll('[data-part="bar"] rect')).toHaveLength(4);
+  });
+
+  it("несколько серий одних данных рисуются одной формой, каждая своим узлом", () => {
+    const host = mount(
+      {
+        data: [
+          { day: 0, temperature: 12, humidity: 40 },
+          { day: 1, temperature: 15, humidity: 55 },
+        ],
+        series: [
+          { x: "day", y: "temperature", label: "Температура" },
+          { x: "day", y: "humidity", label: "Влажность" },
+        ],
+      },
+      "line",
+    );
+
+    expect(host.querySelectorAll('[data-part="line"]')).toHaveLength(2);
+  });
+
+  it("сборка столбцов сама берёт категориальную шкалу и подписывает деления", () => {
+    const host = mount(
+      {
+        data: [
+          { quarter: "Q1", revenue: 120 },
+          { quarter: "Q2", revenue: 190 },
+          { quarter: "Q3", revenue: 90 },
+        ],
+        series: [{ x: "quarter", y: "revenue" }],
+      },
+      "bar",
+    );
+
+    expect(host.querySelectorAll('[data-part="bar"] rect')).toHaveLength(3);
+
+    const xAxis = host.querySelector('[data-part="axis"][data-orientation="x"]')!;
+    expect([...xAxis.querySelectorAll("text")].map((node) => node.textContent)).toEqual(["Q1", "Q2", "Q3"]);
+  });
+
+  it("категориальные данные рисуются любой формой — точка встаёт в центр своей полосы", () => {
+    const categorical: Data = {
+      data: [
+        { quarter: "Q1", revenue: 120 },
+        { quarter: "Q2", revenue: 190 },
+      ],
+      series: [{ x: "quarter", y: "revenue" }],
+    };
+
+    const asBar = mount(categorical, "bar");
+    expect(asBar.querySelectorAll('[data-part="bar"] rect')).toHaveLength(2);
+
+    const asPoint = remount(categorical, "point");
+    const circles = [...asPoint.querySelectorAll('[data-part="point"] circle')];
+    expect(circles).toHaveLength(2);
+
+    const bandLabels = [...asPoint.querySelectorAll('[data-part="axis"][data-orientation="x"] text')];
+    const labelAt = (index: number) =>
+      Number(bandLabels[index]?.parentElement?.getAttribute("transform")?.match(/translate\(([\d.]+)/)?.[1]);
+    expect(Number(circles[0]?.getAttribute("cx"))).toBeCloseTo(labelAt(0), 5);
+    expect(Number(circles[1]?.getAttribute("cx"))).toBeCloseTo(labelAt(1), 5);
+
+    const asLine = remount(categorical, "line");
+    expect(asLine.querySelector('[data-part="line"]')?.getAttribute("d")).toMatch(/^M[\d.]+,[\d.]+L/);
+  });
+
+  it("оси выводит из серий, а явное описание оси их уточняет", () => {
+    const both = mount(data, "line");
+    expect(both.querySelectorAll('[data-part="axis"]')).toHaveLength(2);
+
+    const onlyX = remount({ ...data, axes: [{ orientation: "y", hidden: true }] }, "line");
+    const axes = [...onlyX.querySelectorAll('[data-part="axis"]')];
+    expect(axes).toHaveLength(1);
     expect(axes[0]?.getAttribute("data-orientation")).toBe("x");
-    expect(axes[1]?.getAttribute("data-orientation")).toBe("y");
+  });
 
-    for (const axis of axes) {
-      expect(axis.querySelectorAll("text").length).toBeGreaterThan(0);
-    }
+  it("поле под подписи — дефолт, пока данные не скажут иначе", () => {
+    const byDefault = mount(data, "line");
+    expect(byDefault.querySelector('[data-part="axis"][data-orientation="y"] line')?.getAttribute("x1")).toBe("44");
 
-    const grids = [...host.querySelectorAll('[data-scope="diagram"][data-part="grid"]')];
-    expect(grids).toHaveLength(2);
-    expect(grids[0]?.getAttribute("data-orientation")).toBe("x");
-    expect(grids[1]?.getAttribute("data-orientation")).toBe("y");
+    const widened = remount({ ...data, insets: { left: 80 } }, "line");
+    expect(widened.querySelector('[data-part="axis"][data-orientation="y"] line')?.getAttribute("x1")).toBe("80");
+  });
 
-    for (const grid of grids) {
-      expect(grid.querySelectorAll("line").length).toBeGreaterThan(0);
-    }
+  it("без единой серии остаётся голым корнем — ни осей, ни сетки", () => {
+    const host = mount({ data: [], series: [] }, "line");
+
+    expect(host.querySelector('[data-scope="diagram"][data-part="root"]')).not.toBeNull();
+    expect(host.querySelectorAll('[data-part="axis"]')).toHaveLength(0);
+    expect(host.querySelectorAll('[data-part="grid"]')).toHaveLength(0);
   });
 });
 
-describe('diagram "line" — a real series drawn over the coordinate system', () => {
-  it("renders one path with a real d attribute, over the grid and under the axes in DOM order", () => {
-    const assembly = assemblies.find((candidate) => candidate.name === "line")!;
-    const tree = baseAssemblyOf(diagramPassport, assembly as PassportAssembly, "diagram", {});
+describe("цвет приходит в данных — компонент своего не назначает", () => {
+  const rows = [
+    { day: 0, temperature: 12, tone: "var(--danger-9)" },
+    { day: 1, temperature: 15, tone: "var(--success-9)" },
+  ];
+
+  it("цвет серии ложится на её часть, какой бы формой её ни нарисовали", () => {
+    const asLine = mount({ data: rows, series: [{ x: "day", y: "temperature", color: "var(--accent-11)" }] }, "line");
+    expect(asLine.querySelector('[data-part="line"]')?.getAttribute("style")).toContain("var(--accent-11)");
+
+    const asArea = remount(
+      { data: rows, series: [{ x: "day", y: "temperature", color: "var(--accent-9)" }] },
+      "area",
+    );
+    expect(asArea.querySelector('[data-part="area"]')?.getAttribute("style")).toContain("var(--accent-9)");
+  });
+
+  it("цвет отдельной точки берётся из названного поля строки", () => {
+    const host = mount({ data: rows, series: [{ x: "day", y: "temperature", colorField: "tone" }] }, "point");
+
+    const circles = [...host.querySelectorAll('[data-part="point"] circle')];
+    expect(circles[0]?.getAttribute("style")).toContain("var(--danger-9)");
+    expect(circles[1]?.getAttribute("style")).toContain("var(--success-9)");
+  });
+
+  it("цвета в данных нет — часть не несёт своего цвета вовсе, красит рецепт", () => {
+    const host = mount({ data: rows, series: [{ x: "day", y: "temperature" }] }, "line");
+
+    expect(host.querySelector('[data-part="line"]')?.getAttribute("style")).toBeNull();
+  });
+});
+
+describe("DiagramRoot — рукописный путь через рендер-проп", () => {
+  it("отдаёт посчитанные шкалы, и серия по ним встаёт туда же, куда встала бы сама", () => {
+    const rows = [
+      { at: 0, value: 0 },
+      { at: 1, value: 10 },
+    ];
 
     const host = document.createElement("div");
     document.body.append(host);
 
-    dispose = render(() => <RenderTree registry={REGISTRY} tree={tree} data={{}} />, host);
+    dispose = render(
+      () => (
+        <DiagramRoot
+          width={100}
+          height={100}
+          data={rows}
+          series={[{ x: "at", y: "value" }]}
+          insets={{ top: 0, right: 0, bottom: 0, left: 0 }}
+        >
+          {(frame) =>
+            isBandScale(frame.xScale) || isBandScale(frame.yScale) ? undefined : (
+              <DiagramLine
+                data={rows}
+                xScale={frame.xScale}
+                yScale={frame.yScale}
+                x={(row) => row.at}
+                y={(row) => row.value}
+              />
+            )
+          }
+        </DiagramRoot>
+      ),
+      host,
+    );
 
-    const lines = [...host.querySelectorAll('[data-scope="diagram"][data-part="line"]')];
-    expect(lines).toHaveLength(1);
-
-    const d = lines[0]?.getAttribute("d");
-    expect(d).toMatch(/^M/);
-    expect(d?.match(/L/g)).toHaveLength(6);
+    const line = host.querySelector('[data-scope="diagram"][data-part="line"]')!;
+    expect(line.getAttribute("d")).toBe("M0,100L100,0");
   });
 });
 
@@ -147,25 +277,6 @@ describe("DiagramLine — direct mount", () => {
   });
 });
 
-describe('diagram "area" — a filled series drawn over the coordinate system', () => {
-  it("renders one filled path with a real, closed d attribute", () => {
-    const assembly = assemblies.find((candidate) => candidate.name === "area")!;
-    const tree = baseAssemblyOf(diagramPassport, assembly as PassportAssembly, "diagram", {});
-
-    const host = document.createElement("div");
-    document.body.append(host);
-
-    dispose = render(() => <RenderTree registry={REGISTRY} tree={tree} data={{}} />, host);
-
-    const areas = [...host.querySelectorAll('[data-scope="diagram"][data-part="area"]')];
-    expect(areas).toHaveLength(1);
-
-    const d = areas[0]?.getAttribute("d");
-    expect(d).toMatch(/^M/);
-    expect(d).toMatch(/Z$/);
-  });
-});
-
 describe("DiagramArea — direct mount", () => {
   it("fills from the value down to the yScale's baseline (range()[0])", () => {
     const data = [
@@ -208,21 +319,6 @@ describe("DiagramArea — direct mount", () => {
     const path = host.querySelector('[data-scope="diagram"][data-part="area"]')!;
     expect(path).not.toBeNull();
     expect(path.hasAttribute("d")).toBe(false);
-  });
-});
-
-describe('diagram "bar" — categorical columns drawn over the y coordinate', () => {
-  it("renders one rect per data point", () => {
-    const assembly = assemblies.find((candidate) => candidate.name === "bar")!;
-    const tree = baseAssemblyOf(diagramPassport, assembly as PassportAssembly, "diagram", {});
-
-    const host = document.createElement("div");
-    document.body.append(host);
-
-    dispose = render(() => <RenderTree registry={REGISTRY} tree={tree} data={{}} />, host);
-
-    const bars = host.querySelector('[data-scope="diagram"][data-part="bar"]')!;
-    expect(bars.querySelectorAll("rect")).toHaveLength(4);
   });
 });
 
@@ -274,21 +370,6 @@ describe("DiagramBar — direct mount", () => {
     const bar = host.querySelector('[data-scope="diagram"][data-part="bar"]')!;
     expect(bar).not.toBeNull();
     expect(bar.querySelectorAll("rect")).toHaveLength(0);
-  });
-});
-
-describe('diagram "point" — a scatter series drawn over the coordinate system', () => {
-  it("renders one circle per data point", () => {
-    const assembly = assemblies.find((candidate) => candidate.name === "point")!;
-    const tree = baseAssemblyOf(diagramPassport, assembly as PassportAssembly, "diagram", {});
-
-    const host = document.createElement("div");
-    document.body.append(host);
-
-    dispose = render(() => <RenderTree registry={REGISTRY} tree={tree} data={{}} />, host);
-
-    const points = host.querySelector('[data-scope="diagram"][data-part="point"]')!;
-    expect(points.querySelectorAll("circle")).toHaveLength(8);
   });
 });
 
