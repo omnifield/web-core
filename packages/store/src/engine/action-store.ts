@@ -1,8 +1,8 @@
 import { createAtom } from "@xstate/store";
 import type { Atom, AtomOptions, ReadonlyAtom } from "@xstate/store";
 import { useAtom } from "@xstate/store-solid";
-import { createRoot } from "solid-js";
-import type { Accessor } from "solid-js";
+import { createRoot } from "@web-core/solid";
+import type { Accessor } from "@web-core/solid";
 
 export interface ActionStoreHelpers<T> {
   readonly setState: Atom<T>["set"];

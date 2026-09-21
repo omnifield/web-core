@@ -1,6 +1,6 @@
 // Смоук-проба зоны: настоящий рендер обоих слоёв, а не разбор опций — то, что действительно
 // ловит сломанный реэкспорт или разъехавшийся вендор.
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createStore, useSelector } from "../src/index.js";

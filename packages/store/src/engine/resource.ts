@@ -1,7 +1,7 @@
 import { createAtom } from "@xstate/store";
 import type { Atom, AtomOptions } from "@xstate/store";
-import { createEffect, createRoot } from "solid-js";
-import type { Accessor } from "solid-js";
+import { createEffect, createRoot } from "@web-core/solid";
+import type { Accessor } from "@web-core/solid";
 
 export type ResourceState<Data, Err = unknown> =
   | { status: "pending"; data?: Data }

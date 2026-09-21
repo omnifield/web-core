@@ -1,6 +1,6 @@
 // Регрессия на баг апстрима createAsyncAtom, см. FAQ.md.
-import { render } from "solid-js/web";
-import { createSignal } from "solid-js";
+import { render } from "@web-core/solid/web";
+import { createSignal } from "@web-core/solid";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createResourceAtom } from "../src/engine/resource.js";

@@ -1,5 +1,5 @@
-import { render } from "solid-js/web";
-import { createSignal } from "solid-js";
+import { render } from "@web-core/solid/web";
+import { createSignal } from "@web-core/solid";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createBoundAtom } from "../src/engine/bound.js";
