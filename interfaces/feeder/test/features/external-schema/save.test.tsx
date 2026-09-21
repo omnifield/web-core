@@ -67,7 +67,7 @@ describe("ExternalSchemaLoader", () => {
     await vi.waitFor(() => expect(presetsStore.get().presets).toHaveLength(1));
 
     const preset = presetsStore.get().presets[0];
-    expect(preset?.name).toBe("Петстор");
+    expect(preset?.label).toBe("Петстор");
     expect(preset?.kind).toBe("api");
     expect(asSchemaDocument(preset?.content)?.endpoints.length).toBeGreaterThan(0);
     expect(Object.keys(preset?.content as object).sort()).toEqual([

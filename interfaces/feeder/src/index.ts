@@ -41,10 +41,12 @@ export {
 export {
   presetConfigOf,
   PresetInfo,
+  presetNamed,
   Presets,
   presetsStore,
   recordsOf,
   PRESET_CONFIG,
+  PRESET_NAME,
   type Preset,
   type PresetConfig,
   type PresetsState,

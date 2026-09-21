@@ -274,7 +274,7 @@ describe("ApiCatalog", () => {
     const host = mount();
 
     settings(host)[0]?.click();
-    expect(dialog()?.textContent).toContain("name");
+    expect(dialog()?.textContent).toContain("label");
     expect(dialog()?.textContent).not.toContain("url");
 
     saves()[0]?.click();
@@ -301,7 +301,7 @@ describe("ApiCatalog", () => {
     type(dialog(), "Петстор");
     saves()[0]?.click();
 
-    expect(presetsStore.selectors.presetBy(id)?.name).toBe("Петстор");
+    expect(presetsStore.selectors.presetBy(id)?.label).toBe("Петстор");
   });
 
   it("ответ ручки уходит наружу диспатчем, а не оседает в каталоге", async () => {

@@ -36,7 +36,7 @@ export function ApiCatalog(props: {
       >
         {(preset, document, edit) => (
           <Endpoints
-            label={preset().name}
+            label={preset().label}
             document={document()}
             onAddGroup={() => edit((draft) => addGroup(draft))}
             onAddEndpoint={(group) =>

@@ -10,8 +10,9 @@ export interface PresetsState {
 export const presetsStore = createActionStore<
   PresetsState,
   {
-    add(kind: string, name: string, content: unknown): string;
+    add(kind: string, label: string, content: unknown): string;
     remove(id: string): void;
+    relabel(id: string, label: string): void;
     rename(id: string, name: string): void;
     replace(id: string, content: unknown): void;
     edit<T>(id: string, recipe: (content: Draft<T>) => void): void;
@@ -24,11 +25,11 @@ export const presetsStore = createActionStore<
 >(
   { presets: [] },
   ({ setState }) => ({
-    add(kind, name, content) {
+    add(kind, label, content) {
       const id = crypto.randomUUID();
       setState(
         mutate<PresetsState>((draft) => {
-          draft.presets.push(castDraft({ id, kind, name, content }));
+          draft.presets.push(castDraft({ id, kind, label, content }));
         }),
       );
       return id;
@@ -37,6 +38,14 @@ export const presetsStore = createActionStore<
       setState(
         mutate<PresetsState>((draft) => {
           draft.presets = draft.presets.filter((preset) => preset.id !== id);
+        }),
+      );
+    },
+    relabel(id, label) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.label = label;
         }),
       );
     },

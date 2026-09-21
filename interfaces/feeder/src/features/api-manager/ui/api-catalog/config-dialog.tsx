@@ -48,7 +48,7 @@ function write(subject: ConfigSubject, value: unknown): void {
   const { preset, target } = subject;
 
   if (target.kind === "schema") {
-    presetsStore.actions.rename(preset.id, (value as PresetConfig).name);
+    presetsStore.actions.relabel(preset.id, (value as PresetConfig).label);
     return;
   }
 

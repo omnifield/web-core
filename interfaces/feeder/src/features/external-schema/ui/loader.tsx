@@ -6,17 +6,17 @@ import { PresetInfo, presetsStore } from "../../../entities/preset";
 import { RawLoader } from "../../../shared/ui";
 
 export function ExternalSchemaLoader() {
-  const [name, setName] = createSignal("");
+  const [label, setLabel] = createSignal("");
   const [failure, setFailure] = createSignal<string>();
 
-  const title = () => name().trim();
+  const title = () => label().trim();
 
   async function save(raw: string) {
     setFailure(undefined);
 
     try {
       presetsStore.actions.add(API_KIND, title(), await parseSchema(raw));
-      setName("");
+      setLabel("");
     } catch (error) {
       setFailure(error instanceof Error ? error.message : String(error));
     }
@@ -25,7 +25,7 @@ export function ExternalSchemaLoader() {
   return (
     <Flow data-variant="column">
       <FlowItem>
-        <PresetInfo name={name()} onName={setName} />
+        <PresetInfo label={label()} onLabel={setLabel} />
       </FlowItem>
       <FlowItem>
         <RawLoader
