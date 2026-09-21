@@ -19,6 +19,7 @@ export {
 
 export {
   ADAPTER_KIND,
+  ADAPTER_SHAPE,
   adapterFor,
   applyAdapter,
   asAdapter,
@@ -39,21 +40,30 @@ export {
   type UserTree,
 } from "./entities/adapter";
 export {
+  connectPresets,
+  dropPreset,
+  failureOf,
+  loadPresets,
   presetConfigOf,
   PresetInfo,
   presetNamed,
   Presets,
   presetsStore,
   recordsOf,
+  savePreset,
   PRESET_CONFIG,
   PRESET_NAME,
   type Preset,
   type PresetConfig,
+  type PresetShape,
+  type PresetsFailure,
+  type PresetsService,
   type PresetsState,
   type Record,
 } from "./entities/preset";
 export {
   API_KIND,
+  API_SHAPE,
   asSchemaDocument,
   endpointConfigOf,
   endpointLabel,

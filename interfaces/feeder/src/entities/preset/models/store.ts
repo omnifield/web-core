@@ -15,7 +15,9 @@ export const presetsStore = createActionStore<
     relabel(id: string, label: string): void;
     rename(id: string, name: string): void;
     replace(id: string, content: unknown): void;
+    markSaved(id: string, savedAt: string): void;
     edit<T>(id: string, recipe: (content: Draft<T>) => void): void;
+    adopt(presets: readonly Preset[]): void;
     hydrate(presets: readonly Preset[]): void;
   },
   {
@@ -65,11 +67,30 @@ export const presetsStore = createActionStore<
         }),
       );
     },
+    markSaved(id, savedAt) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.savedAt = savedAt;
+        }),
+      );
+    },
     edit(id, recipe) {
       setState(
         mutate<PresetsState>((draft) => {
           const preset = draft.presets.find((item) => item.id === id);
           if (preset !== undefined) recipe(preset.content as Draft<never>);
+        }),
+      );
+    },
+    adopt(presets) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          for (const preset of presets) {
+            const at = draft.presets.findIndex((item) => item.id === preset.id);
+            if (at === -1) draft.presets.push(castDraft(preset));
+            else draft.presets[at] = castDraft(preset);
+          }
         }),
       );
     },

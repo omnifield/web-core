@@ -12,6 +12,7 @@ export {
   type SchemaDocument,
 } from "./types";
 export { API_KIND } from "./kind";
+export { API_SHAPE } from "./shape";
 export { schemaNodeToZod, type SchemaNode } from "./json-schema";
 export { endpointOf } from "./descriptor";
 export { endpointLabel } from "./label";

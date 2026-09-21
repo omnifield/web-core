@@ -1,20 +1,27 @@
-import { createMemo, Show } from "@web-core/solid";
+import { createMemo, createResource, Show } from "@web-core/solid";
 import { Typography } from "@web-core/ui";
 
 import {
   asAdapter,
   ADAPTER_KIND,
+  ADAPTER_SHAPE,
   partnersOf,
   type UserPath,
 } from "../../../../entities/adapter";
 import {
   API_KIND,
+  API_SHAPE,
   asSchemaDocument,
   endpointLabel,
   type EndpointDescriptor,
   type SchemaNode,
 } from "../../../../entities/openapi";
-import { recordsOf } from "../../../../entities/preset";
+import {
+  failureOf,
+  loadPresets,
+  presetsStore,
+  recordsOf,
+} from "../../../../entities/preset";
 import { Box } from "../../../../shared";
 import { API_USER } from "../../lib";
 import type { Serving } from "../../lib";
@@ -38,6 +45,12 @@ export function ApiProbe(props: {
   consumer: UserPath;
   onServing?: (event: ApiProbeResult) => void;
 }) {
+  const [pulled] = createResource(async () => {
+    const stored = [...(await loadPresets(API_SHAPE)), ...(await loadPresets(ADAPTER_SHAPE))];
+    presetsStore.actions.adopt(stored);
+    return stored.length;
+  });
+
   const linked = createMemo<Linked[]>(() => {
     const adapters = recordsOf(ADAPTER_KIND, asAdapter).map((one) => one.content);
     const paths = partnersOf(adapters, "consumers", props.consumer);
@@ -68,30 +81,42 @@ export function ApiProbe(props: {
   });
 
   return (
-    <Show when={linked().length > 0} fallback={<Typography>{NOTHING}</Typography>}>
-      <Box
-        items={linked()}
-        itemKey={(one) => one.endpoint.id}
-        itemLabel={(one) => endpointLabel(one.endpoint)}
-      >
-        {(one) => (
-          <Endpoint
-            endpoint={one().endpoint}
-            defs={one().defs}
-            users={{
-              provider: API_USER.path(one().presetId, one().endpoint.id),
-              consumer: props.consumer,
-            }}
-            onServing={(serving) =>
-              props.onServing?.({
-                presetId: one().presetId,
-                endpoint: one().endpoint,
-                serving,
-              })
-            }
-          />
+    <>
+      <Show when={pulled.loading}>
+        <Typography>Читаем ручки из службы…</Typography>
+      </Show>
+
+      <Show when={pulled.error}>
+        {(error) => (
+          <Typography>Службу прочитать не вышло: {failureOf(error()).message}</Typography>
         )}
-      </Box>
-    </Show>
+      </Show>
+
+      <Show when={linked().length > 0} fallback={<Typography>{NOTHING}</Typography>}>
+        <Box
+          items={linked()}
+          itemKey={(one) => one.endpoint.id}
+          itemLabel={(one) => endpointLabel(one.endpoint)}
+        >
+          {(one) => (
+            <Endpoint
+              endpoint={one().endpoint}
+              defs={one().defs}
+              users={{
+                provider: API_USER.path(one().presetId, one().endpoint.id),
+                consumer: props.consumer,
+              }}
+              onServing={(serving) =>
+                props.onServing?.({
+                  presetId: one().presetId,
+                  endpoint: one().endpoint,
+                  serving,
+                })
+              }
+            />
+          )}
+        </Box>
+      </Show>
+    </>
   );
 }

@@ -11,7 +11,11 @@ import {
   type EndpointDescriptor,
   type SchemaDocument,
 } from "../../../src/entities/openapi";
-import { presetsStore } from "../../../src/entities/preset";
+import {
+  connectPresets,
+  presetsStore,
+  type PresetsService,
+} from "../../../src/entities/preset";
 import {
   ApiCatalog,
   type ApiCatalogResult,
@@ -33,7 +37,12 @@ afterEach(() => {
   dispose?.();
   dispose = undefined;
   vi.unstubAllGlobals();
+  connectPresets(undefined);
 });
+
+function serviceOf(answer: () => unknown): void {
+  connectPresets({ request: async () => answer() } as unknown as PresetsService);
+}
 
 function mount(onResult?: (event: ApiCatalogResult) => void): HTMLDivElement {
   const host = document.createElement("div");
@@ -335,5 +344,183 @@ describe("ApiCatalog", () => {
       presetId: second,
       endpoint: { id: "pets" },
     });
+  });
+});
+
+describe("ApiCatalog и служба", () => {
+  it("показывает схемы, которые лежат в службе, а не только заведённые здесь", async () => {
+    serviceOf(() => ({
+      presets: [
+        {
+          id: "со-службы",
+          label: "Петстор со службы",
+          name: null,
+          kind: "api",
+          savedAt: "2026-09-21T12:00:00Z",
+          endpoints: [
+            { id: "e1", method: "GET", url: "https://back/pets", groupId: "g1", params: [] },
+          ],
+          groups: [{ id: "g1", name: "питомцы" }],
+          defs: {},
+        },
+      ],
+    }));
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Петстор со службы"));
+    expect(presetsStore.selectors.presetBy("со-службы")?.savedAt).toBe("2026-09-21T12:00:00Z");
+  });
+
+  it("приехавшее не затирает того, что человек завёл в этой сессии", async () => {
+    serviceOf(() => ({
+      presets: [
+        {
+          id: "со-службы",
+          label: "Со службы",
+          kind: "api",
+          savedAt: "когда-то",
+          endpoints: [],
+          groups: [],
+          defs: {},
+        },
+      ],
+    }));
+    presetsStore.actions.add("api", "Своя, ещё не уехавшая", oneEndpoint("users"));
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Со службы"));
+    expect(host.textContent).toContain("Своя, ещё не уехавшая");
+  });
+
+  it("молчание службы названо словами, а не пустым каталогом", async () => {
+    serviceOf(() => {
+      throw new Error("Failed to fetch");
+    });
+    presetsStore.actions.add("api", "Своя", oneEndpoint("users"));
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Службу прочитать не вышло"));
+    expect(host.textContent).toContain("Failed to fetch");
+    expect(host.textContent).toContain("Своя");
+  });
+});
+
+describe("ApiCatalog: правки уезжают в службу", () => {
+  const answering = (document: string) => {
+    if (document.includes("query Presets")) return { presets: [] };
+    if (document.includes("deletePreset")) return { deletePreset: true };
+    if (document.includes("createPreset"))
+      return { createPreset: { id: "неважно", savedAt: "заведено" } };
+    return { replacePreset: { id: "неважно", savedAt: "поправлено" } };
+  };
+
+  function talking(): ReturnType<typeof vi.fn> {
+    const request = vi.fn(async (document: string) => answering(document));
+    connectPresets({ request } as unknown as PresetsService);
+    return request;
+  }
+
+  function stored(label: string) {
+    const id = presetsStore.actions.add("api", label, oneEndpoint("users"));
+    presetsStore.actions.markSaved(id, "когда-то");
+    return id;
+  }
+
+  function lastCall(request: ReturnType<typeof vi.fn>): [string, Record<string, unknown>] {
+    return request.mock.calls.at(-1) as [string, Record<string, unknown>];
+  }
+
+  it("«+» на схеме уезжает заменой записи", async () => {
+    const request = talking();
+    const id = stored("Свой бэк");
+
+    const host = mount();
+    add(host)[0]?.click();
+
+    await vi.waitFor(() =>
+      expect(presetsStore.selectors.presetBy(id)?.savedAt).toBe("поправлено"),
+    );
+
+    const [document, variables] = lastCall(request);
+    expect(document).toContain("replacePreset");
+    expect(variables.id).toBe(id);
+    expect(
+      ((variables.input as { state: { groups: unknown[] } }).state.groups),
+    ).toHaveLength(2);
+  });
+
+  it("удаление ручки тоже уезжает, а не остаётся местным", async () => {
+    const request = talking();
+    const id = stored("Свой бэк");
+
+    const host = mount();
+    trash(host).at(-1)?.click();
+
+    await vi.waitFor(() => expect(lastCall(request)[0]).toContain("replacePreset"));
+    expect(endpointsOf(id)).toHaveLength(0);
+  });
+
+  it("правка из диалога настройки уезжает вместе с новым именем", async () => {
+    const request = talking();
+    const id = stored("Свой бэк");
+
+    const host = mount();
+    settings(host)[0]?.click();
+    type(dialog(), "Петстор");
+    saves()[0]?.click();
+
+    await vi.waitFor(() =>
+      expect(presetsStore.selectors.presetBy(id)?.savedAt).toBe("поправлено"),
+    );
+
+    const [document, variables] = lastCall(request);
+    expect(document).toContain("replacePreset");
+    expect((variables.input as { label: string }).label).toBe("Петстор");
+  });
+
+  it("корзина на схеме удаляет её и в службе", async () => {
+    const request = talking();
+    const id = stored("Свой бэк");
+
+    const host = mount();
+    trash(host)[0]?.click();
+
+    await vi.waitFor(() => expect(lastCall(request)[0]).toContain("deletePreset"));
+    expect(lastCall(request)[1]).toEqual({ id });
+    expect(presetsStore.selectors.presetBy(id)).toBeUndefined();
+  });
+
+  it("схему, которая в службу не уезжала, удаляем молча — там её нет", async () => {
+    const request = talking();
+    presetsStore.actions.add("api", "Только моя", oneEndpoint("users"));
+
+    const host = mount();
+    await vi.waitFor(() => expect(request).toHaveBeenCalled());
+    const reads = request.mock.calls.length;
+
+    trash(host)[0]?.click();
+
+    expect(request.mock.calls).toHaveLength(reads);
+    expect(presetsStore.selectors.presetsOf("api")).toHaveLength(0);
+  });
+
+  it("отказ службы на правке назван словами, правка при этом остаётся здесь", async () => {
+    connectPresets({
+      request: async (document: string) => {
+        if (document.includes("query Presets")) return { presets: [] };
+        throw new Error("запись больше предела");
+      },
+    } as unknown as PresetsService);
+    const id = stored("Свой бэк");
+
+    const host = mount();
+    add(host)[0]?.click();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Правка в службу не уехала"));
+    expect(host.textContent).toContain("запись больше предела");
+    expect(groupsOf(id)).toHaveLength(2);
   });
 });

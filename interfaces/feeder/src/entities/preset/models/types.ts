@@ -3,5 +3,6 @@ export interface Preset {
   readonly kind: string;
   readonly label: string;
   readonly name?: string;
+  readonly savedAt?: string;
   readonly content: unknown;
 }
