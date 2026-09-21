@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { endpointOf, parseSchema } from "../../../src/entities/openapi";
+import { endpointOf, parseSchema, UNKNOWN_GROUP } from "../../../src/entities/openapi";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
 const petstore = readFileSync(join(fixtureDir, "fixtures/petstore.yaml"), "utf-8");
@@ -21,6 +21,31 @@ describe("parseSchema", () => {
     expect(document.groups.find((group) => group.id === found?.groupId)?.name).toBe("pet");
     expect(found?.params[0]?.name).toBe("status");
     expect(found?.params[0]?.in).toBe("query");
+  });
+
+  it("ручки, которым схема не назвала группу, уходят в обычную группу «unknown»", async () => {
+    const document = await parseSchema(
+      JSON.stringify({
+        swagger: "2.0",
+        host: "back",
+        basePath: "/v2",
+        paths: {
+          "/users": { get: { parameters: [] } },
+          "/pets": { get: { tags: ["pet"], parameters: [] } },
+          "/orders": { get: { parameters: [] } },
+        },
+      }),
+    );
+
+    const unknown = document.groups.find((group) => group.name === UNKNOWN_GROUP);
+
+    expect(unknown?.id).toEqual(expect.any(String));
+    expect(document.endpoints.every((endpoint) => endpoint.groupId !== undefined)).toBe(true);
+    expect(
+      document.endpoints
+        .filter((endpoint) => endpoint.groupId === unknown?.id)
+        .map((endpoint) => endpoint.url),
+    ).toEqual(["https://back/v2/users", "https://back/v2/orders"]);
   });
 
   it("результат сериализуется — именно он поедет на бэк", async () => {

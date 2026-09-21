@@ -54,6 +54,7 @@ export {
   API_KIND,
   asSchemaDocument,
   endpointConfigOf,
+  endpointLabel,
   ENDPOINT_CONFIG,
   endpointOf,
   Endpoints,

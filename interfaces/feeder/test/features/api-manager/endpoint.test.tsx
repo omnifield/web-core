@@ -17,6 +17,7 @@ function endpoint(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor {
     id: "users",
     method: "GET",
     url: "https://back/v2/users",
+    groupId: "g-users",
     params: [{ name: "limit", in: "query", required: true, schema: { type: "string" } }],
     ...patch,
   };

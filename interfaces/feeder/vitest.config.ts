@@ -1,16 +1,3 @@
-import solid from "vite-plugin-solid";
-import { defineConfig } from "vitest/config";
+import { defineTestConfig } from "@web-core/build/vitest";
 
-export default defineConfig({
-  plugins: [solid()],
-  resolve: { conditions: ["development", "browser"] },
-  test: {
-    environment: "jsdom",
-    include: ["test/**/*.test.ts", "test/**/*.test.tsx"],
-    server: {
-      deps: {
-        inline: [/@ark-ui\/solid/, /@zag-js\//, /@kobalte\/core/, /lucide-solid/, /@web-core\//],
-      },
-    },
-  },
-});
+export default defineTestConfig();

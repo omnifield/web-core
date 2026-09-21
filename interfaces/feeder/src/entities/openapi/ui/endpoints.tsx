@@ -2,6 +2,7 @@ import type { Accessor, JSX } from "@web-core/solid";
 
 import { Box } from "../../../shared/ui";
 import {
+  endpointLabel,
   groupEndpoints,
   type ConfigTarget,
   type EndpointDescriptor,
@@ -53,7 +54,7 @@ export function Endpoints(props: {
         <Box
           items={group().endpoints}
           itemKey={(endpoint) => endpoint.id}
-          itemLabel={(endpoint) => `${endpoint.method}`}
+          itemLabel={(endpoint) => endpointLabel(endpoint)}
           onConfig={
             props.onConfig === undefined
               ? undefined

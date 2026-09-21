@@ -62,13 +62,13 @@ describe("Mastering", () => {
   it("держит обе стороны разом — выход слева, вход справа", () => {
     const host = mount();
 
-    const texts = columns(host).map((column) =>
-      items(column).map((node) => node.textContent),
+    const addresses = columns(host).map((column) =>
+      items(column).map((node) => node.getAttribute("title")),
     );
 
-    expect(texts).toEqual([
-      [expect.stringContaining("/title"), expect.stringContaining("/author/name")],
-      [expect.stringContaining("/name"), expect.stringContaining("/count")],
+    expect(addresses).toEqual([
+      ["/title", "/author/name"],
+      ["/name", "/count"],
     ]);
   });
 

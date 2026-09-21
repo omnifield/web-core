@@ -72,8 +72,23 @@ describe("ApiProbe", () => {
 
     const host = mount();
 
-    expect(host.textContent).toContain("rates");
-    expect(host.textContent).not.toContain("users");
+    expect(host.textContent).toContain("https://back/rates");
+    expect(host.textContent).not.toContain("https://back/users");
+  });
+
+  it("ручки идут плоским списком — ни схемы, ни групп в пробнике нет", () => {
+    linkCardTo("e1");
+    linkCardTo("e2");
+
+    const host = mount();
+
+    expect(host.textContent).toContain("GET https://back/rates");
+    expect(host.textContent).toContain("GET https://back/users");
+    expect(host.textContent).not.toContain("мой бэк");
+
+    const nodes = host.querySelectorAll('[data-scope="accordion"][data-part="item"]');
+
+    expect(nodes).toHaveLength(2);
   });
 
   it("связей нет — показывать нечего, и это сказано словами", () => {

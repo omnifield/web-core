@@ -14,7 +14,8 @@ export {
 export { API_KIND } from "./kind";
 export { schemaNodeToZod, type SchemaNode } from "./json-schema";
 export { endpointOf } from "./descriptor";
-export { groupEndpoints, NO_GROUP, type EndpointGroup } from "./group";
+export { endpointLabel } from "./label";
+export { groupEndpoints, UNKNOWN_GROUP, type EndpointGroup } from "./group";
 export {
   addEndpoint,
   addGroup,

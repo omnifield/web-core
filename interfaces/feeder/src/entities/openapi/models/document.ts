@@ -15,6 +15,7 @@ function isEndpoint(value: unknown): value is EndpointDescriptor {
     typeof item.id === "string" &&
     typeof item.method === "string" &&
     typeof item.url === "string" &&
+    typeof item.groupId === "string" &&
     Array.isArray(item.params)
   );
 }
@@ -27,6 +28,9 @@ export function asSchemaDocument(value: unknown): SchemaDocument | undefined {
 
   const groups = document.groups ?? [];
   if (!Array.isArray(groups) || !groups.every(isGroup)) return undefined;
+
+  const known = new Set(groups.map((group) => group.id));
+  if (!document.endpoints.every((endpoint) => known.has(endpoint.groupId))) return undefined;
 
   return { endpoints: document.endpoints, groups, defs: document.defs ?? {} };
 }

@@ -24,6 +24,7 @@ export const GROUP_CONFIG = z.object({ name: z.string() });
 export type GroupConfig = z.infer<typeof GROUP_CONFIG>;
 
 export const ENDPOINT_CONFIG = z.object({
+  name: z.string(),
   method: z.enum(HTTP_METHODS),
   url: z.string(),
   params: z.array(

@@ -7,6 +7,7 @@ function descriptor(patch: Partial<EndpointDescriptor> = {}): EndpointDescriptor
     id: "users",
     method: "GET",
     url: "https://back/users",
+    groupId: "g-users",
     params: [],
     ...patch,
   };

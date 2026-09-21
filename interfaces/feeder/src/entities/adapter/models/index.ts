@@ -7,6 +7,7 @@ export { partnersOf } from "./partners-of";
 export { usedBy } from "./used-by";
 export { usersOf } from "./users-of";
 export { fitOf, type Fit } from "./fit";
+export { layoutOf, type LayoutField, type LayoutGroup, type LayoutRow } from "./layout";
 export * from "./users";
 export * from "./edit";
 export { ADAPTER_KIND } from "./kind";

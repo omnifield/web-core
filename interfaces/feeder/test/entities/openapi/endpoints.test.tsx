@@ -14,7 +14,7 @@ afterEach(() => {
   dispose = undefined;
 });
 
-function endpoint(id: string, url: string, groupId?: string): EndpointDescriptor {
+function endpoint(id: string, url: string, groupId: string): EndpointDescriptor {
   return { id, method: "GET", url, groupId, params: [] };
 }
 

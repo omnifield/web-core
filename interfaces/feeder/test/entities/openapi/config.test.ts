@@ -8,7 +8,6 @@ import {
   applyGroupConfig,
   endpointConfigOf,
   groupConfigOf,
-  NO_GROUP,
   paramTypeOf,
   type SchemaDocument,
 } from "../../../src/entities/openapi";
@@ -37,6 +36,7 @@ function edited(recipe: (draft: Draft<SchemaDocument>) => void): SchemaDocument 
 describe("конфиг узла", () => {
   it("значение формы ручки снимается с дескриптора, тип параметра — с его схемы", () => {
     expect(endpointConfigOf(document.endpoints[0]!)).toEqual({
+      name: "",
       method: "GET",
       url: "https://back/users",
       params: [
@@ -54,6 +54,7 @@ describe("конфиг узла", () => {
   it("правка ручки кладёт метод, урл и состав параметров", () => {
     const next = edited((draft) =>
       applyEndpointConfig(draft, "users", {
+        name: "Список людей",
         method: "POST",
         url: "https://back/people",
         params: [{ name: "limit", in: "query", required: false, type: "number" }],
@@ -61,6 +62,7 @@ describe("конфиг узла", () => {
     );
 
     expect(next.endpoints[0]).toMatchObject({
+      name: "Список людей",
       method: "POST",
       url: "https://back/people",
       params: [
@@ -72,6 +74,7 @@ describe("конфиг узла", () => {
   it("описание параметра переживает правку, пока тип тот же", () => {
     const next = edited((draft) =>
       applyEndpointConfig(draft, "users", {
+        name: "",
         method: "GET",
         url: "https://back/users",
         params: [
@@ -87,7 +90,7 @@ describe("конфиг узла", () => {
     expect(id).toMatchObject({ schema: { type: "string" } });
   });
 
-  it("имя группы правится, псевдогруппа не трогается вовсе", () => {
+  it("имя группы правится, группы, которой нет, — нет", () => {
     expect(groupConfigOf({ id: "g-все", name: "все", endpoints: [] })).toEqual({
       name: "все",
     });
@@ -95,7 +98,7 @@ describe("конфиг узла", () => {
     expect(edited((draft) => applyGroupConfig(draft, "g-все", { name: "питомцы" })).groups)
       .toEqual([{ id: "g-все", name: "питомцы" }]);
 
-    expect(edited((draft) => applyGroupConfig(draft, NO_GROUP, { name: "нет" })).groups)
+    expect(edited((draft) => applyGroupConfig(draft, "снесённая", { name: "нет" })).groups)
       .toEqual(document.groups);
   });
 });
