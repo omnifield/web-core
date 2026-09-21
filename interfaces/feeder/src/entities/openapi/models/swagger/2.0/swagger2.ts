@@ -22,6 +22,8 @@ interface Swagger2Parameter {
 }
 
 interface Swagger2Operation {
+  readonly summary?: string;
+  readonly operationId?: string;
   readonly tags?: readonly string[];
   readonly parameters?: readonly Swagger2Parameter[];
 }
@@ -85,6 +87,7 @@ function documentOf(doc: Swagger2Document): IncomingDocument {
       if (!HTTP_METHODS.includes(upperMethod as HttpMethod)) continue;
 
       endpoints.push({
+        name: operation.summary ?? operation.operationId,
         method: upperMethod as HttpMethod,
         url: `${baseUrl}${path}`,
         tag: operation.tags?.[0],

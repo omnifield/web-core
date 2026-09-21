@@ -8,9 +8,9 @@ import {
 } from "@web-core/ui";
 import { ComponentProvider, tree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
-import { FeedPanel } from "#/widgets/feed";
+import { feedSections } from "#/widgets/feed";
 import { PreviewControls } from "#/widgets/preview";
-import { RailPanel } from "#/widgets/rail";
+import { RailPanel, RailSections } from "#/widgets/rail";
 
 export function ShowcasePage() {
   const selection = useRouterCatalogSelection("/showcase/{-$component}");
@@ -26,8 +26,17 @@ export function ShowcasePage() {
         </WorkspaceMain>
         <WorkspaceRightbar style={{ width: railVar("rail-lg"), padding: 0 }}>
           <RailPanel>
-            <PreviewControls />
-            <FeedPanel />
+            <RailSections
+              multiple
+              items={[
+                {
+                  value: "preview",
+                  label: "Показ",
+                  children: <PreviewControls />,
+                },
+                ...feedSections(),
+              ]}
+            />
           </RailPanel>
         </WorkspaceRightbar>
       </ComponentProvider>

@@ -63,6 +63,33 @@ describe('typography "basic" — shows the text data brings, nothing hardcoded i
   });
 });
 
+describe("typography — truncation is a flag, orthogonal to the visual variant", () => {
+  it("marks the root with data-truncated only when asked, and never leaks the prop itself", () => {
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    dispose = render(
+      () => (
+        <>
+          <Typography data-testid="plain">Полный текст</Typography>
+          <Typography truncated data-variant="heading" data-testid="cut">
+            Очень длинный заголовок, который не влезает в свою колонку
+          </Typography>
+        </>
+      ),
+      host,
+    );
+
+    const plain = host.querySelector('[data-testid="plain"]');
+    expect(plain?.hasAttribute("data-truncated")).toBe(false);
+
+    const cut = host.querySelector('[data-testid="cut"]');
+    expect(cut?.getAttribute("data-truncated")).toBe("true");
+    expect(cut?.getAttribute("data-variant")).toBe("heading");
+    expect(cut?.hasAttribute("truncated")).toBe(false);
+  });
+});
+
 describe("typography — the tag is the consumer's choice, independent of the visual variant", () => {
   it("renders a <p> by default and swaps to a real <h1> via `as`, keeping the address", () => {
     const host = document.createElement("div");

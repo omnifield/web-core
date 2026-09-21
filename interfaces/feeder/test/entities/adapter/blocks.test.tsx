@@ -39,10 +39,15 @@ describe("OutputSlots", () => {
       "string",
       "number",
     ]);
+    expect(rows(host).map((row) => row.getAttribute("title"))).toEqual([
+      "/title",
+      "/author/name",
+      "/author/age",
+    ]);
     expect(rows(host).map((row) => row.textContent)).toEqual([
-      expect.stringContaining("/title"),
-      expect.stringContaining("/author/name"),
-      expect.stringContaining("/author/age"),
+      expect.stringContaining("title"),
+      expect.stringContaining("name"),
+      expect.stringContaining("age"),
     ]);
   });
 
@@ -139,10 +144,7 @@ describe("InputFields", () => {
   it("рисует поля плоским списком с их типом", () => {
     const host = mount(() => <InputFields paths={paths} />);
 
-    expect(rows(host).map((row) => row.textContent)).toEqual([
-      expect.stringContaining("/id"),
-      expect.stringContaining("/user/login"),
-    ]);
+    expect(rows(host).map((row) => row.getAttribute("title"))).toEqual(["/id", "/user/login"]);
     expect(rows(host).map((row) => row.getAttribute("data-type"))).toEqual(["number", "string"]);
   });
 

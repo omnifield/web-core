@@ -1,56 +1,35 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionControl,
-  AccordionControlIndicator,
-  AccordionItem,
-} from "@web-core/ui";
 import { FeedManual } from "#/features/feed/manual";
 import { FeedOpenapi } from "#/features/feed/openapi";
 import { FeedPreset } from "#/features/feed/preset";
+import type { RailSection } from "#/widgets/rail";
 
 /**
- * Панели поставщиков еды, по одной секции на поставщика.
+ * Секции поставщиков еды, по одной на поставщика.
  *
  * Место сбора: каждый поставщик — сам себе фича и про соседей не знает, а порядок и вид секций
- * решаются здесь. Новый поставщик добавляется секцией и строкой импорта — ни доска
- * (`entities/feed`), ни показ, ни соседние панели при этом не меняются.
+ * решаются здесь. Новый поставщик добавляется строкой в списке и строкой импорта — ни доска
+ * (`entities/feed`), ни показ, ни соседние секции при этом не меняются.
  *
- * Секции независимы (`multiple`): открытая запись и открытая форма рядом — обычный случай,
- * человек смотрит, что правит.
+ * Отдаётся списком, а не готовой панелью: в рейле рядом стоят секции не про кормление (показ),
+ * и один аккордеон на них всех собирается страницей.
  */
-export function FeedPanel() {
-  return (
-    <Accordion multiple defaultValue={["preset"]}>
-      <AccordionItem value="preset">
-        <AccordionControl>
-          Пресет
-          <AccordionControlIndicator>▾</AccordionControlIndicator>
-        </AccordionControl>
-        <AccordionContent>
-          <FeedPreset />
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="openapi">
-        <AccordionControl>
-          Ручка API
-          <AccordionControlIndicator>▾</AccordionControlIndicator>
-        </AccordionControl>
-        <AccordionContent>
-          <FeedOpenapi />
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="manual">
-        <AccordionControl>
-          Ручной ввод
-          <AccordionControlIndicator>▾</AccordionControlIndicator>
-        </AccordionControl>
-        <AccordionContent>
-          <FeedManual />
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
+export function feedSections(): RailSection[] {
+  return [
+    {
+      value: "preset",
+      label: "Пресет",
+      children: <FeedPreset />,
+    },
+    {
+      value: "openapi",
+      label: "Ручка API",
+      children: <FeedOpenapi />,
+    },
+    {
+      value: "manual",
+      label: "Ручной ввод",
+      open: true,
+      children: <FeedManual />,
+    },
+  ];
 }

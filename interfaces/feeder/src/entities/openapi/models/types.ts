@@ -24,9 +24,10 @@ export interface Group {
 
 export interface EndpointDescriptor {
   readonly id: string;
+  readonly name?: string;
   readonly method: HttpMethod;
   readonly url: string;
-  readonly groupId?: string;
+  readonly groupId: string;
   readonly params: readonly EndpointParam[];
 }
 
@@ -37,6 +38,7 @@ export interface SchemaDocument {
 }
 
 export interface IncomingEndpoint {
+  readonly name?: string;
   readonly method: HttpMethod;
   readonly url: string;
   readonly tag?: string;

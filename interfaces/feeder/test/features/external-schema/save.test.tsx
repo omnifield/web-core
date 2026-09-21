@@ -6,7 +6,7 @@ import { render } from "@web-core/solid/web";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { asSchemaDocument } from "../../../src/entities/openapi";
-import { presetsStore } from "../../../src/entities/preset";
+import { connectPresets, presetsStore, type PresetsService } from "../../../src/entities/preset";
 import { ExternalSchemaLoader } from "../../../src/features/external-schema";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
@@ -24,7 +24,14 @@ beforeEach(() => {
 afterEach(() => {
   dispose?.();
   dispose = undefined;
+  connectPresets(undefined);
 });
+
+function serviceOf(answer: () => unknown): ReturnType<typeof vi.fn> {
+  const request = vi.fn(async () => answer());
+  connectPresets({ request } as unknown as PresetsService);
+  return request;
+}
 
 function mount(): HTMLDivElement {
   const host = document.createElement("div");
@@ -67,7 +74,7 @@ describe("ExternalSchemaLoader", () => {
     await vi.waitFor(() => expect(presetsStore.get().presets).toHaveLength(1));
 
     const preset = presetsStore.get().presets[0];
-    expect(preset?.name).toBe("Петстор");
+    expect(preset?.label).toBe("Петстор");
     expect(preset?.kind).toBe("api");
     expect(asSchemaDocument(preset?.content)?.endpoints.length).toBeGreaterThan(0);
     expect(Object.keys(preset?.content as object).sort()).toEqual([
@@ -94,6 +101,53 @@ describe("ExternalSchemaLoader", () => {
 
     type(fieldOf(host, "Название пресета"), "Петстор");
     expect(loadButton(host).disabled).toBe(false);
+  });
+
+  it("загруженная схема сразу уезжает в службу и помечается сохранённой", async () => {
+    const request = serviceOf(() => ({
+      createPreset: { id: "неважно", savedAt: "2026-09-21T12:00:00Z" },
+    }));
+    const host = mount();
+
+    load(host, "Петстор", petstore);
+
+    await vi.waitFor(() =>
+      expect(presetsStore.get().presets[0]?.savedAt).toBe("2026-09-21T12:00:00Z"),
+    );
+
+    const [document, variables] = request.mock.calls[0] as [string, { input: Record<string, unknown> }];
+    expect(document).toContain("createPreset");
+    expect(variables.input.kind).toBe("api");
+    expect(variables.input.label).toBe("Петстор");
+    expect(Object.keys(variables.input.state as object).sort()).toEqual([
+      "defs",
+      "endpoints",
+      "groups",
+    ]);
+  });
+
+  it("отказ службы назван словами, а схема остаётся на складе", async () => {
+    serviceOf(() => {
+      throw new Error("хранилище полно");
+    });
+    const host = mount();
+
+    load(host, "Петстор", petstore);
+
+    await vi.waitFor(() => expect(host.textContent).toContain("в службу не уехала"));
+    expect(host.textContent).toContain("хранилище полно");
+    expect(presetsStore.get().presets).toHaveLength(1);
+    expect(presetsStore.get().presets[0]?.savedAt).toBeUndefined();
+  });
+
+  it("без подключённой службы схема живёт локально, и это сказано вслух", async () => {
+    const host = mount();
+
+    load(host, "Петстор", petstore);
+
+    await vi.waitFor(() => expect(host.textContent).toContain("в службу не уехала"));
+    expect(host.textContent).toContain("connectPresets");
+    expect(presetsStore.get().presets).toHaveLength(1);
   });
 
   it("после загрузки имя очищается — вторая схема не наследует чужое", async () => {

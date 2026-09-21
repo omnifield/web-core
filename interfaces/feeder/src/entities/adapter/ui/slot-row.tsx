@@ -23,8 +23,10 @@ const CHIP = {
 };
 
 export function SlotRow(props: {
+  name: string;
   path: string;
   type: string;
+  depth: number;
   from?: string;
   carriedType?: string;
   onDrop: (data: Record<string, unknown>) => void;
@@ -56,9 +58,11 @@ export function SlotRow(props: {
       data-type={props.type}
       data-filled={props.from === undefined ? undefined : ""}
       data-fit={fit()}
+      title={props.path}
       style={{
         ...layoutSelf({ align: "stretch" }),
         ...WELL,
+        "margin-inline-start": `calc(var(--space-4) * ${props.depth})`,
         border: border(),
         background: background(),
         opacity: fit() === "risky" ? "0.55" : "1",
@@ -66,7 +70,7 @@ export function SlotRow(props: {
     >
       <Flow style={layoutGroup({ align: "center", gap: "space-2", wrap: false })}>
         <TypeMark type={props.type} />
-        <Typography>{props.path}</Typography>
+        <Typography>{props.name}</Typography>
 
         <Show
           when={props.from}

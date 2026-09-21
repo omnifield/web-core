@@ -2,9 +2,9 @@ import { fromEnv } from "@web-core/build/env";
 import { createNeuroboxConnection } from "@web-core/neurobox";
 import { QueryClient } from "@web-core/query";
 import { createPresetsClient } from "@web-core/skin/presets";
-
+import { connectPresets } from "@web-core/feeder";
 export const queryClient = new QueryClient();
-
+import { createGraphQLClient } from "@web-core/query/graphql";
 const GRAPHQL_PATH = "/graphql";
 const PRESETS_LOCAL = "http://127.0.0.1:8787";
 
@@ -28,3 +28,4 @@ export const neuroboxConnection = createNeuroboxConnection({
   token: fromEnv("NEUROBOX_TOKEN", "VITE_NEUROBOX_TOKEN") ?? "",
   userLogin: NEUROBOX_USER,
 });
+connectPresets(createGraphQLClient({ url: PRESETS_URL }));

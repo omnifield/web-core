@@ -42,10 +42,11 @@
 
 | Слово | Что это в коде | Чем опознаётся |
 | --- | --- | --- |
-| **Пресет** | `Preset { id, kind, name, content }` — именованная запись на складе, `content` для склада непрозрачен, `kind` он сравнивает, но не толкует | `id`, uuid при создании |
+| **Пресет** | `Preset { id, kind, label, name?, content }` — именованная запись на складе, `content` для склада непрозрачен, `kind` он сравнивает, но не толкует | `id`, uuid при создании |
+| **Имена записи** | `label` — человеческое, видно в списке; `name` — машинное, по маске `PRESET_NAME`, им запись зовут снаружи | `name` уникально в пределах вида |
 | **Документ схемы** | `SchemaDocument { endpoints, groups, defs }` — наш формат API, он и лежит в `content` | — |
-| **Ручка** | `EndpointDescriptor { id, method, url, groupId?, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
-| **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа | `id`, uuid при разборе документа |
+| **Ручка** | `EndpointDescriptor { id, method, url, groupId, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
+| **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа; ручкам без группы разбор заводит `unknown` | `id`, uuid при разборе документа |
 | **Адаптер** | `Adapter { root, rules, extra?, providers, consumers }` — шов «поставщик → потребитель»: где записи, как ложатся поля, на ком проверяли | `id` пресета, в котором лежит |
 | **Связь** | `AdapterRule` — одна строка правил: `{ id, target, from }`, это `FieldRule` из `io` плюс выданный айди | `id`, uuid при заведении |
 | **Участник** | путь вида `["api", presetId, endpointId]` — вид первым сегментом, дальше адрес по правилам вида | путём целиком |
@@ -114,7 +115,7 @@ export function MyCatalog() {
     <Presets kind={API_KIND} as={asSchemaDocument} empty="Схем пока нет">
       {(preset, document) => (
         <Endpoints
-          label={preset().name}
+          label={preset().label}
           document={document()}
           onRemove={() => presetsStore.actions.remove(preset().id)}
         >
@@ -160,7 +161,7 @@ export function MyCatalog() {
 
 Зод под эту форму — `ENDPOINT_CONFIG` / `GROUP_CONFIG` / `PRESET_CONFIG`; обратно в документ
 правку кладут `applyEndpointConfig`/`applyGroupConfig` черновиком, а имя записи —
-`presetsStore.actions.rename`. Готовому экрану это подключать не нужно: `ApiCatalog` держит диалог
+`presetsStore.actions.relabel`. Готовому экрану это подключать не нужно: `ApiCatalog` держит диалог
 настройки сам.
 
 Одно обязательное: `children` и у `Presets`, и у `Endpoints` получает **аксессоры**, поэтому
@@ -181,6 +182,9 @@ const id = presetsStore.actions.add(API_KIND, "petstore", await parseSchema(rawS
 
 Первый аргумент — **вид записи**: по нему запись потом и находят (`presetsOf`). Поставишь свой
 вид — каталог схем такую запись не покажет, и это не поломка, а ровно то, ради чего вид завёлся.
+
+Второй — **человеческое имя** (`label`), то, что человек увидит в списке. Машинного имени у
+заведённой записи нет вовсе: его дают позже, когда запись называют для службы.
 
 Содержимым пресета может быть что угодно, склад его не проверяет:
 
@@ -212,12 +216,12 @@ const document: SchemaDocument = {
 presetsStore.actions.add(API_KIND, "мой бэк", document);
 ```
 
-Своим ручкам айди проставляешь сам: сам ставит его только входной слой (`parseSchema`), а
-документ без айди каталог схемой не признает.
+Своим ручкам айди и группу проставляешь сам: сам ставит их только входной слой (`parseSchema`), а
+документ без айди у ручки каталог схемой не признает.
 
-`groups` можно не заводить вовсе — тогда ручки без `groupId` соберутся в псевдогруппу `unknown`.
-А вот `groupId`, который не ведёт ни в одну запись, ручку не потеряет: она уйдёт туда же, к
-безгрупповым.
+Группа обязательна у каждой ручки, и её `groupId` обязан вести в запись `groups` — иначе документ
+не наш формат. Не хочется раскладывать по смыслу — заведи одну группу `unknown`, ровно как это
+делает разбор для ручек, которым входящая схема группы не назвала.
 
 ---
 
@@ -244,36 +248,88 @@ presetsStore.actions.edit<SchemaDocument>(id, (draft) => {
 своей группе), `removeGroup` уносит и запись группы, и все ручки под ней, а имя группы правится
 как обычное поле — тождество держит `id`, и узел на экране от переименования не вздрагивает.
 
-Ручки без группы собираются в псевдогруппу с именем `unknown`. Это не запись: `groupId` у них
-просто нет.
+Группа `unknown` — обычная запись со своим айди: в неё разбор кладёт ручки, которым входящая схема
+группы не назвала. Переименовывается, принимает новые ручки и удаляется как любая другая.
 
-Остальные действия склада: `rename(id, name)`, `replace(id, content)` (заменить содержимое
-целиком), `remove(id)`. Вид записи не меняет ничто — он ставится при заведении и живёт с записью.
+Остальные действия склада: `relabel(id, label)` (человеческое имя), `rename(id, name)` (машинное),
+`replace(id, content)` (заменить содержимое целиком), `remove(id)`. Вид записи не меняет ничто — он
+ставится при заведении и живёт с записью.
+
+Машинное имя обязано пройти маску и быть свободным в своём виде — проверяют этим:
+
+```ts
+import { presetNamed, PRESET_NAME, presetsStore } from "@web-core/feeder";
+
+PRESET_NAME.safeParse("users-list").success; // маска: строчная латиница, цифры, дефис
+presetNamed("adapter", "users-list");        // уже занято этим видом? — запись или undefined
+
+presetsStore.actions.rename(id, "users-list");
+```
 
 Внутри узла `Presets` то же самое делается третьим аргументом `children` — правка уже привязана
 к своей записи, айди подставлять не нужно.
 
 ---
 
-<h2 id="кейс-5">5. Сохранить пресеты наружу и поднять обратно</h2>
+<h2 id="кейс-5">5. Сохранить запись в службу пресетов и поднять обратно</h2>
 
-Пресет — чистый JSON, поэтому сериализуется как есть.
+Клиент службы собирает приложение и отдаёт зоне один раз — адреса и заголовков пакет не держит.
 
 ```ts
-import { presetsStore } from "@web-core/feeder";
+import {
+  ADAPTER_KIND,
+  API_KIND,
+  connectPresets,
+  loadPresets,
+  presetsStore,
+} from "@web-core/feeder";
+import { createGraphQLClient } from "@web-core/query/graphql";
 
-// сохранить
-await fetch("/api/presets", {
-  method: "POST",
-  body: JSON.stringify(presetsStore.get().presets),
-});
+connectPresets(createGraphQLClient({ url: import.meta.env.VITE_PRESETS_URL }));
 
-// поднять при старте приложения
-presetsStore.actions.hydrate(await (await fetch("/api/presets")).json());
+// при старте: поднять свои записи в склад
+presetsStore.actions.hydrate([
+  ...(await loadPresets(API_KIND)),
+  ...(await loadPresets(ADAPTER_KIND)),
+]);
 ```
 
-`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние. Вид (`kind`) уезжает и
-приезжает вместе с записью: без него поднятую запись не найдёт ни один экран.
+`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние. Служба отдаёт записи по
+одному виду за раз, поэтому оба списка кладутся одним вызовом: второй `hydrate` затёр бы первый.
+
+Отправка — отдельное действие человека, а не реакция на каждую правку:
+
+```ts
+import { failureOf, presetsStore, savePreset } from "@web-core/feeder";
+
+const preset = presetsStore.selectors.presetBy(id);
+if (preset === undefined) return;
+
+try {
+  const saved = await savePreset({ ...preset, name: "users-list" });
+  presetsStore.actions.rename(id, "users-list");
+  presetsStore.actions.markSaved(id, saved.savedAt);
+} catch (error) {
+  const failure = failureOf(error);
+  // refused — служба отказала её же словами; unreachable — ответа не было вовсе;
+  // unconnected — клиента зоне не давали
+  say(failure.message);
+}
+```
+
+Запись без `savedAt` заводится в службе с нашим айди, уже уехавшая — заменяется по нему. Машинное
+имя обязательно у `adapter` и `menu`: им запись адресуют снаружи.
+
+Свой вид записи службе нужно объявить — иначе спрашивать у неё нечего:
+
+```ts
+import { definePresetShape } from "@web-core/feeder";
+
+definePresetShape("заметки", "Note", ["text", "pinned"]);
+```
+
+Перечисленные поля и есть содержимое записи: наружу уезжает `content` целиком, обратно собирается
+из них. Виды `api` и `adapter` объявлены самой зоной (`API_SHAPE`, `ADAPTER_SHAPE`).
 
 ---
 
@@ -292,8 +348,8 @@ if (document !== undefined) {
 ```
 
 `asSchemaDocument` — это и проверка, и приведение: не похоже на документ API — вернёт `undefined`,
-а не бросит. `groupEndpoints` отдаёт группы в порядке реестра документа — включая пустые, у них
-своя запись, — а псевдогруппу `unknown` всегда последней.
+а не бросит. `groupEndpoints` отдаёт группы в порядке реестра документа, включая пустые: у них своя
+запись, и от наличия ручек она не зависит.
 
 ---
 
@@ -386,7 +442,7 @@ export function Demo() {
 | «Схема не распозналась» под загрузчиком | ни один шаблон не подошёл; сегодня их один — Swagger 2.0, и совпадение жёсткое (`swagger: "2.0"`) | текст ошибки под полем |
 | Пресет завёлся, но каталога с ним нет вовсе — ни узла, ни отказа | у записи другой вид: каталог берёт только `kind === API_KIND`, остальные не его | `presetsStore.selectors.presetsOf(API_KIND)` |
 | Пресет завёлся, но каталог пишет «не похож на схему API» | вид свой, а `content` не прошёл `asSchemaDocument` — нет массива `endpoints`, элементы без `id`/`method`/`url`/`params`, либо в `groups` лежит не `{ id, name }` | `asSchemaDocument(preset.content)` в консоли |
-| Ручка ушла в группу `unknown`, хотя группа задана | `groupId` не ведёт ни в одну запись `groups` — ручку не теряем, но и группы для неё нет | `document.groups` |
+| Пресет завёлся, но каталог пишет «не похож на схему API», хотя ручки на месте | у ручки нет `groupId` или он не ведёт ни в одну запись `groups` — группу раздаёт вход, документ без неё этот вход не проходил | `document.groups` и `groupId` ручек |
 | Ручка есть, а параметров в форме нет | у ручки пустой `params` — документ их не объявил | `endpointOf(descriptor, defs).schema` |
 | Параметр есть, а поле не рисуется | `$ref` указывает в `defs`, которого нет — неизвестная ссылка становится `z.unknown()` | `document.defs` |
 | Вызов молча ничего не вернул | сорванный транспорт — это исключение; `useInvoke` кладёт его текст в `failure()` | `invocation.failure()` |

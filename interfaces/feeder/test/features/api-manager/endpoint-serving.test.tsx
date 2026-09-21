@@ -14,6 +14,7 @@ const descriptor: EndpointDescriptor = {
   id: "e1",
   method: "GET",
   url: "https://back/rates",
+  groupId: "g-rates",
   params: [],
 };
 

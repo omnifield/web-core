@@ -85,6 +85,15 @@ describe("typography proof recipe — the passport dressed whole", () => {
     expect(css).toContain('[data-scope="typography"]');
   });
 
+  it("prints the truncation rule behind the setting's own mark, not inside a variant", () => {
+    const css = bound.generateSkinCss(assembled.skin);
+    const rule = css.split("}").find((chunk) => chunk.includes("data-truncated"));
+
+    expect(rule).toBeDefined();
+    expect(rule).toContain("text-overflow: ellipsis");
+    expect(rule).not.toContain("data-variant");
+  });
+
   it("covers every state the passport declares — no silent gap", () => {
     expect(skinGaps(assembled.skin, [passport], [editorInfo as PassportEditorInfo])).toEqual([]);
   });

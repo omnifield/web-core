@@ -46,7 +46,8 @@ vitest+jsdom.
 | Загрузка | `ExternalSchemaLoader` | принять документ файлом или вставкой, разобрать, положить пресетом |
 | Каталог | `ApiCatalog`, `ApiProbe`, `Endpoints` | состав API: группы → ручки → параметры; `ApiCatalog` правит состав, `ApiProbe` показывает только связанное с потребителем и кормит его |
 | Вызов | `Endpoint`, `Call`, `useInvoke`, `invokeEndpoint`, `serve` | форма параметров, один HTTP-вызов, ответ; `serve` вдобавок кормит потребителя |
-| Склад | `presetsStore`, `Presets`, `PresetInfo`, `recordsOf` | именованные пользовательские записи, отбор по виду, выдача записей приведёнными |
+| Склад | `presetsStore`, `Presets`, `PresetInfo`, `recordsOf`, `presetNamed`, `PRESET_NAME` | именованные пользовательские записи, отбор по виду, выдача записей приведёнными, два имени записи |
+| Служба | `connectPresets`, `loadPresets`, `savePreset`, `dropPreset`, `failureOf`, `definePresetShape`, `presetShape`, `API_SHAPE`, `ADAPTER_SHAPE` | разговор склада с `backend/presets` по GraphQL: клиент снаружи, чтение по виду, отправка записи, отказы словами |
 | Модель API | `API_KIND`, `parseSchema`, `asSchemaDocument`, `endpointOf`, `groupEndpoints`, `schemaNodeToZod` | наш формат документа и работа с ним |
 | Конфиг узла | `ENDPOINT_CONFIG`, `GROUP_CONFIG`, `PRESET_CONFIG`, `endpointConfigOf`, `groupConfigOf`, `presetConfigOf` | зод-схема и значение формы для узла: ручки, группы, записи склада |
 | Форма | `TreeForm` | дерево по произвольной зод-схеме |
@@ -57,8 +58,11 @@ vitest+jsdom.
 
 📦 Внутри — адаптированный FSD, переосмысленный под движок (правила слоёв — [`src/DBP.md`](./src/DBP.md)):
 
-- `entities/preset` — склад: `Preset { id, kind, name, content }`, стор и механика показа записей
-  своего вида. Про содержимое `content` не знает ничего, а `kind` сравнивает, но не толкует;
+- `entities/preset` — склад: `Preset { id, kind, label, name?, savedAt?, content }`, стор и
+  механика показа записей своего вида. Про содержимое `content` не знает ничего, а `kind`
+  сравнивает, но не толкует. Рядом — `api/`: разговор со службой пресетов (клиент приходит
+  снаружи, чтение по виду, отправка записи, отказы словами); какие поля у вида в службе, ему
+  говорит реестр форм, а заполняет реестр фича;
 - `entities/openapi` — наш формат API: `SchemaDocument { endpoints, groups, defs }`, распознавание
   Swagger 2.0 (`swagger2Template` поверх `@web-core/generators/mapping`), простановка айди ручкам
   и сборка групп из тегов документа (`identify`), JSON Schema → zod (`schemaNodeToZod`),
@@ -155,6 +159,22 @@ partnersOf(adapters, "providers", API_USER.path(presetId, endpointId)); // ко�
 Доставать записи со склада руками не нужно: `savedAdapters()` отдаёт их уже приведёнными стражем,
 вместе с пресетом, в котором они лежат.
 
+✅ Подключить склад к службе пресетов — один раз при старте приложения:
+
+```ts
+import { connectPresets, loadPresets, savePreset } from "@web-core/feeder";
+import { createGraphQLClient } from "@web-core/query/graphql";
+
+connectPresets(createGraphQLClient({ url: "https://…/graphql" }));
+
+presetsStore.actions.hydrate(await loadPresets(API_KIND));
+
+const saved = await savePreset(preset);
+presetsStore.actions.markSaved(saved.id, saved.savedAt);
+```
+
+Адрес и заголовки живут в приложении: зона берёт готовый клиент и своего не собирает.
+
 ✅ Форма по любой зод-схеме:
 
 ```tsx
@@ -183,7 +203,7 @@ import { TreeForm } from "@web-core/feeder";
 `onConfig(target)`. Кнопки появляются **от самого колбэка** — не передали, кнопки нет.
 
 `AdapterMastering` — `provider`, `consumer` (адреса участников), `output`, `input`
-(`PathType[]` из `@web-core/io`) и необязательное `name` для новой записи (по умолчанию имя
+(`PathType[]` из `@web-core/io`) и необязательное `label` для новой записи (по умолчанию имя
 собирается из адресов: `user-card ← endpoint-3`).
 
 `Presets` — механика склада: `kind`, `as` (страж содержимого), необязательные `empty`/`broken` и
@@ -191,11 +211,11 @@ import { TreeForm } from "@web-core/feeder";
 
 `Endpoint` — `endpoint: EndpointDescriptor`, `defs`, необязательные `users`, `onResult` и
 `onServing`. `Call` — то же плюс `value`. Передали `users` — вызов идёт через `serve` и наружу
-едет конверт `Serving`; не передали — как раньше, сырой `InvokeResult`. `PresetInfo` — `name` / `onName`.
+едет конверт `Serving`; не передали — как раньше, сырой `InvokeResult`. `PresetInfo` — `label` / `onLabel`.
 `TreeForm` — `schema: z.ZodType`, `value`, `onChange`.
 
-Чего у движка **нет**: форматов кроме Swagger 2.0; заголовков и авторизации у вызова; хранения
-между сессиями; пагинации (её параметры приезжают обычными параметрами ручки); выбора корня записей
+Чего у движка **нет**: форматов кроме Swagger 2.0; заголовков и авторизации у вызова; экрана, с
+которого запись уезжает в службу (разговор с ней собран, зовут его пока из кода); пагинации (её параметры приезжают обычными параметрами ручки); выбора корня записей
 на экране — `root` у адаптера пока всегда пустой.
 
 <h2 id="состояния">🎛️ Состояния</h2>
@@ -203,10 +223,12 @@ import { TreeForm } from "@web-core/feeder";
 🚦 Пакет держит одно живое состояние в сторе, остальное контролируется снаружи.
 
 - `presetsStore` — `{ presets: Preset[] }`, модульный синглтон (`createActionStore`
-  из `@web-core/store`). Действия: `add(kind, name, content) → id`, `remove(id)`,
-  `rename(id, name)`, `replace(id, content)`, `edit<T>(id, recipe)` (immer-черновик содержимого),
-  `hydrate(presets)`. Селекторы `presetBy(id)` и `presetsOf(kind)` — оба реактивные. Айди — uuid
-  при создании, и он не зависит ни от имени, ни от вида, ни от содержимого;
+  из `@web-core/store`). Действия: `add(kind, label, content) → id`, `remove(id)`,
+  `relabel(id, label)` (человеческое имя), `rename(id, name)` (машинное), `replace(id, content)`,
+  `markSaved(id, savedAt)` (запись уехала в службу), `edit<T>(id, recipe)` (immer-черновик
+  содержимого), `hydrate(presets)`. Селекторы `presetBy(id)`
+  и `presetsOf(kind)` — оба реактивные. Айди — uuid при создании, и он не зависит ни от имени, ни
+  от вида, ни от содержимого;
 - реестр видов участника — модульная карта: `defineUserKind` объявляет вид и отдаёт построитель
   пути, повторное объявление возвращает прежний.
 
@@ -226,11 +248,17 @@ import { TreeForm } from "@web-core/feeder";
 группы и отдаёт `SchemaDocument`. Нераспознанный документ — исключение.
 
 ↔️ **Документ.** `SchemaDocument { endpoints, groups, defs }`; ручка —
-`{ id, method, url, groupId?, params }`, группа — `{ id, name }`, где `params[].schema` — JSON
+`{ id, method, url, groupId, params }`, группа — `{ id, name }`, где `params[].schema` — JSON
 Schema, а `defs` держит общие типы. Чистый JSON: сериализуется и уезжает на склад как есть.
 
-↔️ **Склад.** `Preset { id, kind, name, content }`, `content` непрозрачен. `kind` — ярлык вида,
-который ставит дверь при заведении записи: `api` у документа схемы, `adapter` у шва.
+↔️ **Склад.** `Preset { id, kind, label, name?, content }`, `content` непрозрачен. `kind` — ярлык
+вида, который ставит дверь при заведении записи: `api` у документа схемы, `adapter` у шва.
+
+↔️ **Два имени записи.** `label` — человеческое, свободная строка, есть у записи всегда: его
+показывает список и правит диалог. `name` — машинное, по маске `PRESET_NAME`
+(`^[a-z0-9][a-z0-9-]{0,31}$`), им запись адресуют снаружи; появляется, когда человек называет
+запись при сохранении в службу, и до тех пор его нет. `presetNamed(kind, name)` находит запись по
+машинному имени в пределах её вида.
 
 ↔️ **Вызов.** `invokeEndpoint(endpoint, value)` → `InvokeResult { status, ok, headers, body }`.
 Имя, встреченное в `{плейсхолдере}` url, уходит в путь; ключ `body` — в JSON-тело; остальное — в
@@ -264,13 +292,35 @@ endpointId)` → `["api", presetId, endpointId]`. Вид ставит сам п�
 ↔️ **Записи склада наружу.** `recordsOf(kind, as)` отдаёт записи своего вида уже приведёнными
 стражем — `{ preset, content }`. `savedAdapters()` — то же для адаптеров, без аргументов.
 
+↔️ **Служба пресетов.** Адреса пакет не держит: клиент собирает приложение
+(`createGraphQLClient` из `@web-core/query/graphql`) и отдаёт зоне один раз —
+`connectPresets(client)`. Дальше: `loadPresets(kind, names?)` → `Preset[]` (чтение по виду,
+необязательно суженное машинными именами), `savePreset(preset)` → `Preset` со свежим `savedAt`
+(запись без `savedAt` заводится с НАШИМ айди, уже уехавшая — заменяется по нему),
+`dropPreset(id)` → `boolean`.
+
+↔️ **Форма вида в службе.** У каждого вида записи свой тип в схеме службы и свои поля, и
+спросить их можно, только назвав: `definePresetShape(kind, type, fields)` объявляет форму,
+`presetShape(kind)` её отдаёт. Наши две объявляют фичи — `API_SHAPE` (`Api`:
+`endpoints`/`groups`/`defs`) и `ADAPTER_SHAPE` (`Adapter`: `root`/`rules`/`extra`/`providers`/
+`consumers`). Поля вида и есть содержимое записи: наружу едет `state` = `content` целиком,
+обратно `content` собирается из этих полей.
+
+↔️ **Отказ службы.** `failureOf(error)` → `PresetsFailure { reason, message }`, где `reason` —
+`refused` (служба ответила отказом, `message` — её собственные слова), `unreachable` (ответа не
+было вовсе) или `unconnected` (клиента зоне не давали). Разрез тот же, что у `invokeEndpoint`:
+отказ и молчание — разные вещи, путать их нельзя.
+
 <h2 id="сборки">🏗️ Сборки</h2>
 
-🧪 Vitest + jsdom. **228 тестов, все зелёные:**
+🧪 Vitest + jsdom. **258 тестов, все зелёные:**
 
 - `entities/openapi` — конфиг узла, распознавание petstore, айди при разборе, JSON Schema → zod,
   компоновка по группам, правки состава, живучесть узлов при правке;
-- `entities/preset` — стор и механика показа записей своего вида в настоящем DOM;
+- `entities/preset` — стор, два имени записи (маска машинного, поиск по нему в пределах вида),
+  механика показа записей своего вида в настоящем DOM и разговор со службой на подставном клиенте:
+  запрос по виду и по имени, сборка приехавшей записи, заведение с нашим айди против замены
+  уехавшей, три рода отказа;
 - `entities/form` — `itemBinding`/`useTree` чистой логикой и `Tree` смонтированным;
 - `entities/adapter` — страж записи, правки над черновиком (связь, замена источника с сохранением
   айди, деревья участников), совместимость типов, сборка ответа в форму потребителя (включая две

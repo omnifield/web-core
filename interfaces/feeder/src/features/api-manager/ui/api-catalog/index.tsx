@@ -1,9 +1,11 @@
-import { createSignal } from "@web-core/solid";
+import { createResource, createSignal, Show } from "@web-core/solid";
+import { Typography } from "@web-core/ui";
 
 import {
   addEndpoint,
   addGroup,
   API_KIND,
+  API_SHAPE,
   asSchemaDocument,
   Endpoints,
   removeEndpoint,
@@ -11,7 +13,14 @@ import {
   type EndpointDescriptor,
   type InvokeResult,
 } from "../../../../entities/openapi";
-import { Presets, presetsStore } from "../../../../entities/preset";
+import {
+  dropPreset,
+  failureOf,
+  loadPresets,
+  Presets,
+  presetsStore,
+  pushPreset,
+} from "../../../../entities/preset";
 import { Endpoint } from "../endpoint";
 import { ConfigDialog, type ConfigSubject } from "./config-dialog";
 
@@ -25,9 +34,56 @@ export function ApiCatalog(props: {
   onResult?: (event: ApiCatalogResult) => void;
 }) {
   const [config, setConfig] = createSignal<ConfigSubject>();
+  const [unsent, setUnsent] = createSignal<string>();
+
+  const [pulled] = createResource(async () => {
+    const stored = await loadPresets(API_SHAPE);
+    presetsStore.actions.adopt(stored);
+    return stored.length;
+  });
+
+  async function send(id: string): Promise<void> {
+    try {
+      await pushPreset(id);
+      setUnsent(undefined);
+    } catch (error) {
+      setUnsent(failureOf(error).message);
+    }
+  }
+
+  function write(id: string, change: () => void): void {
+    change();
+    void send(id);
+  }
+
+  async function forget(id: string, savedAt: string | undefined): Promise<void> {
+    presetsStore.actions.remove(id);
+    if (savedAt === undefined) return;
+
+    try {
+      await dropPreset(id);
+      setUnsent(undefined);
+    } catch (error) {
+      setUnsent(failureOf(error).message);
+    }
+  }
 
   return (
     <>
+      <Show when={pulled.loading}>
+        <Typography>Читаем схемы из службы…</Typography>
+      </Show>
+
+      <Show when={pulled.error}>
+        {(error) => (
+          <Typography>Службу прочитать не вышло: {failureOf(error()).message}</Typography>
+        )}
+      </Show>
+
+      <Show when={unsent()}>
+        {(message) => <Typography>Правка в службу не уехала: {message()}</Typography>}
+      </Show>
+
       <Presets
         kind={API_KIND}
         as={asSchemaDocument}
@@ -36,19 +92,21 @@ export function ApiCatalog(props: {
       >
         {(preset, document, edit) => (
           <Endpoints
-            label={preset().name}
+            label={preset().label}
             document={document()}
-            onAddGroup={() => edit((draft) => addGroup(draft))}
+            onAddGroup={() =>
+              write(preset().id, () => edit((draft) => addGroup(draft)))
+            }
             onAddEndpoint={(group) =>
-              edit((draft) => addEndpoint(draft, group.id))
+              write(preset().id, () => edit((draft) => addEndpoint(draft, group.id)))
             }
             onConfig={(target) => setConfig({ preset: preset(), target })}
-            onRemove={() => presetsStore.actions.remove(preset().id)}
+            onRemove={() => void forget(preset().id, preset().savedAt)}
             onRemoveGroup={(group) =>
-              edit((draft) => removeGroup(draft, group.id))
+              write(preset().id, () => edit((draft) => removeGroup(draft, group.id)))
             }
             onRemoveEndpoint={(endpoint) =>
-              edit((draft) => removeEndpoint(draft, endpoint.id))
+              write(preset().id, () => edit((draft) => removeEndpoint(draft, endpoint.id)))
             }
           >
             {(endpoint) => (
@@ -68,7 +126,11 @@ export function ApiCatalog(props: {
         )}
       </Presets>
 
-      <ConfigDialog subject={config()} onClose={() => setConfig(undefined)} />
+      <ConfigDialog
+        subject={config()}
+        onClose={() => setConfig(undefined)}
+        onWritten={(presetId) => void send(presetId)}
+      />
     </>
   );
 }

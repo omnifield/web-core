@@ -48,7 +48,7 @@ function write(subject: ConfigSubject, value: unknown): void {
   const { preset, target } = subject;
 
   if (target.kind === "schema") {
-    presetsStore.actions.rename(preset.id, (value as PresetConfig).name);
+    presetsStore.actions.relabel(preset.id, (value as PresetConfig).label);
     return;
   }
 
@@ -62,6 +62,7 @@ function write(subject: ConfigSubject, value: unknown): void {
 export function ConfigDialog(props: {
   subject?: ConfigSubject;
   onClose: () => void;
+  onWritten?: (presetId: string) => void;
 }) {
   const form = createMemo(() =>
     props.subject === undefined ? undefined : formOf(props.subject),
@@ -82,7 +83,11 @@ export function ConfigDialog(props: {
   };
 
   const save = () => {
-    if (props.subject !== undefined) write(props.subject, value());
+    const subject = props.subject;
+    if (subject !== undefined) {
+      write(subject, value());
+      props.onWritten?.(subject.preset.id);
+    }
     close();
   };
 

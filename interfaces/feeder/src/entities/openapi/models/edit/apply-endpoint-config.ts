@@ -15,6 +15,7 @@ export function applyEndpointConfig(
     endpoint.params.map((param) => [param.name, param.schema] as const),
   );
 
+  endpoint.name = config.name === "" ? undefined : config.name;
   endpoint.method = config.method;
   endpoint.url = config.url;
   endpoint.params = config.params.map((param) => {
