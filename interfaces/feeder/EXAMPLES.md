@@ -271,25 +271,65 @@ presetsStore.actions.rename(id, "users-list");
 
 ---
 
-<h2 id="кейс-5">5. Сохранить пресеты наружу и поднять обратно</h2>
+<h2 id="кейс-5">5. Сохранить запись в службу пресетов и поднять обратно</h2>
 
-Пресет — чистый JSON, поэтому сериализуется как есть.
+Клиент службы собирает приложение и отдаёт зоне один раз — адреса и заголовков пакет не держит.
 
 ```ts
-import { presetsStore } from "@web-core/feeder";
+import {
+  ADAPTER_KIND,
+  API_KIND,
+  connectPresets,
+  loadPresets,
+  presetsStore,
+} from "@web-core/feeder";
+import { createGraphQLClient } from "@web-core/query/graphql";
 
-// сохранить
-await fetch("/api/presets", {
-  method: "POST",
-  body: JSON.stringify(presetsStore.get().presets),
-});
+connectPresets(createGraphQLClient({ url: import.meta.env.VITE_PRESETS_URL }));
 
-// поднять при старте приложения
-presetsStore.actions.hydrate(await (await fetch("/api/presets")).json());
+// при старте: поднять свои записи в склад
+presetsStore.actions.hydrate([
+  ...(await loadPresets(API_KIND)),
+  ...(await loadPresets(ADAPTER_KIND)),
+]);
 ```
 
-`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние. Вид (`kind`) уезжает и
-приезжает вместе с записью: без него поднятую запись не найдёт ни один экран.
+`hydrate` заменяет состав целиком — это подъём сохранённого, а не слияние. Служба отдаёт записи по
+одному виду за раз, поэтому оба списка кладутся одним вызовом: второй `hydrate` затёр бы первый.
+
+Отправка — отдельное действие человека, а не реакция на каждую правку:
+
+```ts
+import { failureOf, presetsStore, savePreset } from "@web-core/feeder";
+
+const preset = presetsStore.selectors.presetBy(id);
+if (preset === undefined) return;
+
+try {
+  const saved = await savePreset({ ...preset, name: "users-list" });
+  presetsStore.actions.rename(id, "users-list");
+  presetsStore.actions.markSaved(id, saved.savedAt);
+} catch (error) {
+  const failure = failureOf(error);
+  // refused — служба отказала её же словами; unreachable — ответа не было вовсе;
+  // unconnected — клиента зоне не давали
+  say(failure.message);
+}
+```
+
+Запись без `savedAt` заводится в службе с нашим айди, уже уехавшая — заменяется по нему. Машинное
+имя обязательно у `adapter` и `menu`: им запись адресуют снаружи.
+
+Свой вид записи службе нужно объявить — иначе спрашивать у неё нечего:
+
+```ts
+import { definePresetShape } from "@web-core/feeder";
+
+definePresetShape("заметки", "Note", ["text", "pinned"]);
+```
+
+Перечисленные поля и есть содержимое записи: наружу уезжает `content` целиком, обратно собирается
+из них. Виды `api` и `adapter` объявлены самой зоной (`API_SHAPE`, `ADAPTER_SHAPE`).
 
 ---
 

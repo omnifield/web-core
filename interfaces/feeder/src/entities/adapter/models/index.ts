@@ -11,3 +11,4 @@ export { layoutOf, type LayoutField, type LayoutGroup, type LayoutRow } from "./
 export * from "./users";
 export * from "./edit";
 export { ADAPTER_KIND } from "./kind";
+export { ADAPTER_SHAPE } from "./shape";

@@ -96,6 +96,31 @@ describe("presetsStore", () => {
     expect(presetsStore.selectors.presetBy("с-бэка")?.content).toBe("b");
   });
 
+  it("adopt подменяет запись с тем же айди и добавляет незнакомую", () => {
+    const own = presetsStore.actions.add("api", "своя", "a");
+
+    presetsStore.actions.adopt([
+      { id: own, kind: "api", label: "она же со службы", savedAt: "когда-то", content: "b" },
+      { id: "чужая", kind: "api", label: "новая со службы", savedAt: "когда-то", content: "c" },
+    ]);
+
+    expect(presetsStore.get().presets).toHaveLength(2);
+    expect(presetsStore.selectors.presetBy(own)?.label).toBe("она же со службы");
+    expect(presetsStore.selectors.presetBy(own)?.content).toBe("b");
+    expect(presetsStore.selectors.presetBy("чужая")?.savedAt).toBe("когда-то");
+  });
+
+  it("adopt не трогает записи, которых в привозе не было", () => {
+    const local = presetsStore.actions.add("api", "только моя", "a");
+
+    presetsStore.actions.adopt([
+      { id: "со-службы", kind: "api", label: "со службы", content: "b" },
+    ]);
+
+    expect(presetsStore.selectors.presetBy(local)?.label).toBe("только моя");
+    expect(presetsStore.selectors.presetBy(local)?.savedAt).toBeUndefined();
+  });
+
   it("вид записи ставит тот, кто её завёл, и склад его только запоминает", () => {
     const id = presetsStore.actions.add("adapter", "юзеры → таблица", { rules: [] });
 

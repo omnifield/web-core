@@ -3,7 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ADAPTER_KIND, defineUserKind } from "../../../src/entities/adapter";
 import { API_KIND } from "../../../src/entities/openapi";
-import { presetsStore } from "../../../src/entities/preset";
+import {
+  connectPresets,
+  presetsStore,
+  type PresetsService,
+} from "../../../src/entities/preset";
 import { ApiCatalog, ApiProbe, type ApiProbeResult } from "../../../src/features/api-manager";
 
 let dispose: (() => void) | undefined;
@@ -45,6 +49,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  connectPresets(undefined);
   dispose?.();
   dispose = undefined;
   document.body.innerHTML = "";
@@ -121,5 +126,56 @@ describe("ApiProbe", () => {
     expect(labels).toContain("Добавить");
     expect(labels).toContain("Убрать");
     expect(labels).toContain("Настроить");
+  });
+});
+
+describe("ApiProbe и служба", () => {
+  it("ручки и связи берутся с бэка, а не только из того, что завели здесь", async () => {
+    const schema = {
+      id: "схема-со-службы",
+      label: "Петстор со службы",
+      kind: "api",
+      savedAt: "когда-то",
+      endpoints: [
+        { id: "e-1", method: "GET", url: "https://back/pets", groupId: "g-1", params: [] },
+      ],
+      groups: [{ id: "g-1", name: "питомцы" }],
+      defs: {},
+    };
+
+    const adapter = {
+      id: "шов-со-службы",
+      label: "user-card ← e-1",
+      kind: "adapter",
+      savedAt: "когда-то",
+      root: "",
+      rules: [{ id: "r-1", target: "/title", from: "/name" }],
+      providers: { api: { "схема-со-службы": { "e-1": {} } } },
+      consumers: { component: { "user-card": {} } },
+    };
+
+    connectPresets({
+      request: async (document: string) =>
+        document.includes('on Api') ? { presets: [schema] } : { presets: [adapter] },
+    } as unknown as PresetsService);
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("GET"));
+    expect(host.textContent).not.toContain("Ручек, связанных с этим потребителем, нет");
+    expect(host.textContent).not.toContain("Службу прочитать не вышло");
+  });
+
+  it("молчание службы названо словами", async () => {
+    connectPresets({
+      request: async () => {
+        throw new Error("Failed to fetch");
+      },
+    } as unknown as PresetsService);
+
+    const host = mount();
+
+    await vi.waitFor(() => expect(host.textContent).toContain("Службу прочитать не вышло"));
+    expect(host.textContent).toContain("Failed to fetch");
   });
 });
