@@ -17,6 +17,21 @@ import (
 	"github.com/vikstrous/dataloadgen"
 )
 
+// Adapters is the resolver for the adapters field.
+func (r *menuResolver) Adapters(ctx context.Context, obj *model.Menu) ([]*model.Adapter, error) {
+	presets, err := resolveManyByName(ctx, "adapter", obj.AdapterNames)
+	if err != nil {
+		return nil, err
+	}
+	adapters := make([]*model.Adapter, 0, len(presets))
+	for _, p := range presets {
+		if adapter, ok := p.(*model.Adapter); ok {
+			adapters = append(adapters, adapter)
+		}
+	}
+	return adapters, nil
+}
+
 // CreatePreset is the resolver for the createPreset field.
 func (r *mutationResolver) CreatePreset(ctx context.Context, input model.PresetInput) (model.Preset, error) {
 	if err := validateState(input.Kind, input.State); err != nil {
@@ -42,6 +57,9 @@ func (r *mutationResolver) ReplacePreset(ctx context.Context, id string, input m
 	normalized, err := normalizeInput(input, r.limits)
 	if err != nil {
 		return nil, err
+	}
+	if normalized.ID != "" && normalized.ID != id {
+		return nil, fmt.Errorf("presets: айди в конверте (%q) не тот, что у заменяемой записи (%q)", normalized.ID, id)
 	}
 
 	record, err := r.store.Replace(id, normalized)
@@ -104,7 +122,7 @@ func (r *outfitResolver) Tags(ctx context.Context, obj *model.Outfit) ([]*model.
 }
 
 // Presets is the resolver for the presets field.
-func (r *queryResolver) Presets(ctx context.Context, kind *string, component []string) ([]model.Preset, error) {
+func (r *queryResolver) Presets(ctx context.Context, kind *string, component []string, name []string) ([]model.Preset, error) {
 	if kind != nil && !kinds.Known(*kind) {
 		return nil, fmt.Errorf("presets: неизвестный вид %q", *kind)
 	}
@@ -119,16 +137,23 @@ func (r *queryResolver) Presets(ctx context.Context, kind *string, component []s
 		return nil, errLoadersNotAttached
 	}
 
-	ids := make([]string, len(metas))
-	for i, meta := range metas {
-		ids[i] = meta.ID
+	// Имя живёт в model.Meta — отбор по нему проходит ДО чтения записей: в батч едут только
+	// названные, а не весь вид (presets-by-name, ROADMAP.yaml).
+	wantedNames := wantedSet(name)
+
+	ids := make([]string, 0, len(metas))
+	for _, meta := range metas {
+		if wantedNames != nil && (meta.Name == "" || !wantedNames[meta.Name]) {
+			continue
+		}
+		ids = append(ids, meta.ID)
 	}
 	records, err := ls.Record.LoadAll(ctx, ids)
 	if err := firstFatal(err); err != nil {
 		return nil, err
 	}
 
-	wanted := componentSet(component)
+	wanted := wantedSet(component)
 
 	presets := make([]model.Preset, 0, len(records))
 	for _, record := range records {
@@ -164,6 +189,9 @@ func (r *queryResolver) Preset(ctx context.Context, id string) (model.Preset, er
 	return toPreset(record)
 }
 
+// Menu returns generated.MenuResolver implementation.
+func (r *Resolver) Menu() generated.MenuResolver { return &menuResolver{r} }
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -174,6 +202,7 @@ func (r *Resolver) Outfit() generated.OutfitResolver { return &outfitResolver{r}
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type (
+	menuResolver     struct{ *Resolver }
 	mutationResolver struct{ *Resolver }
 	outfitResolver   struct{ *Resolver }
 	queryResolver    struct{ *Resolver }
