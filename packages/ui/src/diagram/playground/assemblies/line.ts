@@ -11,7 +11,7 @@ export const line: PassportAssembly<DiagramPart, string, Data> = {
   means: "линия по значениям — те же данные, что у остальных сборок, другая форма",
   tree: {
     node: "root",
-    props: { width: 360, height: 240, shape: "line" },
+    props: { shape: "line" },
     bind: { data: "/data", series: "/series", axes: "/axes", insets: "/insets" },
   },
 };

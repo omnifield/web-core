@@ -151,6 +151,15 @@ describe("форму задаёт сборка, данные — только ч
     expect(widened.querySelector('[data-part="axis"][data-orientation="y"] line')?.getAttribute("x1")).toBe("80");
   });
 
+  it("без пропов размера не прибивает width/height — размер остаётся за рецептом", () => {
+    const host = mount(data, "line");
+    const svg = host.querySelector('[data-scope="diagram"][data-part="root"]')!;
+
+    expect(svg.hasAttribute("width")).toBe(false);
+    expect(svg.hasAttribute("height")).toBe(false);
+    expect(svg.getAttribute("viewBox")).toBe("0 0 360 240");
+  });
+
   it("без единой серии остаётся голым корнем — ни осей, ни сетки", () => {
     const host = mount({ data: [], series: [] }, "line");
 

@@ -11,7 +11,7 @@ export const point: PassportAssembly<DiagramPart, string, Data> = {
   means: "точки без соединяющей линии — рассеяние по тем же полям",
   tree: {
     node: "root",
-    props: { width: 360, height: 240, shape: "point" },
+    props: { shape: "point" },
     bind: { data: "/data", series: "/series", axes: "/axes", insets: "/insets" },
   },
 };

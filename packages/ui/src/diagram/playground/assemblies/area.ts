@@ -11,7 +11,7 @@ export const area: PassportAssembly<DiagramPart, string, Data> = {
   means: "та же линия с заливкой до базовой — форму задаёт сборка, не данные",
   tree: {
     node: "root",
-    props: { width: 360, height: 240, shape: "area" },
+    props: { shape: "area" },
     bind: { data: "/data", series: "/series", axes: "/axes", insets: "/insets" },
   },
 };

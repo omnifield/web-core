@@ -11,7 +11,7 @@ export const bar: PassportAssembly<DiagramPart, string, Data> = {
   means: "столбцы по категориям — корень сам берёт категориальную шкалу под эту форму",
   tree: {
     node: "root",
-    props: { width: 360, height: 240, shape: "bar" },
+    props: { shape: "bar" },
     bind: { data: "/data", series: "/series", axes: "/axes", insets: "/insets" },
   },
 };

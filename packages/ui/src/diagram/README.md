@@ -184,6 +184,11 @@ const rows = [
 него разумный дефолт (`{ top: 12, right: 12, bottom: 28, left: 44 }`), задавать его нужно только
 если подписи перестали помещаться.
 
+**Размер задаёт рецепт, а не сборка.** `width`/`height` — необязательные пропы: без них корень
+меряет свой реальный размер на экране и строит систему координат ровно по нему, так что
+`inlineSize`/`blockSize` из формы работают как на любой другой части кита. Явные `width`/`height`
+остаются для рукописного случая, когда нужна фиксированная система координат (например в тесте).
+
 **Рукописный путь** — `children` функцией: корень отдаёт посчитанный фрейм (форма, геометрия, обе
 шкалы, выведенные оси), а разметку дальше собирает вызывающий. Тот же приём, которым `table`
 отдаёт свой инстанс движка.
@@ -276,7 +281,7 @@ const x = scaleLinear().domain([0, 6]).range([40, 350]);
 <h3 id="сборка-line">📈 line</h3>
 
 ```
-root · props: width, height, shape="line" · bind: data, series, axes, insets
+root · props: shape="line" · bind: data, series, axes, insets
 ```
 
 Ломаная по значениям. Корень сам растит оси, сетку и серии из `data`+`series` — тот же приём, что
@@ -285,7 +290,7 @@ root · props: width, height, shape="line" · bind: data, series, axes, insets
 <h3 id="сборка-area">🟩 area</h3>
 
 ```
-root · props: width, height, shape="area" · bind: data, series, axes, insets
+root · props: shape="area" · bind: data, series, axes, insets
 ```
 
 Та же линия с заливкой до базовой линии шкалы.
@@ -293,7 +298,7 @@ root · props: width, height, shape="area" · bind: data, series, axes, insets
 <h3 id="сборка-bar">📊 bar</h3>
 
 ```
-root · props: width, height, shape="bar" · bind: data, series, axes, insets
+root · props: shape="bar" · bind: data, series, axes, insets
 ```
 
 Столбцы по категориям: эта форма — единственная, под которую корень берёт категориальную шкалу и
@@ -302,7 +307,7 @@ root · props: width, height, shape="bar" · bind: data, series, axes, insets
 <h3 id="сборка-point">🔵 point</h3>
 
 ```
-root · props: width, height, shape="point" · bind: data, series, axes, insets
+root · props: shape="point" · bind: data, series, axes, insets
 ```
 
 Рассеяние — точка на пару значений, без соединяющей линии.

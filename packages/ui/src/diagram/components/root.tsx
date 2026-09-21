@@ -1,5 +1,5 @@
 import { scaleBand, scaleLinear, scaleLog, scaleTime } from "d3-scale";
-import { createMemo, splitProps, type JSX } from "solid-js";
+import { createMemo, createSignal, onCleanup, splitProps, type JSX } from "solid-js";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
 import { useKitLife } from "../../shared/utils/skin-life.js";
@@ -20,6 +20,7 @@ import { DefaultDiagramBody } from "./default-body.js";
 export type DiagramShape = "line" | "area" | "bar" | "point";
 
 const DEFAULT_SHAPE: DiagramShape = "line";
+/** Запасной размер системы координат — пока ничего не измерено (первый кадр, среда без раскладки). */
 const DEFAULT_WIDTH = 360;
 const DEFAULT_HEIGHT = 240;
 const DEFAULT_INSETS: Required<DiagramInsets> = { top: 12, right: 12, bottom: 28, left: 44 };
@@ -160,6 +161,8 @@ export type DiagramRootProps = Omit<
   JSX.SvgSVGAttributes<SVGSVGElement>,
   "width" | "height" | "children"
 > & {
+  /** Размер системы координат. Не задан — корень берёт свой реальный размер на экране, а
+   * задавать его остаётся делом рецепта (`inlineSize`/`blockSize`), не сборки. */
   width?: number;
   height?: number;
   data?: readonly DiagramRow[];
@@ -192,8 +195,24 @@ export function DiagramRoot(props: DiagramRootProps) {
     "children",
   ]);
 
-  const width = () => local.width ?? DEFAULT_WIDTH;
-  const height = () => local.height ?? DEFAULT_HEIGHT;
+  const [measured, setMeasured] = createSignal<{ width: number; height: number }>();
+
+  // Система координат равна реальному размеру на экране — иначе viewBox вписывает рисунок
+  // в бокс с полями, и график выглядит сжатым (`FAQ.md`).
+  const observe = (node: SVGSVGElement): void => {
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const box = entry?.contentRect;
+      if (box && box.width > 0 && box.height > 0) setMeasured({ width: box.width, height: box.height });
+    });
+
+    observer.observe(node);
+    onCleanup(() => observer.disconnect());
+  };
+
+  const width = () => local.width ?? measured()?.width ?? DEFAULT_WIDTH;
+  const height = () => local.height ?? measured()?.height ?? DEFAULT_HEIGHT;
 
   const frame = createMemo<DiagramFrame>(() => {
     const data = local.data ?? [];
@@ -250,9 +269,10 @@ export function DiagramRoot(props: DiagramRootProps) {
 
   return (
     <svg
+      ref={observe}
       {...dropAddress(rest)}
-      width={width()}
-      height={height()}
+      width={local.width}
+      height={local.height}
       viewBox={`0 0 ${width()} ${height()}`}
       {...anatomyParts.root.attrs}
     >
