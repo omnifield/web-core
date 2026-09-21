@@ -7,8 +7,8 @@
 > сколько бы подробно он тут ни был описан.
 >
 > **Что взято и работает** — соседние файлы этой папки, по одному на примитив:
-> [`keyed.md`](./keyed.md). Полный состав поставки — [`README.md`](../README.md), раздел
-> «Анатомия».
+> [`keyed.md`](./keyed.md), [`rootless.md`](./rootless.md). Полный состав поставки —
+> [`README.md`](../README.md), раздел «Анатомия».
 >
 > **Взять следующий — заявка архитектору, а не `pnpm add` в своей зоне:** зависимость в поставку
 > решает он, владелец зоны только предлагает и обосновывает. Взяли — строка уезжает отсюда в
@@ -107,13 +107,19 @@
 
 ## Reactivity
 
+> `rootless` из этого раздела **взят** и в очереди больше не стоит — [`rootless.md`](./rootless.md).
+
 - **db-store** — реактивная привязка данных к базам данных. [docs](https://primitives.solidjs.community/package/db-store/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/db-store)
 - **deep** — глубокое реактивное отслеживание и обновление вложенных структур. [docs](https://primitives.solidjs.community/package/deep/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/deep)
 - **destructure** — безопасная деструктуризация реактивных объектов без потери реактивности. [docs](https://primitives.solidjs.community/package/destructure/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/destructure)
 - **immutable** — неизменяемые реактивные структуры данных. [docs](https://primitives.solidjs.community/package/immutable/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/immutable)
 - **lifecycle** — дополнительный слой lifecycle-примитивов поверх Solid. [docs](https://primitives.solidjs.community/package/lifecycle/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/lifecycle)
 - **map** — реактивные `Map`/`WeakMap`. [docs](https://primitives.solidjs.community/package/map/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/map)
-- **memo** — продвинутые паттерны мемоизации. [docs](https://primitives.solidjs.community/package/memo/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/memo)
+- **memo** — продвинутые паттерны мемоизации. **Рассматривался 2026-09-21 ради `createLazyMemo` и
+  отклонён:** пакет тянет `@solid-primitives/scheduled`, а тот расходуется только на три функции,
+  которые вендор сам пометил устаревшими; сам `createLazyMemo` от него не зависит вовсе. Платить
+  транзитивной зависимостью за мёртвый код ради удобства не стали — появится повод, которого без
+  него не закрыть, вернёмся. [docs](https://primitives.solidjs.community/package/memo/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/memo)
 - **mutable** — создание мутабельных реактивных объектов. [docs](https://primitives.solidjs.community/package/mutable/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/mutable)
 - **resource** — продвинутое управление ресурсами и кэшем поверх `createResource`. [docs](https://primitives.solidjs.community/package/resource/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/resource)
 - **rootless** — хелперы для использования реактивных примитивов вне реактивного root'а. [docs](https://primitives.solidjs.community/package/rootless/) · [src](https://github.com/solidjs-community/solid-primitives/tree/main/packages/rootless)

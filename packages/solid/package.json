@@ -25,6 +25,11 @@
       "development": "./src/keyed/index.ts",
       "types": "./dist/keyed/index.d.ts",
       "default": "./dist/keyed/index.js"
+    },
+    "./rootless": {
+      "development": "./src/rootless/index.ts",
+      "types": "./dist/rootless/index.d.ts",
+      "default": "./dist/rootless/index.js"
     }
   },
   "files": [
@@ -41,7 +46,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@solid-primitives/keyed": "^1.5.3"
+    "@solid-primitives/keyed": "^1.5.3",
+    "@solid-primitives/rootless": "^1.5.4"
   },
   "peerDependencies": {
     "solid-js": "^1.9.14"
