@@ -1,4 +1,5 @@
 import { render } from "@web-core/solid/web";
+import { createSignal } from "@web-core/solid";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createActionStore, createActionStoreFamily } from "../src/engine/action-store.js";
@@ -267,6 +268,160 @@ describe("createActionStoreFamily (кейс componentManagerStore — feedData �
     feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
     expect(feedStoreOf("button").selectors.hasData()).toBe(true);
     expect(feedStoreOf("checkbox").selectors.hasData()).toBe(false);
+  });
+});
+
+describe("createActionStoreFamily — ключ аксессором (кейс apps/studio: ключ из маршрута)", () => {
+  interface FeedState {
+    readonly feedData?: unknown;
+  }
+
+  function createFeedStoreOf() {
+    return createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }>({}, ({ setState }) => ({
+      setFeedData(value) {
+        setState((state) => ({ ...state, feedData: value }));
+      },
+    }));
+  }
+
+  it("подписка переезжает на стор нового ключа, поддерево не пересоздаётся", () => {
+    const feedStoreOf = createFeedStoreOf();
+    feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
+    feedStoreOf("checkbox").actions.setFeedData({ checked: true });
+
+    const [component, setComponent] = createSignal("button");
+    let built = 0;
+
+    function Feed() {
+      built += 1;
+      const store = feedStoreOf(component); // аксессор, а не значение
+      const feedData = store.use((state) => state.feedData);
+      return <p>{JSON.stringify(feedData())}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <Feed />, host);
+
+    expect(host.textContent).toBe(JSON.stringify({ label: "Кнопка" }));
+
+    setComponent("checkbox");
+    expect(host.textContent).toBe(JSON.stringify({ checked: true }));
+    expect(built).toBe(1); // тело компонента отработало один раз — ремаунта не было
+  });
+
+  it("состояние прежнего ключа переезд не трогает", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const [component, setComponent] = createSignal("button");
+
+    const store = feedStoreOf(component);
+    store.actions.setFeedData({ label: "Кнопка" });
+
+    setComponent("checkbox");
+    expect(store.get()).toEqual({}); // у чекбокса своё, пустое
+    store.actions.setFeedData({ checked: true });
+
+    setComponent("button");
+    expect(store.get()).toEqual({ feedData: { label: "Кнопка" } });
+    expect(feedStoreOf("checkbox").get()).toEqual({ feedData: { checked: true } });
+  });
+
+  it("actions и selectors адресуют стор текущего ключа", () => {
+    const feedStoreOf = createActionStoreFamily<
+      FeedState,
+      { setFeedData(value: unknown): void },
+      { hasData(state: FeedState): boolean }
+    >(
+      {},
+      ({ setState }) => ({
+        setFeedData(value) {
+          setState((state) => ({ ...state, feedData: value }));
+        },
+      }),
+      () => ({
+        hasData(state) {
+          return state.feedData !== undefined;
+        },
+      }),
+    );
+
+    const [component, setComponent] = createSignal("button");
+    const store = feedStoreOf(component);
+
+    store.actions.setFeedData({ label: "Кнопка" });
+    expect(store.selectors.hasData()).toBe(true);
+
+    setComponent("checkbox");
+    expect(store.selectors.hasData()).toBe(false);
+    expect(feedStoreOf("button").get()).toEqual({ feedData: { label: "Кнопка" } });
+  });
+
+  it("ключ значением работает как раньше — на смену сигнала такой стор не реагирует", () => {
+    const feedStoreOf = createFeedStoreOf();
+    feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
+    feedStoreOf("checkbox").actions.setFeedData({ checked: true });
+
+    const [component, setComponent] = createSignal("button");
+
+    function Feed() {
+      const feedData = feedStoreOf(component()).use((state) => state.feedData); // значение, не аксессор
+      return <p>{JSON.stringify(feedData())}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <Feed />, host);
+
+    expect(host.textContent).toBe(JSON.stringify({ label: "Кнопка" }));
+    setComponent("checkbox");
+    expect(host.textContent).toBe(JSON.stringify({ label: "Кнопка" })); // так и задумано
+  });
+
+  it("после переезда прежний ключ читателя больше не дёргает", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const [component, setComponent] = createSignal("button");
+    let reads = 0;
+
+    function Feed() {
+      const feedData = feedStoreOf(component).use((state) => {
+        reads += 1;
+        return state.feedData;
+      });
+      return <p>{JSON.stringify(feedData())}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <Feed />, host);
+
+    setComponent("checkbox");
+    const before = reads;
+
+    feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
+    expect(reads).toBe(before); // подписка уехала, на старом ключе читателя нет
+    expect(host.textContent).toBe(""); // у чекбокса данных нет — JSON.stringify(undefined)
+  });
+
+  it("размонтирование читателя снимает подписку на стор текущего ключа", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const [component] = createSignal("button");
+    let reads = 0;
+
+    function Feed() {
+      const feedData = feedStoreOf(component).use((state) => {
+        reads += 1;
+        return state.feedData;
+      });
+      return <p>{JSON.stringify(feedData())}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    render(() => <Feed />, host)();
+
+    const before = reads;
+    feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
+    expect(reads).toBe(before);
   });
 });
 

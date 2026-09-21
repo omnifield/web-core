@@ -328,6 +328,24 @@ function FeedPreset(props: { component: string }) {
 }
 ```
 
+🔑 Ключ зовут двумя способами. **Значением** — как выше, стор фиксирован на всё время жизни
+вызывающего. **Solid-аксессором** — когда ключ приходит из маршрута и меняется, пока компонент
+смонтирован: наружу тот же `ActionStore`, но подписка переезжает на стор нового ключа сама,
+поддерево не пересоздаётся, а состояние прежнего ключа остаётся в `Map` нетронутым:
+
+```tsx
+function FeedManual() {
+  const component = useParams({ strict: false, select: (p) => p.component });
+  const store = feedStoreOf(component); // аксессор, не component()
+
+  return <p>{JSON.stringify(store.use((state) => state.feedData)())}</p>;
+}
+```
+
+Режимы различаются по `typeof key === "function"` — значит ключ, который сам является функцией,
+аксессором адресовать нельзя. Когда ремаунт поддерева нужен намеренно (внутри некооперативное
+состояние, которое проще пересоздать) — это `<Show keyed>`, см. `EXAMPLES.md`, пример 6a.
+
 Ленивое создание + кэш (`Map<K, ActionStore<...>>`) под капотом: `actionsFactory`/`selectorsFactory`
 вызываются один раз на первое обращение к ключу, дальше — тот же инстанс. Без политики вытеснения
 — рассчитан на конечный/известный набор ключей, не на неограниченный поток (для него кэш растёт
@@ -488,7 +506,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createResourceAtom` с ключом  | `(source: Accessor<Key>, fetcher: (key, info: { signal }) => Data \| Promise<Data>, options?)`                                                     |
 | `createBoundAtom`              | `(source: Accessor<T>, options?: AtomOptions<T>)`                                                                                                  |
 | `createActionStore`            | `(initialValue: T, actionsFactory: (helpers: {setState, get}) => TActions, options?: AtomOptions<T>)`, либо с третьим `selectorsFactory: () => TSelectors` перед `options` — селектор `(state) => R` даёт `store.selectors.x()`, `(state, ...args) => R` даёт `store.selectors.x(...args)` |
-| `createActionStoreFamily`      | те же аргументы, что у `createActionStore` — отдаёт не стор, а `(key: K) => ActionStore<T, TActions, TSelectors>`                                                                        |
+| `createActionStoreFamily`      | те же аргументы, что у `createActionStore` — отдаёт не стор, а семью: `(key: K \| Accessor<K>) => ActionStore<T, TActions, TSelectors>`                                                                        |
 | `store.send`                   | `{ type, ...payload }`                                                                                                                             |
 | `store.trigger.<type>`         | `payload`                                                                                                                                          |
 | `store.can.<type>`             | `payload`                                                                                                                                          |
@@ -502,7 +520,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `useAtom` / `useSelector`             | аксессор `() => T`                                                                                           |
 | `createResourceAtom`                  | `ResourceState<Data, Err> = { status: "pending" } \| { status: "done", data } \| { status: "error", error }` |
 | `createActionStore`                   | `ActionStore<T, TActions, TSelectors?> = ReadonlyAtom<T> & { actions, selectors, use(selector?) }` — `.set()` не публичный |
-| `createActionStoreFamily`             | `(key: K) => ActionStore<T, TActions, TSelectors?>` — ленивая, с кэшем по ключу |
+| `createActionStoreFamily`             | `(key: K) => ActionStore<...>` — ленивая, с кэшем по ключу; `(key: Accessor<K>) => ActionStore<...>` — тот же стор наружу, подписка переезжает за ключом |
 | `store.can.<type>`                    | `boolean`                                                                                                    |
 
 <h2 id="сборки">🏗️ Сборки</h2>
@@ -538,6 +556,11 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createActionStoreFamily`, повтор ключа                     | кэш — тот же инстанс, не пересоздание                              | `test/action-store.test.tsx` |
 | `createActionStoreFamily` в реальном рендере                | переключение ключа между рендерами не путает данные разных сущностей | `test/action-store.test.tsx` |
 | `createActionStoreFamily` + `selectorsFactory`               | третий аргумент работает так же, как у `createActionStore`         | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ аксессором                   | подписка переезжает на новый ключ, тело компонента отработало один раз | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ аксессором — возврат назад    | состояние прежнего ключа переезд не тронул                          | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ аксессором — запись и чтение   | `actions`/`selectors` адресуют стор текущего ключа                  | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ значением рядом с сигналом     | на смену сигнала такой стор не реагирует — как и раньше             | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, переезд и размонтирование           | подписка на прежний ключ снята, читателя он больше не дёргает        | `test/action-store.test.tsx` |
 | `persistAtom` + localStorage                              | гидратация при вызове, запись при `.set()`                        | `test/persist.test.tsx`      |
 | `persistAtom` + `createJSONStorage(() => sessionStorage)` | тот же `persistAtom`, локал и сешн не пересекаются                | `test/persist.test.tsx`      |
 | `mutate`                                                   | recipe мутирует draft, наружу — новое значение, старое не тронуто | `test/mutate.test.tsx`       |
