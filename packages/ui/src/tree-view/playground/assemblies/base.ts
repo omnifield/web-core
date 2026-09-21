@@ -12,6 +12,7 @@ export const base: PassportAssembly<TreeViewPart> = {
     "дерево произвольной глубины, каждый узел подписан и кликабелен, свой клик шлёт наружу",
   tree: {
     node: "root",
+    bind: { items: "/items" },
     children: [
       {
         node: "item",

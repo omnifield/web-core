@@ -193,6 +193,43 @@ categories:
           `children` в данных сейчас не работает в принципе, не только у этих трёх — на заметку
           architect/владельцу `packages/skin`.
 
+      - id: tree-view-root-collection-not-bound
+        type: bug
+        status: Done
+        priority: High
+        name: "tree-view — сборка base не привязывала items на корень, дерево жило без коллекции"
+        description: |
+          Найдено user живьём (2026-09-21) на витрине `apps/studio`: дерево не получает данные,
+          в консоли `[web-core-assembly] узел «item-2» (tree-view.item) упал при отрисовке:
+          TypeError: Cannot read properties of undefined (reading 'isBranch')`, и вложенность
+          обрезана до первого уровня — второй и глубже не рисуются вовсе.
+
+          Причина: `playground/assemblies/base.ts` не объявлял `bind` на корневом узле, а
+          `TreeRoot` строит `TreeCollection` ТОЛЬКО из пропа `items` (`components/root.tsx`,
+          `createItemTreeCollection`). Через настоящий путь потребителя — `instanceOf(component,
+          rootProps, assembly, data)` из `component-registry.ts`, которым ходит витрина, — этот
+          проп не кладёт никто: `instanceOf` переносит на корень только `rootProps`, а данные
+          показа доходят до узлов через `bind`. Корень получал `items: undefined`, коллекция
+          выходила пустой, и `getNodeState` (`@zag-js/tree-view`'s `connect`) для узла, которого в
+          коллекции нет, отдавал `undefined` — на нём и падал `nodeState().isBranch` в
+          `components/item/index.tsx`. `repeat`/`recur` при этом отрабатывали правильно: узлы в
+          дереве схемы были все, ронялся именно рендер.
+
+          Почему не поймали тесты: `test/tree-view.test.tsx`'s `mount` подставлял коллекцию руками
+          (`updateNode(..., { props: { items: data.items } })`) — проверялся путь, которым живой
+          потребитель не ходит. Ровно поэтому ручная JSX-сборка работала, а витрина нет.
+
+          Сделано (2026-09-21): `bind: { items: "/items" }` на корневом узле сборки `base` — тем же
+          приёмом, каким это уже сделано у `listbox` (`bind: { items: "/items" }` на root).
+          Ручная подстановка `items` из `mount` убрана — шесть существующих сценариев теперь идут
+          настоящим путём; добавлен сценарий через `kitComponentRenderer().instanceOf` без единого
+          пропа на корне (три уровня данных → три подписи и `data-depth` 1/2/1), то есть буквально
+          тот вызов, который делает витрина. README дерева: у сборки `base` показан bind корня,
+          заодно io-вход и примеры переведены со старого `id` на канонический `value`
+          (расхождение с кодом осталось с `unified-item-collection-engine`).
+
+          `typecheck && lint && test && build` — зелёные, 305/305 тестов кита (было 304, +1).
+
       - id: menu-data-driven-rich-items
         type: feature
         status: Backlog

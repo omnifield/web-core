@@ -6,6 +6,7 @@ import type { ComponentPassport } from "@web-core/skin/model";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { kitComponentRenderer } from "../../component-registry.jsx";
 import { kit as treeViewKit } from "../components/index.jsx";
 import type { Data } from "../entity/io.js";
 import { passport as treeViewPassport } from "../entity/passport.js";
@@ -57,9 +58,7 @@ function mount(
   rootProps?: Readonly<Record<string, unknown>>,
 ): HTMLElement {
   const base = baseAssemblyOf(treeViewPassport, assembly, "tree-view", data);
-  const onRoot = updateNode(base as AssemblyTree, base.components.root, {
-    props: { items: data.items, ...rootProps },
-  });
+  const onRoot = updateNode(base as AssemblyTree, base.components.root, { props: { ...rootProps } });
   if (!onRoot.ok) throw new Error(`витрина: экземпляр отвергнут механикой — ${onRoot.means}`);
 
   const host = document.createElement("div");
@@ -199,6 +198,37 @@ describe('tree view "base" — externally driven activeValue overrides Zag\'s ow
 
     const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
     expect(items[1]!.getAttribute("data-selected")).toBe("");
+  });
+});
+
+describe('tree view "base" — the real consumer path: instanceOf feeds the root its own collection', () => {
+  it("grows every level off data alone, with nothing hand-fed into the root props", async () => {
+    const { registry, instanceOf } = kitComponentRenderer();
+    const data: Data = {
+      items: [
+        { value: "a", label: "Alpha", children: [{ value: "a1", label: "Alpha One" }] },
+        { value: "b", label: "Beta" },
+      ],
+    };
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(
+      () => <RenderTree registry={registry} tree={instanceOf("tree-view", {}, "base", data)} data={data} />,
+      host,
+    );
+
+    await vi.waitFor(() => {
+      if (host.querySelectorAll('[data-scope="tree-view"][data-part="control"]').length === 0) {
+        throw new Error("suspended tree not resolved yet");
+      }
+    });
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "Alpha One", "Beta"]);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "2", "1"]);
   });
 });
 

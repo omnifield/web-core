@@ -52,7 +52,7 @@ root
 {
   "items": [
     {
-      "id": "string",
+      "value": "string",
       "label": "string",
       "children": [recursive]
     }
@@ -65,7 +65,7 @@ root
 ```tsx
 const onDispatch = (event: DispatchedEvent) => {
   // Клик по узлу, возвращает все данные кликнотого узла, кроме детей.
-  // event.context.payload = { id: "a", label: "Alpha" }
+  // event.context.payload = { value: "a", label: "Alpha" }
 };
 
 <RenderTree
@@ -81,7 +81,7 @@ const onDispatch = (event: DispatchedEvent) => {
 <h3 id="сборка-base">🧱 base</h3>
 
 ```
-root
+root                   · bind: items ← /items
   item[] 🍃/🌿          · repeat: /items · bind: весь узел
     control ▶️           · on: click → controlClick
       🏷️ text: {label}
@@ -129,7 +129,7 @@ calc(var(--space-3) + var(--depth) * var(--space-6))
 **Рендер через движок** — та же композиция, но по схеме (сборка `base`), которую рисует `RenderTree`.
 
 ```tsx
-const data = { items: [{ id: "a", label: "Alpha" }] };
+const data = { items: [{ value: "a", label: "Alpha" }] };
 const tree = instanceOf("tree-view", {}, "base", data);
 
 <RenderTree tree={tree} registry={registry} data={data} />;
@@ -139,7 +139,7 @@ const tree = instanceOf("tree-view", {}, "base", data);
 `content` подменён живым компонентом из кода, а не тем, что объявлено в схеме.
 
 ```tsx
-const data = { items: [{ id: "a", label: "Alpha" }] };
+const data = { items: [{ value: "a", label: "Alpha" }] };
 const tree = instanceOf("tree-view", {}, "base", data);
 
 <RenderTree
