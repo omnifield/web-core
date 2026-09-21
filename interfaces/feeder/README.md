@@ -57,7 +57,7 @@ vitest+jsdom.
 
 📦 Внутри — адаптированный FSD, переосмысленный под движок (правила слоёв — [`src/DBP.md`](./src/DBP.md)):
 
-- `entities/preset` — склад: `Preset { id, kind, name, content }`, стор и механика показа записей
+- `entities/preset` — склад: `Preset { id, kind, label, name?, content }`, стор и механика показа записей
   своего вида. Про содержимое `content` не знает ничего, а `kind` сравнивает, но не толкует;
 - `entities/openapi` — наш формат API: `SchemaDocument { endpoints, groups, defs }`, распознавание
   Swagger 2.0 (`swagger2Template` поверх `@web-core/generators/mapping`), простановка айди ручкам
@@ -183,7 +183,7 @@ import { TreeForm } from "@web-core/feeder";
 `onConfig(target)`. Кнопки появляются **от самого колбэка** — не передали, кнопки нет.
 
 `AdapterMastering` — `provider`, `consumer` (адреса участников), `output`, `input`
-(`PathType[]` из `@web-core/io`) и необязательное `name` для новой записи (по умолчанию имя
+(`PathType[]` из `@web-core/io`) и необязательное `label` для новой записи (по умолчанию имя
 собирается из адресов: `user-card ← endpoint-3`).
 
 `Presets` — механика склада: `kind`, `as` (страж содержимого), необязательные `empty`/`broken` и
@@ -191,7 +191,7 @@ import { TreeForm } from "@web-core/feeder";
 
 `Endpoint` — `endpoint: EndpointDescriptor`, `defs`, необязательные `users`, `onResult` и
 `onServing`. `Call` — то же плюс `value`. Передали `users` — вызов идёт через `serve` и наружу
-едет конверт `Serving`; не передали — как раньше, сырой `InvokeResult`. `PresetInfo` — `name` / `onName`.
+едет конверт `Serving`; не передали — как раньше, сырой `InvokeResult`. `PresetInfo` — `label` / `onLabel`.
 `TreeForm` — `schema: z.ZodType`, `value`, `onChange`.
 
 Чего у движка **нет**: форматов кроме Swagger 2.0; заголовков и авторизации у вызова; хранения
@@ -203,10 +203,11 @@ import { TreeForm } from "@web-core/feeder";
 🚦 Пакет держит одно живое состояние в сторе, остальное контролируется снаружи.
 
 - `presetsStore` — `{ presets: Preset[] }`, модульный синглтон (`createActionStore`
-  из `@web-core/store`). Действия: `add(kind, name, content) → id`, `remove(id)`,
-  `rename(id, name)`, `replace(id, content)`, `edit<T>(id, recipe)` (immer-черновик содержимого),
-  `hydrate(presets)`. Селекторы `presetBy(id)` и `presetsOf(kind)` — оба реактивные. Айди — uuid
-  при создании, и он не зависит ни от имени, ни от вида, ни от содержимого;
+  из `@web-core/store`). Действия: `add(kind, label, content) → id`, `remove(id)`,
+  `relabel(id, label)` (человеческое имя), `rename(id, name)` (машинное), `replace(id, content)`,
+  `edit<T>(id, recipe)` (immer-черновик содержимого), `hydrate(presets)`. Селекторы `presetBy(id)`
+  и `presetsOf(kind)` — оба реактивные. Айди — uuid при создании, и он не зависит ни от имени, ни
+  от вида, ни от содержимого;
 - реестр видов участника — модульная карта: `defineUserKind` объявляет вид и отдаёт построитель
   пути, повторное объявление возвращает прежний.
 
@@ -229,8 +230,14 @@ import { TreeForm } from "@web-core/feeder";
 `{ id, method, url, groupId, params }`, группа — `{ id, name }`, где `params[].schema` — JSON
 Schema, а `defs` держит общие типы. Чистый JSON: сериализуется и уезжает на склад как есть.
 
-↔️ **Склад.** `Preset { id, kind, name, content }`, `content` непрозрачен. `kind` — ярлык вида,
-который ставит дверь при заведении записи: `api` у документа схемы, `adapter` у шва.
+↔️ **Склад.** `Preset { id, kind, label, name?, content }`, `content` непрозрачен. `kind` — ярлык
+вида, который ставит дверь при заведении записи: `api` у документа схемы, `adapter` у шва.
+
+↔️ **Два имени записи.** `label` — человеческое, свободная строка, есть у записи всегда: его
+показывает список и правит диалог. `name` — машинное, по маске `PRESET_NAME`
+(`^[a-z0-9][a-z0-9-]{0,31}$`), им запись адресуют снаружи; появляется, когда человек называет
+запись при сохранении в службу, и до тех пор его нет. `presetNamed(kind, name)` находит запись по
+машинному имени в пределах её вида.
 
 ↔️ **Вызов.** `invokeEndpoint(endpoint, value)` → `InvokeResult { status, ok, headers, body }`.
 Имя, встреченное в `{плейсхолдере}` url, уходит в путь; ключ `body` — в JSON-тело; остальное — в
@@ -266,11 +273,12 @@ endpointId)` → `["api", presetId, endpointId]`. Вид ставит сам п�
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
-🧪 Vitest + jsdom. **228 тестов, все зелёные:**
+🧪 Vitest + jsdom. **247 тестов, все зелёные:**
 
 - `entities/openapi` — конфиг узла, распознавание petstore, айди при разборе, JSON Schema → zod,
   компоновка по группам, правки состава, живучесть узлов при правке;
-- `entities/preset` — стор и механика показа записей своего вида в настоящем DOM;
+- `entities/preset` — стор, два имени записи (маска машинного, поиск по нему в пределах вида) и
+  механика показа записей своего вида в настоящем DOM;
 - `entities/form` — `itemBinding`/`useTree` чистой логикой и `Tree` смонтированным;
 - `entities/adapter` — страж записи, правки над черновиком (связь, замена источника с сохранением
   айди, деревья участников), совместимость типов, сборка ответа в форму потребителя (включая две

@@ -15,7 +15,7 @@ import { Mastering } from "./mastering";
 
 const EMPTY: Adapter = { root: "", rules: [], providers: {}, consumers: {} };
 
-function nameOf(provider: readonly string[], consumer: readonly string[]): string {
+function labelOf(provider: readonly string[], consumer: readonly string[]): string {
   return `${consumer.at(-1) ?? "потребитель"} ← ${provider.at(-1) ?? "поставщик"}`;
 }
 
@@ -24,7 +24,7 @@ export function AdapterMastering(props: {
   consumer: readonly string[];
   output: readonly PathType[];
   input: readonly PathType[];
-  name?: string;
+  label?: string;
 }) {
   const records = createMemo(() => savedAdapters());
 
@@ -50,7 +50,7 @@ export function AdapterMastering(props: {
 
     const id = presetsStore.actions.add(
       ADAPTER_KIND,
-      props.name ?? nameOf(provider, consumer),
+      props.label ?? labelOf(provider, consumer),
       EMPTY,
     );
 

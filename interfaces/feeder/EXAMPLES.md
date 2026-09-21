@@ -42,7 +42,8 @@
 
 | Слово | Что это в коде | Чем опознаётся |
 | --- | --- | --- |
-| **Пресет** | `Preset { id, kind, name, content }` — именованная запись на складе, `content` для склада непрозрачен, `kind` он сравнивает, но не толкует | `id`, uuid при создании |
+| **Пресет** | `Preset { id, kind, label, name?, content }` — именованная запись на складе, `content` для склада непрозрачен, `kind` он сравнивает, но не толкует | `id`, uuid при создании |
+| **Имена записи** | `label` — человеческое, видно в списке; `name` — машинное, по маске `PRESET_NAME`, им запись зовут снаружи | `name` уникально в пределах вида |
 | **Документ схемы** | `SchemaDocument { endpoints, groups, defs }` — наш формат API, он и лежит в `content` | — |
 | **Ручка** | `EndpointDescriptor { id, method, url, groupId, params }`, `params[].schema` — JSON Schema | `id`, uuid при разборе документа |
 | **Группа** | `Group { id, name }` — компоновка ручек в каталоге, отдельная запись документа; ручкам без группы разбор заводит `unknown` | `id`, uuid при разборе документа |
@@ -114,7 +115,7 @@ export function MyCatalog() {
     <Presets kind={API_KIND} as={asSchemaDocument} empty="Схем пока нет">
       {(preset, document) => (
         <Endpoints
-          label={preset().name}
+          label={preset().label}
           document={document()}
           onRemove={() => presetsStore.actions.remove(preset().id)}
         >
@@ -160,7 +161,7 @@ export function MyCatalog() {
 
 Зод под эту форму — `ENDPOINT_CONFIG` / `GROUP_CONFIG` / `PRESET_CONFIG`; обратно в документ
 правку кладут `applyEndpointConfig`/`applyGroupConfig` черновиком, а имя записи —
-`presetsStore.actions.rename`. Готовому экрану это подключать не нужно: `ApiCatalog` держит диалог
+`presetsStore.actions.relabel`. Готовому экрану это подключать не нужно: `ApiCatalog` держит диалог
 настройки сам.
 
 Одно обязательное: `children` и у `Presets`, и у `Endpoints` получает **аксессоры**, поэтому
@@ -181,6 +182,9 @@ const id = presetsStore.actions.add(API_KIND, "petstore", await parseSchema(rawS
 
 Первый аргумент — **вид записи**: по нему запись потом и находят (`presetsOf`). Поставишь свой
 вид — каталог схем такую запись не покажет, и это не поломка, а ровно то, ради чего вид завёлся.
+
+Второй — **человеческое имя** (`label`), то, что человек увидит в списке. Машинного имени у
+заведённой записи нет вовсе: его дают позже, когда запись называют для службы.
 
 Содержимым пресета может быть что угодно, склад его не проверяет:
 
@@ -247,8 +251,20 @@ presetsStore.actions.edit<SchemaDocument>(id, (draft) => {
 Группа `unknown` — обычная запись со своим айди: в неё разбор кладёт ручки, которым входящая схема
 группы не назвала. Переименовывается, принимает новые ручки и удаляется как любая другая.
 
-Остальные действия склада: `rename(id, name)`, `replace(id, content)` (заменить содержимое
-целиком), `remove(id)`. Вид записи не меняет ничто — он ставится при заведении и живёт с записью.
+Остальные действия склада: `relabel(id, label)` (человеческое имя), `rename(id, name)` (машинное),
+`replace(id, content)` (заменить содержимое целиком), `remove(id)`. Вид записи не меняет ничто — он
+ставится при заведении и живёт с записью.
+
+Машинное имя обязано пройти маску и быть свободным в своём виде — проверяют этим:
+
+```ts
+import { presetNamed, PRESET_NAME, presetsStore } from "@web-core/feeder";
+
+PRESET_NAME.safeParse("users-list").success; // маска: строчная латиница, цифры, дефис
+presetNamed("adapter", "users-list");        // уже занято этим видом? — запись или undefined
+
+presetsStore.actions.rename(id, "users-list");
+```
 
 Внутри узла `Presets` то же самое делается третьим аргументом `children` — правка уже привязана
 к своей записи, айди подставлять не нужно.

@@ -44,8 +44,8 @@ function mount(children: Parameters<typeof Presets<Content>>[0]["children"]): HT
   return host;
 }
 
-function line(preset: () => { name: string }): string {
-  return preset().name;
+function line(preset: () => { label: string }): string {
+  return preset().label;
 }
 
 describe("Presets", () => {
@@ -117,7 +117,7 @@ describe("Presets", () => {
     const host = mount((preset) => <button type="button">{line(preset)}</button>);
     const node = host.querySelector("button");
 
-    presetsStore.actions.rename(id, "стала");
+    presetsStore.actions.relabel(id, "стала");
 
     expect(host.querySelector("button")).toBe(node);
     expect(node?.textContent).toBe("стала");

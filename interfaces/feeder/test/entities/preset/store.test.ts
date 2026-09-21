@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { presetsStore } from "../../../src/entities/preset";
+import { presetNamed, PRESET_NAME, presetsStore } from "../../../src/entities/preset";
 
 beforeEach(() => {
   presetsStore.actions.hydrate([]);
@@ -23,14 +23,25 @@ describe("presetsStore", () => {
     expect(presetsStore.selectors.presetBy(second)?.content).toBe("b");
   });
 
-  it("переименование не трогает содержимое, подмена не трогает имя и вид", () => {
-    const id = presetsStore.actions.add("api", "старое", "первый");
+  it("заведённая запись несёт человеческое имя и ещё не несёт машинного", () => {
+    const id = presetsStore.actions.add("api", "мой бэк", "a");
 
-    presetsStore.actions.rename(id, "новое");
     expect(presetsStore.selectors.presetBy(id)).toEqual({
       id,
       kind: "api",
-      name: "новое",
+      label: "мой бэк",
+      content: "a",
+    });
+  });
+
+  it("переименование не трогает содержимое, подмена не трогает имя и вид", () => {
+    const id = presetsStore.actions.add("api", "старое", "первый");
+
+    presetsStore.actions.relabel(id, "новое");
+    expect(presetsStore.selectors.presetBy(id)).toEqual({
+      id,
+      kind: "api",
+      label: "новое",
       content: "первый",
     });
 
@@ -38,20 +49,30 @@ describe("presetsStore", () => {
     expect(presetsStore.selectors.presetBy(id)).toEqual({
       id,
       kind: "api",
-      name: "новое",
+      label: "новое",
       content: "второй",
     });
+  });
+
+  it("машинное имя ставится отдельно от человеческого и его не трогает", () => {
+    const id = presetsStore.actions.add("adapter", "user-card ← endpoint-3", { rules: [] });
+
+    presetsStore.actions.rename(id, "users-list");
+
+    expect(presetsStore.selectors.presetBy(id)?.name).toBe("users-list");
+    expect(presetsStore.selectors.presetBy(id)?.label).toBe("user-card ← endpoint-3");
   });
 
   it("действие по несуществующему айди проходит молча, а не валит стор", () => {
     const id = presetsStore.actions.add("api", "одна", "a");
 
+    presetsStore.actions.relabel("нет-такого", "другое");
     presetsStore.actions.rename("нет-такого", "другое");
     presetsStore.actions.replace("нет-такого", "другое");
     presetsStore.actions.remove("нет-такого");
 
     expect(presetsStore.get().presets).toHaveLength(1);
-    expect(presetsStore.selectors.presetBy(id)?.name).toBe("одна");
+    expect(presetsStore.selectors.presetBy(id)?.label).toBe("одна");
   });
 
   it("удаление убирает только свою запись", () => {
@@ -61,14 +82,14 @@ describe("presetsStore", () => {
     presetsStore.actions.remove(first);
 
     expect(presetsStore.selectors.presetBy(first)).toBeUndefined();
-    expect(presetsStore.selectors.presetBy(second)?.name).toBe("вторая");
+    expect(presetsStore.selectors.presetBy(second)?.label).toBe("вторая");
   });
 
   it("hydrate поднимает сохранённое снаружи целиком", () => {
     presetsStore.actions.add("api", "своя", "a");
 
     presetsStore.actions.hydrate([
-      { id: "с-бэка", kind: "api", name: "поднятая", content: "b" },
+      { id: "с-бэка", kind: "api", label: "поднятая", content: "b" },
     ]);
 
     expect(presetsStore.get().presets).toHaveLength(1);
@@ -86,11 +107,11 @@ describe("presetsStore", () => {
     presetsStore.actions.add("adapter", "адаптер", "b");
     presetsStore.actions.add("api", "вторая схема", "c");
 
-    expect(presetsStore.selectors.presetsOf("api").map((preset) => preset.name)).toEqual([
+    expect(presetsStore.selectors.presetsOf("api").map((preset) => preset.label)).toEqual([
       "первая схема",
       "вторая схема",
     ]);
-    expect(presetsStore.selectors.presetsOf("adapter").map((preset) => preset.name)).toEqual([
+    expect(presetsStore.selectors.presetsOf("adapter").map((preset) => preset.label)).toEqual([
       "адаптер",
     ]);
   });
@@ -99,5 +120,42 @@ describe("presetsStore", () => {
     presetsStore.actions.add("api", "схема", "a");
 
     expect(presetsStore.selectors.presetsOf("чего-то-ещё")).toEqual([]);
+  });
+});
+
+describe("машинное имя", () => {
+  it("маска принимает строчную латиницу с дефисом и отвергает всё остальное", () => {
+    expect(PRESET_NAME.safeParse("users-list").success).toBe(true);
+    expect(PRESET_NAME.safeParse("a1").success).toBe(true);
+
+    expect(PRESET_NAME.safeParse("Users").success).toBe(false);
+    expect(PRESET_NAME.safeParse("users list").success).toBe(false);
+    expect(PRESET_NAME.safeParse("-users").success).toBe(false);
+    expect(PRESET_NAME.safeParse("").success).toBe(false);
+    expect(PRESET_NAME.safeParse("u".repeat(33)).success).toBe(false);
+  });
+
+  it("отказ маски называется словами, а не кодом", () => {
+    const failure = PRESET_NAME.safeParse("Users");
+
+    expect(failure.error?.issues[0]?.message).toContain("латиница");
+  });
+
+  it("поиск по машинному имени идёт в пределах вида", () => {
+    const adapter = presetsStore.actions.add("adapter", "карточка", { rules: [] });
+    presetsStore.actions.rename(adapter, "user-card");
+
+    const menu = presetsStore.actions.add("menu", "набор студии", { adapters: [] });
+    presetsStore.actions.rename(menu, "user-card");
+
+    expect(presetNamed("adapter", "user-card")?.id).toBe(adapter);
+    expect(presetNamed("menu", "user-card")?.id).toBe(menu);
+    expect(presetNamed("api", "user-card")).toBeUndefined();
+  });
+
+  it("записи без машинного имени поиску не отвечают", () => {
+    presetsStore.actions.add("adapter", "безымянная", { rules: [] });
+
+    expect(presetNamed("adapter", "")).toBeUndefined();
   });
 });
