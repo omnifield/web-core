@@ -1,7 +1,7 @@
 import { Show } from "solid-js";
 import { AdapterMastering, API_USER } from "@web-core/feeder";
 import { describeSample, describeSchema } from "@web-core/io";
-import { Typography } from "@web-core/ui";
+import { Surface, Typography } from "@web-core/ui";
 import { COMPONENT_USER, useComponent } from "#/entities/component";
 import { useEndpoint } from "#/entities/endpoint";
 
@@ -20,22 +20,24 @@ export function KitchenPage() {
   };
 
   return (
-    <Show
-      when={endpoint.probe()}
-      fallback={
-        <Typography>
-          Дёрните ручку в панели справа — сводить поля будем с её ответом.
-        </Typography>
-      }
-    >
-      {(probe) => (
-        <AdapterMastering
-          provider={API_USER.path(probe().presetId, probe().endpointId)}
-          consumer={COMPONENT_USER.path(component.name)}
-          output={output()}
-          input={describeSample(probe().sample)}
-        />
-      )}
-    </Show>
+    <Surface data-variant="filled">
+      <Show
+        when={endpoint.probe()}
+        fallback={
+          <Typography>
+            Дёрните ручку в панели справа — сводить поля будем с её ответом.
+          </Typography>
+        }
+      >
+        {(probe) => (
+          <AdapterMastering
+            provider={API_USER.path(probe().presetId, probe().endpointId)}
+            consumer={COMPONENT_USER.path(component.name)}
+            output={output()}
+            input={describeSample(probe().sample)}
+          />
+        )}
+      </Show>
+    </Surface>
   );
 }
