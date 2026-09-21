@@ -17,6 +17,8 @@ import { PresetsRefused } from "./wire.js";
 interface OutfitContext {
   readonly outfit: Outfit;
   readonly palette: Palette;
+  /** Один объект на наряд, общий всем его компонентам — разбор в FAQ.md. */
+  readonly variables: SkinVariables;
   readonly outfitData: { readonly outfit: PresetRecord<Outfit>; readonly palette: PresetRecord<Palette> };
 }
 
@@ -27,6 +29,8 @@ interface ComponentAccumulator {
   readonly variants: Set<string>;
   readonly settings: Map<string, Set<string>>;
   readonly form: PresetRecord<Form> | undefined;
+  /** Текст последней печати — отдаётся как есть, пока накопленное не выросло. */
+  printed: string | undefined;
 }
 
 const EMPTY_RECIPE: SlotRecipe = {};
@@ -69,7 +73,17 @@ export function createLazyComponentSkin(options: LazyComponentSkinOptions): Comp
           throw new PresetsRefused(`палитры «${outfit.state.palette}» в службе раздачи нет`);
         }
 
-        return { outfit: outfit.state, palette: palette.state, outfitData: { outfit, palette } };
+        const bare = assemble(
+          { ...outfit.state, forms: [] },
+          { palettes: [palette.state], forms: [] },
+        ).skin;
+
+        return {
+          outfit: outfit.state,
+          palette: palette.state,
+          variables: bare.variables ?? palette.state,
+          outfitData: { outfit, palette },
+        };
       })();
     }
 
@@ -82,7 +96,7 @@ export function createLazyComponentSkin(options: LazyComponentSkinOptions): Comp
     if (pending !== undefined) return pending;
 
     pending = (async (): Promise<ComponentAccumulator> => {
-      const { outfit, palette } = await scoped;
+      const { outfit, palette, variables } = await scoped;
       const candidates = await client.list(PRESET_KIND.form, { component: [component] });
       const matchedName = outfit.forms.find((name) => candidates.some((candidate) => candidate.name === name));
 
@@ -90,10 +104,11 @@ export function createLazyComponentSkin(options: LazyComponentSkinOptions): Comp
         return {
           recipe: EMPTY_RECIPE,
           keyframes: undefined,
-          variables: palette,
+          variables,
           variants: new Set(),
           settings: new Map(),
           form: undefined,
+          printed: undefined,
         };
       }
 
@@ -108,10 +123,11 @@ export function createLazyComponentSkin(options: LazyComponentSkinOptions): Comp
       return {
         recipe,
         keyframes: skin.keyframes,
-        variables: skin.variables ?? palette,
+        variables,
         variants,
         settings: new Map(),
         form,
+        printed: undefined,
       };
     })();
 
@@ -127,22 +143,32 @@ export function createLazyComponentSkin(options: LazyComponentSkinOptions): Comp
     const acc = await accumulatorFor(outfitName, component);
     const ctx = await contextFor(outfitName);
 
+    let grown = false;
     if (axis.kind === "variant") {
-      if (axis.value !== undefined) acc.variants.add(axis.value);
+      if (axis.value !== undefined && !acc.variants.has(axis.value)) {
+        acc.variants.add(axis.value);
+        grown = true;
+      }
     } else {
       const seen = acc.settings.get(axis.name) ?? new Set<string>();
-      seen.add(axis.value);
+      if (!seen.has(axis.value)) {
+        seen.add(axis.value);
+        grown = true;
+      }
       acc.settings.set(axis.name, seen);
     }
 
-    const scoped = scopeRecipe(acc.recipe, { variants: acc.variants, settings: acc.settings });
-    const css = generateComponentSkinCss({
-      name: outfitName,
-      recipes: { [component]: scoped },
-      keyframes: keyframesUsedBy(scoped, acc.keyframes),
-      variables: acc.variables,
-    });
-    return { css, data: acc.form, outfit: ctx.outfitData };
+    if (grown || acc.printed === undefined) {
+      const scoped = scopeRecipe(acc.recipe, { variants: acc.variants, settings: acc.settings });
+      acc.printed = generateComponentSkinCss({
+        name: outfitName,
+        recipes: { [component]: scoped },
+        keyframes: keyframesUsedBy(scoped, acc.keyframes),
+        variables: acc.variables,
+      });
+    }
+
+    return { css: acc.printed, data: acc.form, outfit: ctx.outfitData };
   }
 
   return { ensure };

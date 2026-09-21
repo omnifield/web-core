@@ -3,6 +3,7 @@
 // `recipe.test.tsx` (закрывает VOCABULARY целиком, иначе `checkOutfit` бросит `palette-incomplete`
 // независимо от того, какой компонент проверяется — это проверка САМОЙ палитры, не формы).
 
+import { setEnabled } from "@web-core/trace";
 import { createAnatomy } from "@zag-js/anatomy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -160,6 +161,27 @@ const ACCORDION_FORM: Form = {
     "grow-inline-size": { from: { inlineSize: "0" }, to: { inlineSize: "var(--grow-size)" } },
   },
 };
+
+/** Считает трассы пакета по имени операции — тот же тумблер, которым цену одевания мерят снаружи. */
+async function traced(run: () => Promise<unknown>): Promise<{ calls: Map<string, number> }> {
+  const calls = new Map<string, number>();
+  const debug = console.debug;
+
+  console.debug = (line: unknown) => {
+    const label = /^\[web-core-skin] ([^(]+)\(/.exec(String(line))?.[1];
+    if (label !== undefined) calls.set(label, (calls.get(label) ?? 0) + 1);
+  };
+  setEnabled("skin", true);
+
+  try {
+    await run();
+  } finally {
+    setEnabled("skin", false);
+    console.debug = debug;
+  }
+
+  return { calls };
+}
 
 function record<K extends PresetKind, T>(kind: K, name: string, state: T): PresetRecord<T> {
   return { id: name, label: name, name, kind, savedAt: "now", state };
@@ -328,5 +350,29 @@ describe("createLazyComponentSkin", () => {
     await expect(skin.ensure("no-such-brand", "button", { kind: "variant", value: "primary" })).rejects.toBeInstanceOf(
       PresetsRefused,
     );
+  });
+
+  it("повтор уже накопленного значения не печатает CSS заново — тот же текст, без второго прохода", async () => {
+    const skin = createLazyComponentSkin({ client, lookup });
+    await skin.ensure("brand", "button", { kind: "variant", value: "primary" });
+
+    const repeat = await traced(() => skin.ensure("brand", "button", { kind: "variant", value: "primary" }));
+    expect(repeat.calls.get("generateComponentSkinCss") ?? 0).toBe(0);
+
+    const grown = await traced(() => skin.ensure("brand", "button", { kind: "variant", value: "secondary" }));
+    expect(grown.calls.get("generateComponentSkinCss")).toBe(1); // новое значение печатается
+  });
+
+  it("палитра считается ОДИН раз на наряд — не на компонент и не на одевание", async () => {
+    const skin = createLazyComponentSkin({ client, lookup });
+
+    const seen = await traced(async () => {
+      await skin.ensure("brand", "button", { kind: "variant", value: "primary" });
+      await skin.ensure("brand", "button", { kind: "variant", value: "secondary" });
+      await skin.ensure("brand", "accordion", { kind: "setting", name: "orientation", value: "vertical" });
+    });
+
+    expect(seen.calls.get("generateComponentSkinCss")).toBe(3); // печать — на каждое новое значение
+    expect(seen.calls.get("skinValues")).toBe(2); // а значения половин — светлая и тёмная, один раз
   });
 });
