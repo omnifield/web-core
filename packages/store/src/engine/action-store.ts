@@ -1,8 +1,9 @@
 import { createAtom } from "@xstate/store";
 import type { Atom, AtomOptions, ReadonlyAtom } from "@xstate/store";
 import { useAtom } from "@xstate/store-solid";
-import { createRoot } from "@web-core/solid";
+import { createRoot, getOwner } from "@web-core/solid";
 import type { Accessor } from "@web-core/solid";
+import { createSingletonRoot } from "@web-core/solid/rootless";
 
 export interface ActionStoreHelpers<T> {
   readonly setState: Atom<T>["set"];
@@ -96,24 +97,26 @@ export function createActionStore<
           continue;
         }
 
-        // Параметризованный геттер: своя подписка на каждый набор аргументов, лениво и
-        // с кэшем по ключу — тот же приём, что у createActionStoreFamily по K, только уровнем
-        // ниже (внутри одного стора, не между сторами). Кэш не вытесняется — рассчитан на
-        // конечный набор аргументов (id ячейки, тег и т.п.), не на неограниченный поток.
-        const cache = new Map<string, Accessor<unknown>>();
+        // Параметризованный геттер: своя подписка на каждый набор аргументов, лениво и с кэшем
+        // по ключу — тот же приём, что у createActionStoreFamily по K, только уровнем ниже
+        // (внутри одного стора, не между сторами). Подписка живёт в корне со счётчиком
+        // слушателей: гаснет, когда уходит последний читающий владелец. Разбор — FAQ.md.
+        const cache = new Map<string, () => Accessor<unknown>>();
         (selectors as Record<keyof TSelectors, (...args: unknown[]) => unknown>)[key] = (...args: unknown[]) => {
+          // Вызов без реактивного владельца (тест, роутер, обычная функция) — считать некого:
+          // разовое значение из снапшота, как у .get(), без подписки и без корня.
+          if (getOwner() === null) return fn(atom.get(), ...args);
+
           const cacheKey = args.map((arg) => (typeof arg === "object" && arg !== null ? JSON.stringify(arg) : String(arg))).join(" ");
-          let accessor = cache.get(cacheKey);
-          if (accessor === undefined) {
-            // Собственный createRoot, а не текущий owner — ленивое создание может случиться
-            // из тела компонента; без своего root эффект унаследует owner ЭТОГО компонента и
-            // умрёт вместе с ним, хотя закэширован для переиспользования другими вызывающими.
-            createRoot(() => {
-              accessor = useAtom(atom, (state: T) => fn(state, ...args));
-              cache.set(cacheKey, accessor as Accessor<unknown>);
-            });
+          let subscribe = cache.get(cacheKey);
+          if (subscribe === undefined) {
+            // Корень отвязан от владельца явно (второй аргумент `null`): по умолчанию
+            // createSingletonRoot цепляется к тому, кто вызвал первым, — а подписка кэширована
+            // и переиспользуется остальными, гасить её должен счётчик, а не первый читатель.
+            subscribe = createSingletonRoot(() => useAtom(atom, (state: T) => fn(state, ...args)), null);
+            cache.set(cacheKey, subscribe);
           }
-          return (accessor as Accessor<unknown>)();
+          return subscribe()();
         };
       }
     });

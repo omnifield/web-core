@@ -332,6 +332,59 @@ describe("createActionStore — параметризованный селект�
     expect(host.textContent).toBe("xy");
   });
 
+  function createCountingStore() {
+    let calls = 0;
+    const store = createActionStore<
+      GridState,
+      { setVariants(variants: readonly string[]): void },
+      { variantAt(state: GridState, index: number): string | undefined }
+    >(
+      { axis: "variant", variants: ["a", "b"] },
+      ({ setState }) => ({
+        setVariants(variants) {
+          setState((state) => ({ ...state, variants }));
+        },
+      }),
+      () => ({
+        variantAt(state, index) {
+          calls += 1;
+          return state.variants[index];
+        },
+      }),
+    );
+
+    return { store, calls: () => calls };
+  }
+
+  it("подписка гаснет, когда уходит последний читающий владелец", async () => {
+    const { store, calls } = createCountingStore();
+
+    function Cell() {
+      return <p>{store.selectors.variantAt(0)}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    render(() => <Cell />, host)();
+
+    await Promise.resolve(); // гашение корня отложено на микротаск — свойство createSingletonRoot
+
+    const before = calls();
+    store.actions.setVariants(["x", "y"]);
+    expect(calls()).toBe(before); // живой подписки не осталось, пересчитывать некому
+  });
+
+  it("вызов без реактивного владельца не заводит подписку — разовое чтение снапшота", () => {
+    const { store, calls } = createCountingStore();
+
+    expect(store.selectors.variantAt(0)).toBe("a");
+
+    const before = calls();
+    store.actions.setVariants(["x", "y"]);
+    expect(calls()).toBe(before);
+    expect(store.selectors.variantAt(0)).toBe("x"); // значение свежее, хоть подписки и нет
+  });
+
   it("axis влияет на результат так же, как обычный (беспараметровый) селектор видел бы state целиком", () => {
     const store = createGridStore();
     store.actions.setVariants(["a", "b", "c"]);

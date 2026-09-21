@@ -532,6 +532,8 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createActionStore` + `selectors` в реальном рендере         | реальный рендер компонента, значение меняется по вызову `actions`  | `test/action-store.test.tsx` |
 | `createActionStore` + параметризованный селектор             | `store.selectors.x(arg)` отдаёт значение сразу, без `()`            | `test/action-store.test.tsx` |
 | `createActionStore` + параметризованный селектор в рендере    | реактивен для каждого `arg` независимо, в реальном рендере          | `test/action-store.test.tsx` |
+| `createActionStore`, уход последнего читателя селектора        | подписка гаснет, изменение state её больше не пересчитывает         | `test/action-store.test.tsx` |
+| `createActionStore`, селектор вне реактивного владельца        | подписки нет, значение читается из снапшота и остаётся свежим       | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, разные ключи                     | физически разные store, запись в один не видна в другом            | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, повтор ключа                     | кэш — тот же инстанс, не пересоздание                              | `test/action-store.test.tsx` |
 | `createActionStoreFamily` в реальном рендере                | переключение ключа между рендерами не путает данные разных сущностей | `test/action-store.test.tsx` |
