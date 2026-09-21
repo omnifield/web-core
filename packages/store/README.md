@@ -108,7 +108,7 @@ export const componentsAtom = createResourceAtom(() => listComponents());
 
 ```ts
 import { createResourceAtom, useAtom } from "@web-core/store";
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 export const [selectedComponentId, setSelectedComponentId] = createSignal<string>();
 export const componentInfoAtom = createResourceAtom(selectedComponentId, (id) => componentInfo(id));
@@ -146,7 +146,7 @@ export function ShowcasePage(props: { component: string }) {
 любой атом):
 
 ```ts
-// user.store.ts — обычный TS, ни одного импорта из solid-js
+// user.store.ts — обычный TS, ни одного импорта Solid (даже через @web-core/solid)
 import { createActionStore } from "@web-core/store";
 
 interface User {
@@ -211,7 +211,7 @@ function Profile() {
 **`createActionStore` — полный пример: чтение и запись во всех сценариях, не только из компонента:**
 
 ```ts
-// counter.store.ts — обычный TS, ни одного импорта из solid-js
+// counter.store.ts — обычный TS, ни одного импорта Solid (даже через @web-core/solid)
 import { createActionStore } from "@web-core/store";
 
 interface CounterState {

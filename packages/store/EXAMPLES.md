@@ -151,7 +151,7 @@ export function GridCell(props: { index: number }) {
 ### 4. `createActionStore` — чтение и запись СНАРУЖИ компонента
 
 Стор не привязан к дереву компонентов — читать/писать можно откуда угодно (роутер, интерсептор,
-тест), без единого импорта из `solid-js`:
+тест), без единого импорта Solid — даже через `@web-core/solid`:
 
 ```ts
 import { createActionStore } from "@web-core/store";
@@ -257,7 +257,7 @@ function FeedManual() {
 синхронизировать (сторонний виджет, `<canvas>`, форма-черновик под конкретную сущность):
 
 ```tsx
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 
 function FeedManual() {
   const component = useParams({ strict: false, select: (p) => p.component });
@@ -419,7 +419,7 @@ export function ResourceNoKeyDemo() {
 
 ```tsx
 import { createResourceAtom, useAtom } from "@web-core/store";
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 function fakeFetchUser(id: string) {
   const delay = id === "slow" ? 800 : 100;

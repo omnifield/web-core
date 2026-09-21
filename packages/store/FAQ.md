@@ -36,7 +36,7 @@
 
 **Коротко: автотрекинг `@xstate/store` — та же система, что сломана у `createAsyncAtom`; здесь реактивность ведёт Solid, не она.**
 
-`createResourceAtom` вызывает `source()` внутри `createEffect` из `solid-js` — реактивность
+`createResourceAtom` вызывает `source()` внутри `createEffect` (`@web-core/solid`) — реактивность
 завязана на Solid-сигналы, не на систему зависимостей `@xstate/store` (alien-signals). Сам
 ресурс-атом — обычный писуемый `createAtom`, обновляется только через `.set()` изнутри эффекта.
 Ничего не отслеживается автоматически внутри `@xstate/store` — нечему молча сломаться на
