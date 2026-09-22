@@ -1,19 +1,20 @@
 import { createActionStore } from "@web-core/store";
 import { mutate } from "@web-core/store/mutate";
 
-interface ComponentState {
+interface OutfitState {
   readonly outfit?: string;
 }
 
-export const componentStore = createActionStore<
-  ComponentState,
+/** Какой наряд надет сейчас. Один на приложение: наряд не свойство компонента. */
+export const outfitStore = createActionStore<
+  OutfitState,
   {
     setOutfit(name: string | undefined): void;
   }
 >({}, ({ setState }) => ({
   setOutfit(outfit) {
     setState(
-      mutate<ComponentState>((draft) => {
+      mutate<OutfitState>((draft) => {
         draft.outfit = outfit;
       }),
     );

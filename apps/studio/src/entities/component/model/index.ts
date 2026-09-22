@@ -6,5 +6,4 @@ export {
   useComponent,
   type ComponentFacts,
 } from "./context";
-export { componentStore } from "./store";
 export { COMPONENT_USER } from "./user";
