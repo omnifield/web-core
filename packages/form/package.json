@@ -23,7 +23,18 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",

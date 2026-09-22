@@ -28,7 +28,22 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./generate": {
+        "types": "./dist/css/generate.d.ts",
+        "default": "./dist/css/generate.js"
+      },
+      "./base.css": "./dist/css/base.css",
+      "./solid": {
+        "types": "./dist/solid/index.d.ts",
+        "default": "./dist/solid/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/build-css.mjs",

@@ -42,7 +42,33 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./transport": {
+        "types": "./dist/transport/index.d.ts",
+        "default": "./dist/transport/index.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination/index.d.ts",
+        "default": "./dist/pagination/index.js"
+      },
+      "./peer": {
+        "types": "./dist/peer/index.d.ts",
+        "default": "./dist/peer/index.js"
+      },
+      "./browser": {
+        "types": "./dist/browser/index.d.ts",
+        "default": "./dist/browser/index.js"
+      },
+      "./feedback": {
+        "types": "./dist/feedback/index.d.ts",
+        "default": "./dist/feedback/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

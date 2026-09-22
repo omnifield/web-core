@@ -24,7 +24,19 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "solid": "./dist/index.jsx",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./neurobox": {
+        "solid": "./dist/neurobox.jsx",
+        "types": "./dist/neurobox.d.ts",
+        "default": "./dist/neurobox.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",

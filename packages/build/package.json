@@ -32,7 +32,23 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      "./vite": {
+        "types": "./dist/vite/index.d.ts",
+        "default": "./dist/vite/index.js"
+      },
+      "./vitest": {
+        "types": "./dist/vitest/index.d.ts",
+        "default": "./dist/vitest/index.js"
+      },
+      "./env": {
+        "types": "./dist/env.d.ts",
+        "default": "./dist/env.js"
+      },
+      "./tsconfig": "./dist/tsconfig/frontend.json",
+      "./tsconfig-node": "./dist/tsconfig/node.json"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && mkdir -p dist/tsconfig && cp src/tsconfig/frontend.json dist/tsconfig/frontend.json && cp src/tsconfig/node.json dist/tsconfig/node.json && cp src/tsconfig/shared.json dist/tsconfig/shared.json && cp src/bin.mjs dist/bin.mjs && chmod +x dist/bin.mjs",

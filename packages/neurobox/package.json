@@ -48,7 +48,38 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      },
+      "./mcp": {
+        "types": "./dist/mcp.d.ts",
+        "default": "./dist/mcp.js"
+      },
+      "./server": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
+      "./zone-feedback": {
+        "types": "./dist/zone-feedback.d.ts",
+        "default": "./dist/zone-feedback.js"
+      },
+      "./tool": {
+        "types": "./dist/tool.d.ts",
+        "default": "./dist/tool.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",

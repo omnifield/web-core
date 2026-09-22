@@ -42,7 +42,31 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "solid": "./dist/index.jsx",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./passport": {
+        "types": "./dist/passport.d.ts",
+        "default": "./dist/passport.js"
+      },
+      "./io": {
+        "types": "./dist/io.d.ts",
+        "default": "./dist/io.js"
+      },
+      "./component-info": {
+        "types": "./dist/component-info.d.ts",
+        "default": "./dist/component-info.js"
+      },
+      "./component-registry": {
+        "solid": "./dist/component-registry.jsx",
+        "types": "./dist/component-registry.d.ts",
+        "default": "./dist/component-registry.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",
@@ -81,9 +105,14 @@
   "nx": {
     "targets": {
       "generate": {
-        "dependsOn": ["^build"],
+        "dependsOn": [
+          "^build"
+        ],
         "cache": true,
-        "inputs": ["production", "^production"],
+        "inputs": [
+          "production",
+          "^production"
+        ],
         "outputs": [
           "{projectRoot}/src/passport.ts",
           "{projectRoot}/src/kit.ts",
@@ -91,10 +120,30 @@
           "{projectRoot}/src/index.ts"
         ]
       },
-      "build": { "dependsOn": ["^build", "generate"] },
-      "typecheck": { "dependsOn": ["build", "^build"] },
-      "lint": { "dependsOn": ["build", "^build"] },
-      "test": { "dependsOn": ["build", "^build"] }
+      "build": {
+        "dependsOn": [
+          "^build",
+          "generate"
+        ]
+      },
+      "typecheck": {
+        "dependsOn": [
+          "build",
+          "^build"
+        ]
+      },
+      "lint": {
+        "dependsOn": [
+          "build",
+          "^build"
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          "build",
+          "^build"
+        ]
+      }
     }
   },
   "dependencies": {

@@ -47,7 +47,37 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./machine": {
+        "types": "./dist/machine/index.d.ts",
+        "default": "./dist/machine/index.js"
+      },
+      "./persist": {
+        "types": "./dist/addons/persist.d.ts",
+        "default": "./dist/addons/persist.js"
+      },
+      "./undo": {
+        "types": "./dist/addons/undo.d.ts",
+        "default": "./dist/addons/undo.js"
+      },
+      "./reset": {
+        "types": "./dist/addons/reset.d.ts",
+        "default": "./dist/addons/reset.js"
+      },
+      "./validate": {
+        "types": "./dist/addons/validate.d.ts",
+        "default": "./dist/addons/validate.js"
+      },
+      "./mutate": {
+        "types": "./dist/addons/mutate.d.ts",
+        "default": "./dist/addons/mutate.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

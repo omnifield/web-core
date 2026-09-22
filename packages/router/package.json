@@ -32,7 +32,25 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./vite": {
+        "types": "./dist/vite/index.d.ts",
+        "default": "./dist/vite/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./virtual-file-routes": {
+        "types": "./dist/virtual-file-routes/index.d.ts",
+        "default": "./dist/virtual-file-routes/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
