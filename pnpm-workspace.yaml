@@ -73,6 +73,7 @@ versioning:
       - '@web-core/trace'
       - '@web-core/ui'
   ignore:
+    - './apps/dashboard'
     - './apps/reference'
     - './apps/studio'
     - './apps/studio/.mcp'
