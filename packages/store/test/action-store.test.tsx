@@ -425,6 +425,192 @@ describe("createActionStoreFamily — ключ аксессором (кейс ap
   });
 });
 
+describe("createActionStoreFamily — начальное значение функцией ключа", () => {
+  interface CellState {
+    readonly title: string;
+    readonly tags: string[];
+  }
+
+  function createCellStoreOf() {
+    return createActionStoreFamily<CellState, { addTag(tag: string): void }, string>(
+      (key) => ({ title: key === undefined ? "нет ячейки" : `паспорт ${key}`, tags: [] }),
+      ({ setState }) => ({
+        addTag(tag) {
+          setState((state) => ({ ...state, tags: [...state.tags, tag] }));
+        },
+      }),
+    );
+  }
+
+  it("каждая ячейка при рождении несёт то, что посчитано из её ключа", () => {
+    const cellStoreOf = createCellStoreOf();
+
+    expect(cellStoreOf("button").get().title).toBe("паспорт button");
+    expect(cellStoreOf("checkbox").get().title).toBe("паспорт checkbox");
+  });
+
+  it("объект начального значения не общий по ссылке — у каждой ячейки свой", () => {
+    const cellStoreOf = createCellStoreOf();
+
+    cellStoreOf("button").actions.addTag("форма");
+    expect(cellStoreOf("button").get().tags).toEqual(["форма"]);
+    expect(cellStoreOf("checkbox").get().tags).toEqual([]);
+    expect(cellStoreOf("checkbox").get()).not.toBe(cellStoreOf("button").get());
+  });
+
+  it("форма-значение работает как раньше", () => {
+    const cellStoreOf = createActionStoreFamily<CellState, { addTag(tag: string): void }, string>(
+      { title: "общий", tags: [] },
+      ({ setState }) => ({
+        addTag(tag) {
+          setState((state) => ({ ...state, tags: [...state.tags, tag] }));
+        },
+      }),
+    );
+
+    expect(cellStoreOf("button").get().title).toBe("общий");
+    expect(cellStoreOf("checkbox").get().title).toBe("общий");
+  });
+
+  it("дефолтной ячейке начальное значение считается от ключа undefined", () => {
+    const cellStoreOf = createCellStoreOf();
+
+    expect(cellStoreOf.active().get().title).toBe("нет ячейки");
+  });
+});
+
+describe("createActionStoreFamily — активный ключ (кейс apps/studio: имя приходит со сменой маршрута)", () => {
+  interface FeedState {
+    readonly feedData?: unknown;
+  }
+
+  function createFeedStoreOf() {
+    return createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }>({}, ({ setState }) => ({
+      setFeedData(value) {
+        setState((state) => ({ ...state, feedData: value }));
+      },
+    }));
+  }
+
+  it("до первой активации active() отдаёт дефолтную ячейку со статусом absent", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    expect(store.key()).toBeUndefined();
+    expect(store.status()).toBe("absent");
+    expect(store.get()).toEqual({});
+  });
+
+  it("запись в дефолтную ячейку заглушена — состояние остаётся начальным", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    store.actions.setFeedData({ label: "Кнопка" });
+
+    expect(store.get()).toEqual({});
+    expect(store.status()).toBe("absent");
+  });
+
+  it("storeOf(undefined) значением — та же дефолтная ячейка, тоже без записи", () => {
+    const feedStoreOf = createFeedStoreOf();
+
+    const first = feedStoreOf(undefined);
+    first.actions.setFeedData({ label: "Кнопка" });
+
+    expect(feedStoreOf(undefined)).toBe(first);
+    expect(first.get()).toEqual({});
+  });
+
+  it("activate переводит active() на ячейку ключа, записи туда доходят", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    feedStoreOf.activate("button");
+
+    expect(store.key()).toBe("button");
+    expect(store.status()).toBe("initial");
+
+    store.actions.setFeedData({ label: "Кнопка" });
+
+    expect(store.status()).toBe("written");
+    expect(feedStoreOf("button").get()).toEqual({ feedData: { label: "Кнопка" } });
+  });
+
+  it("смена активного ключа не трогает состояние прежнего", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    feedStoreOf.activate("button");
+    store.actions.setFeedData({ label: "Кнопка" });
+
+    feedStoreOf.activate("checkbox");
+    expect(store.get()).toEqual({});
+    store.actions.setFeedData({ checked: true });
+
+    feedStoreOf.activate("button");
+    expect(store.get()).toEqual({ feedData: { label: "Кнопка" } });
+    expect(feedStoreOf("checkbox").get()).toEqual({ feedData: { checked: true } });
+  });
+
+  it("active() отдаёт один и тот же стор — читателям не нужно знать имя", () => {
+    const feedStoreOf = createFeedStoreOf();
+
+    expect(feedStoreOf.active()).toBe(feedStoreOf.active());
+  });
+
+  it("в реальном рендере активация меняет данные без пересоздания поддерева", () => {
+    const feedStoreOf = createFeedStoreOf();
+    feedStoreOf("button").actions.setFeedData({ label: "Кнопка" });
+    feedStoreOf("checkbox").actions.setFeedData({ checked: true });
+
+    let built = 0;
+
+    function Feed() {
+      built += 1;
+      const store = feedStoreOf.active(); // имя компонента панели неизвестно вовсе
+      const feedData = store.use((state) => state.feedData);
+      return <p>{store.status()}:{JSON.stringify(feedData())}</p>;
+    }
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <Feed />, host);
+
+    expect(host.textContent).toBe("absent:");
+
+    feedStoreOf.activate("button");
+    expect(host.textContent).toBe(`written:${JSON.stringify({ label: "Кнопка" })}`);
+
+    feedStoreOf.activate("checkbox");
+    expect(host.textContent).toBe(`written:${JSON.stringify({ checked: true })}`);
+    expect(built).toBe(1); // ремаунта не было
+  });
+
+  it("снятие активации возвращает к дефолтной ячейке", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    feedStoreOf.activate("button");
+    store.actions.setFeedData({ label: "Кнопка" });
+
+    feedStoreOf.activate(undefined);
+    expect(store.status()).toBe("absent");
+    expect(store.get()).toEqual({});
+    expect(feedStoreOf("button").get()).toEqual({ feedData: { label: "Кнопка" } });
+  });
+
+  it("status ячейки, адресованной значением: initial до записи, written после", () => {
+    const feedStoreOf = createFeedStoreOf();
+    const store = feedStoreOf("button");
+
+    expect(store.key()).toBe("button");
+    expect(store.status()).toBe("initial");
+
+    store.actions.setFeedData({ label: "Кнопка" });
+    expect(store.status()).toBe("written");
+  });
+});
+
 describe("createActionStore — параметризованный селектор (кейс component-manager: значение по cell)", () => {
   interface GridState {
     readonly axis: "variant" | "assembly";
