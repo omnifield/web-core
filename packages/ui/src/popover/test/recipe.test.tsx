@@ -1,8 +1,17 @@
 import { passportLookup, skinGaps, withPassports } from "@web-core/skin";
 import type { PassportEditorInfo } from "@web-core/skin/editor";
 import type { Outfit, Palette } from "@web-core/skin/model";
+import { render } from "solid-js/web";
 import { describe, expect, it } from "vitest";
 
+import { declarationsFor } from "../../../test/skin-rules.js";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverPositioner,
+  PopoverTitle,
+} from "../components/index.js";
 import { passport } from "../entity/passport.js";
 import { editorInfo } from "../playground/index.js";
 import { form } from "../playground/recipe.js";
@@ -87,5 +96,51 @@ describe("popover proof recipe — the passport dressed whole (PWEB-111)", () =>
 
   it("covers every state the passport declares — no silent gap", () => {
     expect(skinGaps(assembled.skin, [passport], [editorInfo as PassportEditorInfo])).toEqual([]);
+  });
+});
+
+describe("the floating panel scrolls inside its own content, not the document", () => {
+  it("puts flex column on the positioner and a shrinkable, scrollable content — on nodes that really exist", async () => {
+    const css = bound.generateSkinCss(assembled.skin);
+
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    const dispose = render(
+      () => (
+        <Popover defaultOpen>
+          <PopoverPositioner>
+            <PopoverContent>
+              <PopoverTitle>Заголовок</PopoverTitle>
+              <PopoverDescription>{"Очень длинное описание. ".repeat(200)}</PopoverDescription>
+            </PopoverContent>
+          </PopoverPositioner>
+        </Popover>
+      ),
+      host,
+    );
+
+    await Promise.resolve();
+
+    const positionerSelector = '[data-scope="popover"][data-part="positioner"]';
+    const contentSelector = '[data-scope="popover"][data-part="content"]';
+    const positioner = document.querySelector(positionerSelector)!;
+    const content = document.querySelector(contentSelector)!;
+
+    expect(positioner.matches(positionerSelector)).toBe(true);
+    expect(content.matches(contentSelector)).toBe(true);
+    expect(positioner.contains(content)).toBe(true);
+
+    const positionerRule = declarationsFor(css, positionerSelector);
+    expect(positionerRule).toContain("display: flex");
+    expect(positionerRule).toContain("flex-direction: column");
+    expect(positionerRule).toContain("max-height: var(--available-height)");
+
+    const contentRule = declarationsFor(css, contentSelector);
+    expect(contentRule).toContain("overflow: auto");
+    expect(contentRule).toContain("min-block-size: 0");
+
+    dispose();
+    host.remove();
   });
 });

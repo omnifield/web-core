@@ -103,6 +103,8 @@ export const recipe: SlotRecipe = {
         display: "flex",
         flexDirection: "column",
         gap: "var(--space-2)",
+        minBlockSize: "0",
+        overflow: "auto",
         padding: "var(--space-3)",
         background: "var(--neutral-1)",
         borderWidth: "var(--border-width-1)",
@@ -119,6 +121,8 @@ export const recipe: SlotRecipe = {
     },
     positioner: {
       props: {
+        display: "flex",
+        flexDirection: "column",
         maxWidth: "var(--available-width)",
         maxHeight: "var(--available-height)",
       },

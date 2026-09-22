@@ -276,6 +276,10 @@ root · bind: items
 > `color` — `step-purpose-mismatch`, `skinGaps` не пропустил бы, но `checkSkin` поймал раньше: шаги
 > 1–10 не несут гарантии контраста, `color` должен брать чернильный класс (`--accent-11`).
 
+Высота списка ограничена у `positioner`, а прокручивается сам `content`: позиционер — флекс-колонка,
+содержимое сжимается внутри неё (`min-block-size: 0`) и несёт свой `overflow: auto`. Почему высота
+не ставится прямо на `content` — [`FAQ.md`](../../FAQ.md) зоны.
+
 <h2 id="доступность">♿ Доступность</h2>
 
 Селект следует паттерну WAI-ARIA [Listbox](https://www.w3.org/WAI/ARIA/apg/patterns/listbox/)

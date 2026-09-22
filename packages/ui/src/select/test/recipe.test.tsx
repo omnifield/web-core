@@ -1,8 +1,21 @@
 import { passportLookup, skinGaps, withPassports } from "@web-core/skin";
 import type { PassportEditorInfo } from "@web-core/skin/editor";
 import type { Outfit, Palette } from "@web-core/skin/model";
+import { For } from "solid-js";
+import { render } from "solid-js/web";
 import { describe, expect, it } from "vitest";
 
+import {
+  Select,
+  SelectContent,
+  SelectControl,
+  SelectItem,
+  SelectItemText,
+  SelectPositioner,
+  SelectTrigger,
+  SelectValueText,
+} from "../components/index.js";
+import { declarationsFor } from "../../../test/skin-rules.js";
 import { passport } from "../entity/passport.js";
 import { editorInfo } from "../playground/index.js";
 import { form } from "../playground/recipe.js";
@@ -87,5 +100,70 @@ describe("select proof recipe — the passport dressed whole (PWEB-111)", () => 
 
   it("covers every state the passport declares — no silent gap", () => {
     expect(skinGaps(assembled.skin, [passport], [editorInfo as PassportEditorInfo])).toEqual([]);
+  });
+});
+
+describe("the floating list scrolls inside its own content, not the document", () => {
+  it("puts flex column on the positioner and a shrinkable, scrollable content — on nodes that really exist", async () => {
+    const css = bound.generateSkinCss(assembled.skin);
+
+    const items = Array.from({ length: 40 }, (_, index) => ({
+      value: `item-${index}`,
+      label: `Пункт ${index}`,
+    }));
+
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    const dispose = render(
+      () => (
+        <Select items={items}>
+          <SelectControl>
+            <SelectTrigger>
+              <SelectValueText placeholder="Выберите пункт" />
+            </SelectTrigger>
+          </SelectControl>
+          <SelectPositioner>
+            <SelectContent>
+              <For each={items}>
+                {(item) => (
+                  <SelectItem item={item}>
+                    <SelectItemText>{item.label}</SelectItemText>
+                  </SelectItem>
+                )}
+              </For>
+            </SelectContent>
+          </SelectPositioner>
+        </Select>
+      ),
+      host,
+    );
+
+    const trigger = host.querySelector('[data-scope="select"][data-part="trigger"]') as HTMLElement;
+    trigger.click();
+    await Promise.resolve();
+
+    expect(document.querySelectorAll('[data-scope="select"][data-part="item"]')).toHaveLength(40);
+
+    const positionerSelector = '[data-scope="select"][data-part="positioner"]';
+    const contentSelector = '[data-scope="select"][data-part="content"]';
+    const positioner = document.querySelector(positionerSelector)!;
+    const content = document.querySelector(contentSelector)!;
+
+    expect(positioner.matches(positionerSelector)).toBe(true);
+    expect(content.matches(contentSelector)).toBe(true);
+    expect(positioner.contains(content)).toBe(true);
+
+    const positionerRule = declarationsFor(css, positionerSelector);
+    expect(positionerRule).toContain("display: flex");
+    expect(positionerRule).toContain("flex-direction: column");
+    expect(positionerRule).toContain("max-height: var(--available-height)");
+
+    const contentRule = declarationsFor(css, contentSelector);
+    expect(contentRule).toContain("overflow: auto");
+    expect(contentRule).toContain("min-block-size: 0");
+
+    dispose();
+    host.remove();
   });
 });
