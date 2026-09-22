@@ -142,6 +142,11 @@ export interface ActionStoreCell<T, TActions, TSelectors extends SelectorsShape<
   readonly status: Accessor<ActionStoreCellStatus>;
 }
 
+/** Опции семьи, у которой начальное значение задано функцией ключа: `empty` — значение ячейки-заглушки. */
+export interface ActionStoreFamilyOptions<T> extends AtomOptions<T> {
+  readonly empty: T;
+}
+
 /**
  * Семья сторов: ключом её зовут либо значением (стор фиксирован), либо Solid-аксессором (стор
  * переезжает вслед за ключом), либо не зовут вовсе — `active()` отдаёт ячейку активного ключа.
@@ -150,7 +155,9 @@ export interface ActionStoreCell<T, TActions, TSelectors extends SelectorsShape<
 export interface ActionStoreFamily<T, TActions, TSelectors extends SelectorsShape<T>, K> {
   (key: K | undefined): ActionStoreCell<T, TActions, TSelectors, K>;
   (key: Accessor<K | undefined>): ActionStoreCell<T, TActions, TSelectors, K>;
-  /** Сделать ячейку активной. Заранее создавать её не нужно — ячейка рождается при первом обращении. */
+  /** Родить ячейку явной операцией: есть — отдаёт её же, нет — создаёт и наполняет фабрикой ключа. */
+  create(key: K): ActionStoreCell<T, TActions, TSelectors, K>;
+  /** Сделать ячейку активной. Заранее создавать её не обязательно — ячейка рождается при первом обращении. */
   activate(key: K | undefined): void;
   /** Ячейка активного ключа: тот же стор, подписка переезжает за активацией. */
   active(): ActionStoreCell<T, TActions, TSelectors, K>;
@@ -264,15 +271,25 @@ function storeBoundToKey<T, TActions, TSelectors extends SelectorsShape<T>, K>(
  *
  * Начальное значение — либо одно на все ячейки, либо функция ключа (`(key) => T`), когда ячейка
  * при рождении обязана нести то, что считается ИЗ её ключа. Форма-функция заодно снимает общий
- * объект по ссылке у всех ячеек.
+ * объект по ссылке у всех ячеек и требует `options.empty` — значение ячейки-заглушки; на заглушку
+ * фабрика ключа не зовётся, ключа у неё нет.
  *
  * Ключ `undefined` (активного ещё нет либо его сняли) адресует ОДНУ дефолтную ячейку — она не
  * попадает в `Map` и запись в неё заглушена: читается как обычная, `status()` у неё `absent`.
  */
 export function createActionStoreFamily<T, TActions extends Record<string, (...args: never[]) => unknown>, K = string>(
-  initialValue: T | ((key: K | undefined) => T),
+  initialValue: T,
   actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
   options?: AtomOptions<T>,
+): ActionStoreFamily<T, TActions, Record<string, never>, K>;
+export function createActionStoreFamily<
+  T,
+  TActions extends Record<string, (...args: never[]) => unknown>,
+  K = string,
+>(
+  initialValue: (key: K) => T,
+  actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
+  options: ActionStoreFamilyOptions<T>,
 ): ActionStoreFamily<T, TActions, Record<string, never>, K>;
 export function createActionStoreFamily<
   T,
@@ -280,7 +297,7 @@ export function createActionStoreFamily<
   TSelectors extends SelectorsShape<T>,
   K = string,
 >(
-  initialValue: T | ((key: K | undefined) => T),
+  initialValue: T,
   actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
   selectorsFactory: () => TSelectors,
   options?: AtomOptions<T>,
@@ -288,10 +305,21 @@ export function createActionStoreFamily<
 export function createActionStoreFamily<
   T,
   TActions extends Record<string, (...args: never[]) => unknown>,
+  TSelectors extends SelectorsShape<T>,
+  K = string,
+>(
+  initialValue: (key: K) => T,
+  actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
+  selectorsFactory: () => TSelectors,
+  options: ActionStoreFamilyOptions<T>,
+): ActionStoreFamily<T, TActions, TSelectors, K>;
+export function createActionStoreFamily<
+  T,
+  TActions extends Record<string, (...args: never[]) => unknown>,
   TSelectors extends SelectorsShape<T> = Record<string, never>,
   K = string,
 >(
-  initialValue: T | ((key: K | undefined) => T),
+  initialValue: T | ((key: K) => T),
   actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
   selectorsFactoryOrOptions?: (() => TSelectors) | AtomOptions<T>,
   maybeOptions?: AtomOptions<T>,
@@ -300,14 +328,21 @@ export function createActionStoreFamily<
   const selectorsFactory = withSelectors ? (selectorsFactoryOrOptions as () => TSelectors) : undefined;
   const options = withSelectors ? maybeOptions : (selectorsFactoryOrOptions as AtomOptions<T> | undefined);
 
+  const initialOf = typeof initialValue === "function" ? (initialValue as (key: K) => T) : undefined;
+  if (initialOf !== undefined && !(options !== undefined && "empty" in options)) {
+    throw new Error(
+      "createActionStoreFamily: начальное значение задано функцией ключа — задайте options.empty, значение ячейки-заглушки (ключа ещё нет)",
+    );
+  }
+  const emptyValue = initialOf === undefined ? (initialValue as T) : (options as ActionStoreFamilyOptions<T>).empty;
+
   const cache = new Map<K, ActionStoreCell<T, TActions, TSelectors, K>>();
   const [activeKey, setActiveKey] = createSignal<K | undefined>(undefined);
   let emptyCell: ActionStoreCell<T, TActions, TSelectors, K> | undefined;
   let activeCell: ActionStoreCell<T, TActions, TSelectors, K> | undefined;
 
-  function createCell(key: K | undefined, writable: boolean): ActionStoreCell<T, TActions, TSelectors, K> {
+  function createCell(key: K | undefined, value: T, writable: boolean): ActionStoreCell<T, TActions, TSelectors, K> {
     const [written, setWritten] = createSignal(false);
-    const value = typeof initialValue === "function" ? (initialValue as (key: K | undefined) => T)(key) : initialValue;
 
     const factory = (helpers: ActionStoreHelpers<T>): TActions => {
       const setState: Atom<T>["set"] = writable
@@ -333,14 +368,14 @@ export function createActionStoreFamily<
 
   function getOrCreate(key: K | undefined): ActionStoreCell<T, TActions, TSelectors, K> {
     if (key === undefined) {
-      if (emptyCell === undefined) emptyCell = createCell(undefined, false);
+      if (emptyCell === undefined) emptyCell = createCell(undefined, emptyValue, false);
       return emptyCell;
     }
 
     const cached = cache.get(key);
     if (cached !== undefined) return cached;
 
-    const cell = createCell(key, true);
+    const cell = createCell(key, initialOf === undefined ? (initialValue as T) : initialOf(key), true);
     cache.set(key, cell);
     return cell;
   }
@@ -350,6 +385,8 @@ export function createActionStoreFamily<
       ? storeBoundToKey(getOrCreate, key as Accessor<K | undefined>)
       : getOrCreate(key as K | undefined);
   }
+
+  storeOf.create = (key: K): ActionStoreCell<T, TActions, TSelectors, K> => getOrCreate(key);
 
   storeOf.activate = (key: K | undefined): void => {
     setActiveKey(() => key);

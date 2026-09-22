@@ -298,19 +298,24 @@ interface FeedState {
   readonly feedData?: unknown;
 }
 
-// начальное значение — функция ключа: ячейка при рождении несёт синхронный срез по своему имени
+// начальное значение — фабрика ключа: ячейка при рождении несёт синхронный срез по своему имени.
+// Ключ в фабрике всегда настоящий; значение заглушки объявляется рядом, options.empty.
 const feedStoreOf = createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }, string>(
-  (key) => ({ passport: key === undefined ? undefined : passportOf(key) }),
+  (key) => ({ passport: passportOf(key) }),
   ({ setState }) => ({
     setFeedData(value) {
       setState((state) => ({ ...state, feedData: value }));
     },
   }),
+  { empty: { passport: undefined } },
 );
 
 // маршрут — единственное место, где имя произносится
 export function ComponentRoute(props: { component: string }) {
-  createEffect(() => feedStoreOf.activate(props.component));
+  createEffect(() => {
+    feedStoreOf.create(props.component); // ячейка собрана…
+    feedStoreOf.activate(props.component); // …и только теперь показана всем
+  });
   return <FeedPanel />;
 }
 
@@ -329,9 +334,13 @@ function FeedPanel() {
 
 Пока `activate` не позвали (первый кадр, маршрут без компонента в адресе, `activate(undefined)`),
 `active()` отдаёт дефолтную ячейку: `key()` — `undefined`, `status()` — `"absent"`, состояние —
-то, что дал `initialValue(undefined)`. Читается она как любая другая, но **запись в неё
-заглушена**: `setFeedData` из примера выше отработает вхолостую и ничего не сломает. Единственный
-способ отличить это от нормальной записи — посмотреть на `status()` ДО вызова.
+то, что объявлено в `options.empty`. Читается она как любая другая, но **запись в неё заглушена**:
+`setFeedData` из примера выше отработает вхолостую и ничего не сломает. Единственный способ
+отличить это от нормальной записи — посмотреть на `status()` ДО вызова.
+
+`create` здесь не обязателен — ячейка родилась бы и от самой активации. Он нужен ради порядка:
+без него между `activate` и первым чтением ячейка собирается по ходу, и `active()` на кадр
+показывает несобранную.
 
 Активацию кладут туда, где маршрут уже выбран, — в компонент маршрута, а не в его загрузчик:
 при `defaultPreload: "intent"` загрузчик срабатывает на наведение, и активной стала бы ячейка

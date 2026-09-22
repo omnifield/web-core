@@ -433,12 +433,13 @@ describe("createActionStoreFamily — начальное значение фун
 
   function createCellStoreOf() {
     return createActionStoreFamily<CellState, { addTag(tag: string): void }, string>(
-      (key) => ({ title: key === undefined ? "нет ячейки" : `паспорт ${key}`, tags: [] }),
+      (key) => ({ title: `паспорт ${key}`, tags: [] }),
       ({ setState }) => ({
         addTag(tag) {
           setState((state) => ({ ...state, tags: [...state.tags, tag] }));
         },
       }),
+      { empty: { title: "нет ячейки", tags: [] } },
     );
   }
 
@@ -472,10 +473,106 @@ describe("createActionStoreFamily — начальное значение фун
     expect(cellStoreOf("checkbox").get().title).toBe("общий");
   });
 
-  it("дефолтной ячейке начальное значение считается от ключа undefined", () => {
-    const cellStoreOf = createCellStoreOf();
+  it("у заглушки своё пустое значение — фабрика ключа на неё не зовётся", () => {
+    const keysSeen: string[] = [];
+    const cellStoreOf = createActionStoreFamily<CellState, { addTag(tag: string): void }, string>(
+      (key) => {
+        keysSeen.push(key);
+        return { title: `паспорт ${key}`, tags: [] };
+      },
+      ({ setState }) => ({
+        addTag(tag) {
+          setState((state) => ({ ...state, tags: [...state.tags, tag] }));
+        },
+      }),
+      { empty: { title: "нет ячейки", tags: [] } },
+    );
 
     expect(cellStoreOf.active().get().title).toBe("нет ячейки");
+    expect(keysSeen).toEqual([]); // заглушку фабрика не собирала
+
+    cellStoreOf.create("button");
+    expect(keysSeen).toEqual(["button"]); // настоящую — собрала, и ключ пришёл настоящий
+  });
+
+  it("форма-функция без options.empty не собирается вовсе", () => {
+    expect(() =>
+      createActionStoreFamily<CellState, { addTag(tag: string): void }, string>(
+        (key) => ({ title: `паспорт ${key}`, tags: [] }),
+        ({ setState }) => ({
+          addTag(tag) {
+            setState((state) => ({ ...state, tags: [...state.tags, tag] }));
+          },
+        }),
+        // @ts-expect-error — форма-функция требует options.empty, это и проверяется
+        undefined,
+      ),
+    ).toThrow(/options.empty/);
+  });
+});
+
+describe("createActionStoreFamily — явное рождение ячейки (create)", () => {
+  interface FeedState {
+    readonly passport: string;
+    readonly feedData?: unknown;
+  }
+
+  function createFeedStoreOf() {
+    let born = 0;
+    const feedStoreOf = createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }, string>(
+      (key) => {
+        born += 1;
+        return { passport: `паспорт ${key}` };
+      },
+      ({ setState }) => ({
+        setFeedData(value) {
+          setState((state) => ({ ...state, feedData: value }));
+        },
+      }),
+      { empty: { passport: "" } },
+    );
+
+    return { feedStoreOf, born: () => born };
+  }
+
+  it("создаёт ячейку и наполняет её фабрикой ключа", () => {
+    const { feedStoreOf, born } = createFeedStoreOf();
+
+    const cell = feedStoreOf.create("button");
+
+    expect(cell.get().passport).toBe("паспорт button");
+    expect(cell.status()).toBe("initial");
+    expect(born()).toBe(1);
+  });
+
+  it("идемпотентна — повторный вызов отдаёт ту же ячейку и ничего не пересобирает", () => {
+    const { feedStoreOf, born } = createFeedStoreOf();
+
+    const first = feedStoreOf.create("button");
+    first.actions.setFeedData({ label: "Кнопка" });
+
+    const second = feedStoreOf.create("button");
+
+    expect(second).toBe(first);
+    expect(second.get().feedData).toEqual({ label: "Кнопка" });
+    expect(born()).toBe(1);
+  });
+
+  it("отдаёт ту же ячейку, что и обращение по ключу", () => {
+    const { feedStoreOf } = createFeedStoreOf();
+
+    expect(feedStoreOf.create("button")).toBe(feedStoreOf("button"));
+  });
+
+  it("порядок «сначала собрать, потом активировать» — active() сразу видит наполненную ячейку", () => {
+    const { feedStoreOf } = createFeedStoreOf();
+    const store = feedStoreOf.active();
+
+    feedStoreOf.create("button");
+    feedStoreOf.activate("button");
+
+    expect(store.get().passport).toBe("паспорт button");
+    expect(store.status()).toBe("initial");
   });
 });
 

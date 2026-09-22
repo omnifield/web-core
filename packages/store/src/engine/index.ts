@@ -11,6 +11,7 @@ export type {
   ActionStoreCell,
   ActionStoreCellStatus,
   ActionStoreFamily,
+  ActionStoreFamilyOptions,
   ActionStoreHelpers,
 } from "./action-store.js";
 

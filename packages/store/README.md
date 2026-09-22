@@ -354,7 +354,10 @@ function FeedManual() {
 ```tsx
 // маршрут — единственное место, где имя вообще произносится
 function ComponentRoute(props: { component: string }) {
-  createEffect(() => feedStoreOf.activate(props.component));
+  createEffect(() => {
+    feedStoreOf.create(props.component); // сперва собрать ячейку…
+    feedStoreOf.activate(props.component); // …и только потом показать её всем
+  });
   return <FeedPanel />;
 }
 
@@ -380,19 +383,26 @@ function FeedPanel() {
 
 🌱 **Начальное значение — либо одно на все ячейки, либо функция ключа.** Форма `(key) => T` нужна,
 когда ячейка при рождении обязана нести то, что считается ИЗ её ключа; заодно у каждой ячейки
-получается свой объект, а не один общий по ссылке. У дефолтной ячейки ключ — `undefined`, поэтому
-сигнатура именно `(key: K | undefined) => T`:
+получается свой объект, а не один общий по ссылке. У ячейки-заглушки ключа нет — фабрика на неё не
+зовётся, её значение объявляется рядом, `options.empty` (без него семья с фабрикой не собирается):
 
 ```ts
 export const feedStoreOf = createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }, string>(
-  (key) => ({ passport: key === undefined ? undefined : passportOf(key) }),
+  (key) => ({ passport: passportOf(key) }), // ключ здесь всегда настоящий
   ({ setState }) => ({
     setFeedData(value) {
       setState((state) => ({ ...state, feedData: value }));
     },
   }),
+  { empty: { passport: undefined } },
 );
 ```
+
+🐣 **Рождение ячейки — операцией, а не побочным эффектом чтения.** `family.create(key)` идемпотентна:
+ячейка есть — отдаёт её же, нет — создаёт и наполняет фабрикой ключа. Нужна там, где порядок важен:
+собрать ячейку и только потом активировать, чтобы `active()` ни на один кадр не смотрел на
+несобранную. Обращение по ключу (`family(key)`) ячейку тоже родит — но читается как чтение, а не как
+намерение.
 
 Ленивое создание + кэш (`Map<K, ActionStore<...>>`) под капотом: `actionsFactory`/`selectorsFactory`
 вызываются один раз на первое обращение к ключу, дальше — тот же инстанс. Без политики вытеснения
@@ -499,6 +509,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | Настройка                                          | Где                                                              | Тип                                               | По умолчанию              |
 | -------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- | ------------------------- |
 | `compare`                                          | `createAtom`/`createResourceAtom`/`createReducerAtom`, `options` | `(prev: T, next: T) => boolean`                   | `Object.is`               |
+| `empty`                                            | `createActionStoreFamily`, `options` (только с фабрикой ключа)   | `T`                                               | обязательное              |
 | `schemas`                                          | `createStore`, `definition.schemas`                              | `{context?, events?, emitted?}` (Standard Schema) | —                         |
 | `strategy`                                         | `persist`, `options.strategy`                                    | `"snapshot" \| "event"`                           | `"snapshot"`              |
 | `name`                                             | `persist`, `options.name`                                        | `string`                                          | обязательное              |
@@ -554,7 +565,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createResourceAtom` с ключом  | `(source: Accessor<Key>, fetcher: (key, info: { signal }) => Data \| Promise<Data>, options?)`                                                     |
 | `createBoundAtom`              | `(source: Accessor<T>, options?: AtomOptions<T>)`                                                                                                  |
 | `createActionStore`            | `(initialValue: T, actionsFactory: (helpers: {setState, get}) => TActions, options?: AtomOptions<T>)`, либо с третьим `selectorsFactory: () => TSelectors` перед `options` — селектор `(state) => R` даёт `store.selectors.x()`, `(state, ...args) => R` даёт `store.selectors.x(...args)` |
-| `createActionStoreFamily`      | те же аргументы, что у `createActionStore`, но `initialValue` можно отдать и функцией ключа (`(key: K \| undefined) => T`) — отдаёт не стор, а семью: `(key: K \| undefined \| Accessor<K \| undefined>) => ActionStoreCell<…>` плюс `activate(key)`/`active()` |
+| `createActionStoreFamily`      | те же аргументы, что у `createActionStore`, но `initialValue` можно отдать и фабрикой ключа (`(key: K) => T`, тогда `options.empty` обязателен) — отдаёт не стор, а семью: `(key: K \| undefined \| Accessor<K \| undefined>) => ActionStoreCell<…>` плюс `create(key)`/`activate(key)`/`active()` |
 | `store.send`                   | `{ type, ...payload }`                                                                                                                             |
 | `store.trigger.<type>`         | `payload`                                                                                                                                          |
 | `store.can.<type>`             | `payload`                                                                                                                                          |
@@ -612,6 +623,11 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createActionStoreFamily`, переезд и размонтирование           | подписка на прежний ключ снята, читателя он больше не дёргает        | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, начальное значение функцией ключа    | ячейка при рождении несёт посчитанное из своего ключа                | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, начальное значение — свой объект     | правка одной ячейки не видна в другой, общей ссылки нет              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, заглушка и фабрика ключа             | на заглушку фабрика не зовётся, её значение — `options.empty`        | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, фабрика без `options.empty`          | семья не собирается вовсе — ошибка на месте объявления               | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create(key)`                        | ячейка рождается операцией и наполняется фабрикой ключа              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create` повторно                    | идемпотентна — тот же инстанс, состояние не пересобрано              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create` + `activate`                | «сперва собрать, потом активировать» — `active()` видит наполненную  | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `active()` до активации              | дефолтная ячейка, `status()` — `absent`, `key()` — `undefined`       | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, запись в дефолтную ячейку            | заглушена, состояние остаётся начальным                              | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `activate` + `active()`              | стор переезжает на ячейку ключа, записи доходят, прежняя цела        | `test/action-store.test.tsx` |
