@@ -1,6 +1,6 @@
 {
   "name": "@web-core/solid",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Solid.js web-core: единственная точка резолва вместо вендора, плюс собственные добавления поверх (первое — mountApp()/#root).",
   "license": "UNLICENSED",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@web-core/trace",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Perf-трейсер web-core: ядро без фреймворка + необязательный Solid-плагин (createLifeTracer, TraceProvider).",
   "license": "UNLICENSED",
   "type": "module",

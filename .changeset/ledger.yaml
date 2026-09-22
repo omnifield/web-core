@@ -1,0 +1,4 @@
+"@web-core/ui@0.3.0":
+  dir: packages/ui
+  intents:
+    - flat-cups-cross

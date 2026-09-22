@@ -1,6 +1,6 @@
 {
   "name": "@web-core/chat",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Второй кейс слоя interfaces/ (после @web-core/feeder) — нейтральное ядро чата (юзер↔агент и юзер↔юзер одним ядром), агентность и другие возможности — опциональные фичи поверх. Ядро готово, первая фича — агентский адаптер @web-core/neurobox (подпуть ./neurobox).",
   "license": "UNLICENSED",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@web-core/io",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Универсальный вход/выход данных web-core: паспорт формы (Zod), реестр по имени компонента, слои преобразования по несхожести данных (PWEB-180). Не зависит от паспорта скина, и наоборот.",
   "license": "UNLICENSED",
   "type": "module",
@@ -36,9 +36,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@types/node": "^24.10.1",
     "eslint": "^10.8.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
