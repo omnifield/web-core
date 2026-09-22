@@ -6,7 +6,7 @@ export function Passport() {
 
   return (
     <Surface data-variant="filled">
-      <Typography>{name}</Typography>
+      <Typography>{name()}</Typography>
     </Surface>
   );
 }

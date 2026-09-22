@@ -23,7 +23,7 @@ export function FeedOpenapi() {
 
   return (
     <ApiProbe
-      consumer={COMPONENT_USER.path(component.name)}
+      consumer={COMPONENT_USER.path(component.name())}
       onServing={(event) => {
         const { data, error } = event.serving;
         if (data === undefined || error !== null) return;

@@ -32,7 +32,7 @@ export function KitchenPage() {
         {(probe) => (
           <AdapterMastering
             provider={API_USER.path(probe().presetId, probe().endpointId)}
-            consumer={COMPONENT_USER.path(component.name)}
+            consumer={COMPONENT_USER.path(component.name())}
             output={output()}
             input={describeSample(probe().sample)}
           />

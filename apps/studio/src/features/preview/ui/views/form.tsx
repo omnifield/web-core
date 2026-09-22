@@ -26,7 +26,7 @@ export function Form(props: {
 
   return (
     <Renderer
-      component={component.name}
+      component={component.name()}
       assembly={props.assembly.name}
       variant={props.variant}
       rootProps={settings.values()}

@@ -1,6 +1,7 @@
 import {
   type Accessor,
   createContext,
+  createMemo,
   type JSX,
   Show,
   useContext,
@@ -25,9 +26,8 @@ import { contentOf, variantsOf } from "../api";
  * ошибке, ни обновиться, а расходиться с оригиналом умеет.
  */
 export interface ComponentFacts {
-  /** Имя компонента, оно же `data-scope` на каждом его узле. Простая строка, а не аксессор:
-   *  провайдер пересоздаёт поддерево по `keyed`, так что внутри имя не меняется. */
-  readonly name: string;
+  /** Имя компонента, оно же `data-scope` на каждом его узле. */
+  readonly name: Accessor<string>;
   /** Машинная половина среза: части, состояния, настройки с их умолчаниями и зависимостями. */
   readonly passport: Accessor<ComponentDescriptor["passport"]>;
   readonly editorInfo: Accessor<ComponentDescriptor["editorInfo"]>;
@@ -48,17 +48,17 @@ export function ComponentProvider(props: {
   children: JSX.Element;
 }) {
   return (
-    <Show when={props.name} keyed>
+    <Show when={props.name}>
       {(name) => {
-        const descriptor = componentDescriptorOf(name);
-        const variants = variantsOf.use(() => name);
-        const content = contentOf.use(() => name);
+        const descriptor = createMemo(() => componentDescriptorOf(name()));
+        const variants = variantsOf.use(name);
+        const content = contentOf.use(name);
 
         const facts: ComponentFacts = {
           name,
-          passport: () => descriptor.passport,
-          editorInfo: () => descriptor.editorInfo,
-          io: () => descriptor.io,
+          passport: () => descriptor().passport,
+          editorInfo: () => descriptor().editorInfo,
+          io: () => descriptor().io,
           variants: () => variants.data ?? [],
           content: () => content.data ?? [],
           isPending: () => variants.isPending || content.isPending,
