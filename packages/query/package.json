@@ -37,11 +37,33 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./persist": {
+        "types": "./dist/persist/index.d.ts",
+        "default": "./dist/persist/index.js"
+      },
+      "./graphql": {
+        "types": "./dist/graphql/index.d.ts",
+        "default": "./dist/graphql/index.js"
+      },
+      "./rest": {
+        "types": "./dist/rest/index.d.ts",
+        "default": "./dist/rest/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json",
     "lint": "eslint . && pnpm run typecheck",
     "test": "vitest run"
   },

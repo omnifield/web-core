@@ -3,6 +3,10 @@
 // сборки {query, variables} и разбора ошибок GraphQL-ответа, которые оправдывали graphql-request
 // там. Голого fetch с типизацией и разбором тела хватает, лишний пакет добавлял бы вес без пользы.
 
+// Своя форма заголовков вместо HeadersInit: тот глобал даёт библиотека DOM, а транспорт зовут и
+// из серверных пакетов, типизированных без неё. Разбор — FAQ.md.
+export type RequestHeaders = Readonly<Record<string, string>>;
+
 export type RestRequestInit = Omit<RequestInit, "body"> & {
   body?: RequestInit["body"];
   /** Сериализуется в JSON и уходит телом; выставляет `content-type: application/json`, если он не задан явно. */
@@ -74,7 +78,10 @@ function joinUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
 
-function mergeHeaders(clientHeaders: HeadersInit | undefined, callHeaders: HeadersInit | undefined): Headers {
+function mergeHeaders(
+  clientHeaders: RequestHeaders | undefined,
+  callHeaders: RestRequestInit["headers"],
+): Headers {
   const headers = new Headers(clientHeaders);
   new Headers(callHeaders).forEach((value, key) => headers.set(key, value));
   return headers;
@@ -84,7 +91,7 @@ function mergeHeaders(clientHeaders: HeadersInit | undefined, callHeaders: Heade
 // дальше используется как есть в любом queryFn/mutationFn: baseUrl/headers не повторяются на
 // каждый вызов, per-call headers из init перекрывают клиентские по тому же имени. `raw` — та же
 // пара `response`+`data`, что у `rawRestRequest`, но с конфигом клиента, не url на каждый вызов.
-export function createRestClient(config: { baseUrl: string; headers?: HeadersInit }): {
+export function createRestClient(config: { baseUrl: string; headers?: RequestHeaders }): {
   request: <TResult = unknown>(path: string, init?: RestRequestInit) => Promise<TResult>;
   raw: <TResult = unknown>(path: string, init?: RestRequestInit) => Promise<RestResult<TResult>>;
 } {

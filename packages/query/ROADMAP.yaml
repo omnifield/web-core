@@ -290,6 +290,75 @@ categories:
           — переводить в статус канона (README без пометки ⚠️, версия пакета — решение architect
           при публикации).
 
+  - category: Поставка наружу
+    items:
+      - id: headers-type-browser-only
+        type: bug
+        status: Done
+        priority: High
+        milestone: null
+        name: "`HeadersInit`/`Headers` в публичных сигнатурах транспорта — типы браузера, а пакет зовут из node"
+        description: |
+          Найдено architect'ом 2026-09-22 при первой реальной публикации пакетов в реестр:
+          `pnpm build` из корня падает на `@web-core/mcp`, дословно —
+          `../query/src/graphql/index.ts(9,70): error TS2304: Cannot find name 'HeadersInit'`.
+          Из-за этого `@web-core/mcp` единственный из поставки не уехал в реестр.
+
+          Механизм (проверен чтением конфигов, не по догадке): `packages/mcp` — серверный пакет,
+          его база `@web-core/build/tsconfig-node` объявляет `lib: ["ESNext"]`, `types: ["node"]`,
+          то есть БЕЗ `DOM`. Он импортирует `@web-core/query/graphql`
+          (`packages/mcp/src/feedback/index.ts:9` — `ClientError`/`gql`/`graphqlRequest`), а
+          `createGraphQLClient` (`src/graphql/index.ts:9`) типизирует конфиг как
+          `{ url: string; headers?: HeadersInit }`. `HeadersInit` — глобальный тип библиотеки
+          `DOM`; в node-типизации его нет, и тайпчек падает до всякого рантайма. Сам рантайм при
+          этом исправен: `fetch`/`Headers` в Node 18+ существуют, вопрос только в типах.
+
+          То же место есть и в REST-транспорте, просто оно пока никого не сломало, потому что
+          `mcp` импортирует только `./graphql`: `src/rest/index.ts:77` (`mergeHeaders(clientHeaders:
+          HeadersInit | undefined, …): Headers`) и `src/rest/index.ts:87` (`createRestClient(config:
+          { baseUrl: string; headers?: HeadersInit })`). Любой следующий серверный потребитель
+          `./rest` упрётся в ту же стену.
+
+          Что решить (зона query, не cross-zone): объявить форму заголовков СВОИМ типом, не
+          зависящим от среды, — тем же приёмом, каким `packages/assembly` сузил нужду в чужом
+          паспорте до структурного `GrowablePassport`. Тип обязан оставаться совместимым с тем,
+          что принимает `fetch`/`GraphQLClient` изнутри (простая карта «имя → значение» под это
+          подходит). Менять `@web-core/build/tsconfig-node` (добавить туда `DOM`) — НЕ решение:
+          серверному пакету нельзя выдавать браузерные глобалы ради одной подписи типа, это
+          спрячет ошибку, а не уберёт её.
+
+          Отдельно решить и назвать в описании: считать ли сужение типа заголовков изменением
+          публичной поверхности (сегодня формально можно передать `Headers`-объект или массив пар;
+          после сужения — только карту). Если да, выпуск идёт минором — владелец записывает это
+          интентом (`pnpm change`), версию поднимает architect.
+
+          Воспроизведение: `pnpm --filter @web-core/mcp build` из корня.
+
+          СДЕЛАНО 2026-09-22. Своим типом стал `RequestHeaders` —
+          `Readonly<Record<string, string>>`, объявлен в КАЖДОМ из двух подпутей отдельно (а не
+          общим внутренним модулем): `./graphql` и `./rest` зафиксированы как не-семья (разный
+          протокол, разная ошибка, ничего общего в реализации), и заводить ради одной строки
+          третье место, от которого оба зависят, значило бы сшить их обратно. Заменено в трёх
+          сигнатурах: `createGraphQLClient` (src/graphql/index.ts), `createRestClient` и
+          внутренний `mergeHeaders` (src/rest/index.ts); per-call заголовки в `RestRequestInit`
+          не трогали — они приходят из `RequestInit`, а это имя в node-типизации есть.
+
+          Найдено по ходу (чтение `@types/node@24.13.3/web-globals/fetch.d.ts`): под node-типами
+          глобально объявлены `fetch`/`Headers`/`Response`/`Request`/`RequestInit`, нет ровно
+          `HeadersInit`. Поэтому правка вышла точечной, а не переездом транспорта на другие типы.
+
+          Гейт против повторения: `pnpm typecheck` пакета гоняет ВТОРОЙ проект —
+          `tsconfig.node.json` (только `src/graphql`+`src/rest`, база
+          `@web-core/build/tsconfig-node`). Проверено возвратом `HeadersInit` в сигнатуру: снова
+          `TS2304`, до всякой сборки чужого пакета.
+
+          Решение по открытому вопросу о поверхности: сужение СЧИТАЕМ изменением публичной
+          поверхности (формально пропадают `Headers`-объект и массив пар), значит выпуск минорный
+          — `0.2.0`. В репозитории `headers` в оба клиента не передаёт ни один потребитель, так
+          что фактически не сломано ничего. Файл интента (`.changeset/`) лежит в корне, вне зоны
+          query — его кладёт architect; команды `pnpm change` в корневом `package.json` сегодня
+          нет и `@changesets/cli` не установлен, это названо architect'у отдельно.
+
   - category: Не сделано
     items:
       - id: sync-persister-deprecated
@@ -322,6 +391,26 @@ categories:
           `graphql-subpath-no-second-cache`/`graphql-codegen-types`. Не входит в объём этого файла.
 
 log:
+  - id: headers-own-type-not-dom-global
+    type: plan
+    date: 2026-09-22
+    summary: >
+      Закрыт `headers-type-browser-only`. Публичные сигнатуры транспорта больше не зависят от
+      библиотеки `DOM`: `HeadersInit` заменён своим `RequestHeaders`
+      (`Readonly<Record<string, string>>`) — тем же приёмом, каким `packages/assembly` сузил нужду
+      в чужом паспорте до структурного `GrowablePassport`. Тип объявлен в каждом подпути отдельно,
+      не общим модулем: `./graphql` и `./rest` не семья, и общий внутренний модуль сшил бы их
+      обратно ради одной строки. Сужение поверхности признано изменением публичной поверхности,
+      значит выпуск минорный (`0.2.0`), хотя фактически в репозитории `headers` в клиенты не
+      передаёт никто.
+
+      Главное, что даёт этот заход дальше: на пакет повешен ВТОРОЙ проект тайпчека
+      (`tsconfig.node.json`, база `@web-core/build/tsconfig-node`) — до сих пор пакет проверялся
+      только в своей, браузерной типизации, и о том, что он ломает серверного потребителя,
+      узнавали из чужой сборки. Теперь граница проверяется у себя. Правило на будущее:
+      поставляемый наружу код не имеет права называть глобал, которого нет у потребителя с другой
+      базой tsconfig.
+
   - id: define-query-experimental-added
     type: plan
     date: 2026-09-15

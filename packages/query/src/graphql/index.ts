@@ -1,12 +1,16 @@
 import { GraphQLClient } from "graphql-request";
 import type { RequestDocument, Variables } from "graphql-request";
 
+// Своя форма заголовков вместо HeadersInit: тот глобал даёт библиотека DOM, а транспорт зовут и
+// из серверных пакетов, типизированных без неё. Разбор — FAQ.md.
+export type RequestHeaders = Readonly<Record<string, string>>;
+
 // Основной способ — createGraphQLClient({ url, headers? }) один раз при старте приложения,
 // дальше используется как есть в любом queryFn/mutationFn: url/headers не повторяются на каждый
 // вызов. Под капотом — GraphQLClient самого graphql-request: он, в отличие от urql/Apollo, кэша
 // не держит — только url+headers, так что философии "не тащим второй кэш поверх solid-query"
 // здесь ничего не противоречит.
-export function createGraphQLClient(config: { url: string; headers?: HeadersInit }): {
+export function createGraphQLClient(config: { url: string; headers?: RequestHeaders }): {
   request: <TResult = unknown, TVariables extends Variables = Variables>(
     document: RequestDocument,
     variables?: TVariables,
