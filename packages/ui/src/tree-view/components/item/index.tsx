@@ -1,4 +1,4 @@
-import { splitProps, type JSX } from "solid-js";
+import { Show, splitProps, type JSX } from "solid-js";
 import {
   TreeViewBranch as ArkBranch,
   TreeViewItem as ArkItem,
@@ -29,8 +29,19 @@ export function TreeItem<T extends TreeNode = TreeNode>(
   return (
     <ArkNodeProvider node={own.node} indexPath={own.indexPath ?? []}>
       <ArkNodeContext>
-        {(nodeState) =>
-          nodeState().isBranch ? (
+        {(nodeState) => (
+          <Show
+            when={nodeState().isBranch}
+            fallback={
+              <ArkItem
+                {...dropAddress(rest)}
+                {...anatomyParts.item.attrs}
+                {...activeOverride(activeValue(), nodeState().value)}
+              >
+                {own.children}
+              </ArkItem>
+            }
+          >
             <ArkBranch
               {...dropAddress(rest)}
               {...anatomyParts.item.attrs}
@@ -38,16 +49,8 @@ export function TreeItem<T extends TreeNode = TreeNode>(
             >
               {own.children}
             </ArkBranch>
-          ) : (
-            <ArkItem
-              {...dropAddress(rest)}
-              {...anatomyParts.item.attrs}
-              {...activeOverride(activeValue(), nodeState().value)}
-            >
-              {own.children}
-            </ArkItem>
-          )
-        }
+          </Show>
+        )}
       </ArkNodeContext>
     </ArkNodeProvider>
   );
