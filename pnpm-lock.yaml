@@ -769,6 +769,9 @@ importers:
       '@solid-primitives/keyed':
         specifier: ^1.5.3
         version: 1.5.3(solid-js@1.9.14)
+      '@solid-primitives/rootless':
+        specifier: ^1.5.4
+        version: 1.5.4(solid-js@1.9.14)
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
@@ -794,6 +797,9 @@ importers:
 
   packages/store:
     dependencies:
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       '@xstate/store':
         specifier: ^4.2.3
         version: 4.2.3
