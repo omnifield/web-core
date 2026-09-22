@@ -1,7 +1,7 @@
 import { createAtom } from "@xstate/store";
 import type { Atom, AtomOptions, Observer, ReadonlyAtom, Subscription } from "@xstate/store";
 import { useAtom } from "@xstate/store-solid";
-import { createEffect, createRoot, createSignal, getOwner, onCleanup, untrack } from "@web-core/solid";
+import { createComputed, createRoot, createSignal, getOwner, onCleanup, untrack } from "@web-core/solid";
 import type { Accessor } from "@web-core/solid";
 import { createSingletonRoot } from "@web-core/solid/rootless";
 
@@ -202,15 +202,18 @@ function storeBoundToKey<T, TActions, TSelectors extends SelectorsShape<T>, K>(
           ? store.subscribe(observerOrNext, error, complete)
           : store.subscribe(observerOrNext);
 
-      // Первая подписка — синхронно, до эффекта: между вызовом subscribe и первым прогоном
-      // эффекта читатель иначе пропустил бы изменения текущего стора.
+      // Первая подписка — синхронно, до вычисления: между вызовом subscribe и первым прогоном
+      // читатель иначе пропустил бы изменения текущего стора.
       let subscribed = untrack(key);
       let inner = subscribeTo(storeOf(subscribed));
 
       let disposeRoot = (): void => {};
       createRoot((dispose) => {
         disposeRoot = dispose;
-        createEffect(() => {
+        // Переезд — В ФАЗЕ ВЫЧИСЛЕНИЙ, не эффектом: get/селекторы адресуют стор текущего ключа
+        // синхронно, и подписка обязана успеть туда же до того, как отработает хоть один
+        // читательский эффект. Разбор — FAQ.md.
+        createComputed(() => {
           const next = key();
           if (next === subscribed) return;
           subscribed = next;

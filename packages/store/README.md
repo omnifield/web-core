@@ -331,7 +331,9 @@ function FeedPreset(props: { component: string }) {
 🔑 Ключ зовут двумя способами. **Значением** — как выше, стор фиксирован на всё время жизни
 вызывающего. **Solid-аксессором** — когда ключ приходит из маршрута и меняется, пока компонент
 смонтирован: наружу тот же `ActionStore`, но подписка переезжает на стор нового ключа сама,
-поддерево не пересоздаётся, а состояние прежнего ключа остаётся в `Map` нетронутым:
+поддерево не пересоздаётся, а состояние прежнего ключа остаётся в `Map` нетронутым. Переезд
+происходит ТЕМ ЖЕ тактом, что и смена ключа: `key()`, `get()`, `selectors` и `use()` меняются
+вместе, кадра «новый ключ, старые данные» читатель не видит:
 
 ```tsx
 function FeedManual() {
@@ -628,6 +630,9 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createActionStoreFamily`, `create(key)`                        | ячейка рождается операцией и наполняется фабрикой ключа              | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `create` повторно                    | идемпотентна — тот же инстанс, состояние не пересобрано              | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `create` + `activate`                | «сперва собрать, потом активировать» — `active()` видит наполненную  | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, активация и `use()`                  | `use()` переезжает тем же тактом, что `key`/`get`/селекторы          | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ аксессором и `use()`             | тот же один проход, без кадра со старыми данными                     | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, цепочка активаций                    | значение не отстаёт от ключа ни на один проход                       | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `active()` до активации              | дефолтная ячейка, `status()` — `absent`, `key()` — `undefined`       | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, запись в дефолтную ячейку            | заглушена, состояние остаётся начальным                              | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, `activate` + `active()`              | стор переезжает на ячейку ключа, записи доходят, прежняя цела        | `test/action-store.test.tsx` |

@@ -1,5 +1,5 @@
 import { render } from "@web-core/solid/web";
-import { createSignal } from "@web-core/solid";
+import { createEffect, createSignal } from "@web-core/solid";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createActionStore, createActionStoreFamily } from "../src/engine/action-store.js";
@@ -705,6 +705,96 @@ describe("createActionStoreFamily — активный ключ (кейс apps/s
 
     store.actions.setFeedData({ label: "Кнопка" });
     expect(store.status()).toBe("written");
+  });
+});
+
+describe("createActionStoreFamily — у фасада одни часы (кейс заявки: лишний проход со старыми данными)", () => {
+  interface Value {
+    readonly v: string;
+  }
+
+  function createValueStoreOf() {
+    return createActionStoreFamily<Value, Record<string, never>, { v(state: Value): string }, string>(
+      (key) => ({ v: key }),
+      () => ({}),
+      () => ({
+        v(state) {
+          return state.v;
+        },
+      }),
+      { empty: { v: "-" } },
+    );
+  }
+
+  it("активация: use() переезжает тем же тактом, что key/get/селекторы", () => {
+    const storeOf = createValueStoreOf();
+    storeOf.create("a");
+    storeOf.activate("a");
+
+    const seen: string[] = [];
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    dispose = render(() => {
+      const cell = storeOf.active();
+      const whole = cell.use();
+      createEffect(() => {
+        seen.push(`${String(cell.key())}/${cell.get().v}/${cell.selectors.v()}/${whole().v}`);
+      });
+      return null;
+    }, host);
+
+    expect(seen).toEqual(["a/a/a/a"]);
+
+    storeOf.create("b");
+    storeOf.activate("b");
+
+    expect(seen).toEqual(["a/a/a/a", "b/b/b/b"]); // ровно один проход, без кадра со старым use()
+  });
+
+  it("ключ аксессором: тот же фасад, тот же один проход", () => {
+    const storeOf = createValueStoreOf();
+    const [key, setKey] = createSignal("a");
+
+    const seen: string[] = [];
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    dispose = render(() => {
+      const cell = storeOf(key);
+      const whole = cell.use();
+      createEffect(() => {
+        seen.push(`${String(cell.key())}/${cell.get().v}/${whole().v}`);
+      });
+      return null;
+    }, host);
+
+    setKey("b");
+
+    expect(seen).toEqual(["a/a/a", "b/b/b"]);
+  });
+
+  it("селектор через use(): значение не отстаёт от ключа ни на один проход", () => {
+    const storeOf = createValueStoreOf();
+    const seen: string[] = [];
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    storeOf.activate("a");
+
+    dispose = render(() => {
+      const cell = storeOf.active();
+      const v = cell.use((state) => state.v);
+      createEffect(() => {
+        seen.push(`${String(cell.key())}/${v()}`);
+      });
+      return null;
+    }, host);
+
+    storeOf.activate("b");
+    storeOf.activate("c");
+
+    expect(seen).toEqual(["a/a", "b/b", "c/c"]);
   });
 });
 
