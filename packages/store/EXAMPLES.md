@@ -715,9 +715,9 @@ const store = createStore({
   `reason: "invalidContext" | "invalidEvent" | "invalidEmitted" | "unknownEvent" |
   "unknownEmitted" | "asyncValidationUnsupported"`.
 
-## Подключить для живого теста в `apps/skin`
+## Подключить для живого теста в приложении
 
-`apps/skin/src/pages/lab/index.tsx` — dev-страница:
+Любая dev-страница приложения-потребителя, смонтированная на свой маршрут:
 
 ```tsx
 import { CounterDemo } from "..."; // любой пример выше

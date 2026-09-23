@@ -271,7 +271,7 @@ describe("createActionStoreFamily (кейс componentManagerStore — feedData �
   });
 });
 
-describe("createActionStoreFamily — ключ аксессором (кейс apps/studio: ключ из маршрута)", () => {
+describe("createActionStoreFamily — ключ аксессором (кейс приложения: ключ из маршрута)", () => {
   interface FeedState {
     readonly feedData?: unknown;
   }
@@ -576,7 +576,7 @@ describe("createActionStoreFamily — явное рождение ячейки (
   });
 });
 
-describe("createActionStoreFamily — активный ключ (кейс apps/studio: имя приходит со сменой маршрута)", () => {
+describe("createActionStoreFamily — активный ключ (кейс приложения: имя приходит со сменой маршрута)", () => {
   interface FeedState {
     readonly feedData?: unknown;
   }
