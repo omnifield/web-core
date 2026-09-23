@@ -127,7 +127,7 @@ app → pages → widgets → features → entities → shared
 Конкретный пример (этот же репозиторий, реактивный доступ к пресету контента в
 `entities/component/api/presets.ts`): нужно было дать Solid-компоненту реактивное чтение
 данных, которые уже тянет императивный фетчер на `queryClient.query(...)`. Три попытки подряд,
-одна хуже другой, ни разу не открыв `packages/query/README.md`:
+одна хуже другой, ни разу не открыв `web-core/query/README.md`:
 1. Голый `createResource` — мимо `@web-core/query` вообще, второй источник данных и кэша
    параллельно первому.
 2. Ручной `createQuery({ queryKey, queryFn: () => contentOf(...), ... })` прямо в фиче — фича

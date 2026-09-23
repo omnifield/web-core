@@ -9,7 +9,7 @@
 // обвязки — значит движок, не витрина): переход 0 items → N items ПОСЛЕ монтирования у
 // `radio-group` (`item` — прямой потомок `root`) отрабатывает корректно (тест ниже), у `select`
 // (`item` — потомок `content`, который сам внутри `positioner`, открытого сразу) — раньше НЕТ.
-// ПОЧИНЕНО в `packages/assembly` — `content-of-null-vs-for-by-structure`/`-breaks-ark-native-
+// ПОЧИНЕНО в `web-core/assembly` — `content-of-null-vs-for-by-structure`/`-breaks-ark-native-
 // defaults` (два критерия null-vs-`<For>`, коммит `9b44feb`) закрыли РОВНО этот 0→N прыжок, тест
 // ниже — `it` (не `it.fails`), зелёный по `expect`, регрессии не будет молча.
 //

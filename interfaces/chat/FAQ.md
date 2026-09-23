@@ -78,7 +78,7 @@ parts, рендер `text`, список сообщений со скролло�
 Полный разбор разведки — `ROADMAP.yaml`, лог `chat-market-research`. Коротко, что нашлось и почему
 это не противоречит нейтральности ядра:
 
-- headless-примитива «чат» в Ark UI (наш кит `packages/ui`) нет и не будет — рынок эту часть тоже
+- headless-примитива «чат» в Ark UI (наш кит `web-core/ui`) нет и не будет — рынок эту часть тоже
   собирает руками, не как решённый кит;
 - у TanStack AI (тот же вендор, что `neurobox`) есть headless-слой `@tanstack/ai-solid/ui`
   (`Chat`/`ChatMessages`/`ChatMessage`/`ChatInput`/`ToolApproval`/`TextPart`/`ThinkingPart`) —
@@ -88,7 +88,7 @@ parts, рендер `text`, список сообщений со скролло�
 - parts-модель сообщения, буферизация токенов вместо релейаута на каждый чанк, stick-to-bottom
   скролл через invisible anchor + `IntersectionObserver` — общая база любого потокового чата в
   2026 году, не специфика ИИ-чатов, поэтому легли в ядро без конфликта с решением выше;
-- `packages/ui` (Ark) уже даёт кирпичи под это: `scroll-area` под список сообщений, `avatar`,
+- `web-core/ui` (Ark) уже даёт кирпичи под это: `scroll-area` под список сообщений, `avatar`,
   `field`/`editable` под композер — новых зависимостей под ядро не потребовалось.
 
 ---
@@ -147,9 +147,9 @@ content: string }`, ядро chat — `{ type: "text", text: string }`. Имя �
 ### Что за варнинг сборки при `build` фичи — не сломано?
 
 **Коротко: нет, `build`/`typecheck`/`lint` зелёные, exit code 0, сам результат (`dist/neurobox.d.ts`)
-собран верно — это шумный, но безобидный гап `packages/build`, не моей зоны, чинить у себя не стал.**
+собран верно — это шумный, но безобидный гап `web-core/build`, не моей зоны, чинить у себя не стал.**
 
-`defineLibraryConfig`'s `buildDeclarationFiles` (`packages/build/src/vite/library.ts`) заводит
+`defineLibraryConfig`'s `buildDeclarationFiles` (`web-core/build/src/vite/library.ts`) заводит
 СВОЙ `rollup({ input, plugins: [dts()] })` под каждый `.d.ts`, без резолвера и без `external` —
 когда публичный тип пакета ссылается на тип ДРУГОГО workspace-пакета (здесь — `ConnectConnectionAdapter`/
 `ToolCallState`/`ToolResultState` из `@web-core/neurobox`), эта сборка не может его резолвнуть и

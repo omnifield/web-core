@@ -1,6 +1,6 @@
 # Дорожная карта @web-core/chat — источник правды по фактически сделанной работе. Статус
 # проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же, что
-# у interfaces/feeder, packages/io, packages/store (categories → items, log — журнал решений); без
+# у interfaces/feeder, web-core/io, web-core/store (categories → items, log — журнал решений); без
 # milestones — у пакета нет освоенной поставки с датами релиза, только сделанное и открытое.
 
 categories:
@@ -144,7 +144,7 @@ categories:
           Означает: `src/entities/conversation/part-registry.ts` — `registerPart(type, renderer)`/
           `rendererOf(type)` поверх `Map<string, PartRenderer<Part>>` (типостёрто до `Part`,
           безопасно по факту: ищут всегда по тому же `type`, которым зарегистрировали, — тот же
-          приём, что словарь загрузчиков иконок в `packages/ui`). `src/widgets/message/
+          приём, что словарь загрузчиков иконок в `web-core/ui`). `src/widgets/message/
           part-view.tsx` — `PartView`, диспетчер по `part.type` через `Show`+`Dynamic`
           (`solid-js/web`), незарегистрированный тип рендерится в `null`, не падает. Обе части
           публично реэкспортированы (`registerPart`/`rendererOf`/`PartView`/`PartRenderer` из
@@ -265,7 +265,7 @@ categories:
           стороне потребителя, чат отдаёт только механику и типизированный ИО. Открыто
           по-прежнему: полный список фич первого релиза, транспорт для плеча юзер↔юзер (в
           репозитории пока нет ни вебсокета, ни GraphQL-подписки — проверено чтением
-          `packages/query`), и когда/как заходит фича «агентский адаптер `neurobox`». Разбор
+          `web-core/query`), и когда/как заходит фича «агентский адаптер `neurobox`». Разбор
           продолжает owner с user. Первый кейс использования chat — с агентом
           (`neurobox-agent-adapter`, готов).
 
@@ -291,7 +291,7 @@ categories:
             у текстовой части) → `Message<NeuroboxPart>` ядра. `role: 'system'` фильтруется целиком
             (не для показа), `'user'`→`viewerId` параметра, `'assistant'`→фиксированный
             `AGENT_PARTICIPANT_ID`. Незнакомые типы part'а (картинка/аудио/видео/структурный вывод)
-            молча отбрасываются — тот же приём, что `toWireContent` в `packages/neurobox` на
+            молча отбрасываются — тот же приём, что `toWireContent` в `web-core/neurobox` на
             исходящей стороне (бокс текстовый, `NEUROBOX_CLIENT.md`).
           - `use-neurobox-chat.ts` — `useNeuroboxChat({ connection, threadId, viewerId, ... })`:
             обёртка над `useChat` (`@web-core/neurobox/solid`), отдаёт `conversation`/`isStreaming`
@@ -310,13 +310,13 @@ categories:
 
           `build`/`typecheck`/`lint` зелёные. Известный БЕЗОБИДНЫЙ варнинг при `build` (не ошибка,
           exit code 0): `rollup-plugin-dts` внутри `buildDeclarationFiles`
-          (`packages/build/src/vite/library.ts`) заводит СВОЙ `rollup()` без резолвера/`external`
+          (`web-core/build/src/vite/library.ts`) заводит СВОЙ `rollup()` без резолвера/`external`
           — когда публичный тип пакета ссылается на тип ДРУГОГО workspace-пакета (здесь —
           `ConnectConnectionAdapter`/`ToolCallState`/`ToolResultState` из `@web-core/neurobox`),
           эта конкретная сборка `.d.ts` не может его резолвнуть и падает в стандартный фолбэк
           Rollup «could not be resolved — treating as external» — САМ РЕЗУЛЬТАТ при этом верный
           (проверено чтением `dist/neurobox.d.ts`: тип корректно остаётся внешним импортом, не
-          инлайнится). Гап общего `packages/build`, не моей зоны — чинить у себя не стал
+          инлайнится). Гап общего `web-core/build`, не моей зоны — чинить у себя не стал
           (`escalate-dont-hack-workarounds`), назвать architect.
 
 log:
@@ -326,7 +326,7 @@ log:
     summary: >
       User подключил чат живьём (`apps/skin/src/widgets/chat`) — механика работает, визуала нет
       вообще. Первая версия ответа была ошибочной: предложил развилку «свой CSS в chat vs. кит-
-      компонент с паспортом в packages/ui», как будто нужно новое архитектурное решение. User
+      компонент с паспортом в web-core/ui», как будто нужно новое архитектурное решение. User
       поправил — кит уже есть, разбираться, чем он не устраивает. Разобрался чтением
       `apps/skin/src/app/index.tsx`: в этом репо визуал компонента приходит НЕ ручным CSS-файлом
       пакета, а нарядом (`@web-core/skin`), который одевает НАСТОЯЩИЕ кит-компоненты — «цвет
@@ -349,7 +349,7 @@ log:
       (не веб-дока) — точная форма `UIMessage`/`MessagePart` (`TextPart.content`, не `.text` —
       разошлась с именем поля ядра, перевод обязателен), `useChat`'s `sendMessage`/`stop`/
       `isLoading`/`messages`, `ToolCallState`/`ToolResultState`. Заодно перечитан
-      `packages/neurobox/src/engine/connection.ts` — подтвердил паттерн «не-текстовые части
+      `web-core/neurobox/src/engine/connection.ts` — подтвердил паттерн «не-текстовые части
       отбрасываются молча» (`toWireContent`), зеркально применён во входящем направлении
       (`map-message.ts`'s `contentText`).
 
@@ -360,7 +360,7 @@ log:
       физически, не только «фича не вызвана». Подтверждено `grep`'ом по факту собранных
       `dist/index.js`/`dist/index.d.ts` — ноль упоминаний `neurobox`.
 
-      По пути найден и НЕ починен (чужая зона, `packages/build`) безобидный варнинг сборки:
+      По пути найден и НЕ починен (чужая зона, `web-core/build`) безобидный варнинг сборки:
       `rollup-plugin-dts` внутри `defineLibraryConfig`'s `buildDeclarationFiles` не резолвит
       типы ДРУГИХ workspace-пакетов (свой `rollup()` без резолвера/`external`) — падает в
       стандартный фолбэк Rollup с текстом «could not be resolved», сам `.d.ts` при этом собран
@@ -424,12 +424,12 @@ log:
       По просьбе user («го по порядку как тебе удобнее») owner выбрал порядок: точка расширения
       сначала — рендер списка/скролл/композер всё равно строятся поверх неё, логичнее не
       откладывать. `registerPart`/`rendererOf` (`entities/conversation/part-registry.ts`) —
-      реестр типостёртый до `Part`, тот же приём, что словарь загрузчиков иконок в `packages/ui`.
+      реестр типостёртый до `Part`, тот же приём, что словарь загрузчиков иконок в `web-core/ui`.
       `PartView` (`widgets/message/part-view.tsx`) — диспетчер, первая попытка (условный `return`
       + чтение `rendererOf` вне JSX) не прошла ни `tsc` (сужение до `never` при сторонней форме
       части), ни eslint (`solid/reactivity` + `solid/components-return-once` — Solid-компонент
       исполняется один раз, условный рендер обязан жить внутри JSX). Переписано на `Show`+
-      `Dynamic` по образцу `packages/ui/src/icon/components/root.tsx` (та же форма задачи —
+      `Dynamic` по образцу `web-core/ui/src/icon/components/root.tsx` (та же форма задачи —
       резолвить и отрисовать компонент по имени/типу) — оба гейта зелёные. Ядро сознательно не
       регистрирует `text` само — эта часть предмета следующей задачи (`core-stream-render`).
 
@@ -500,7 +500,7 @@ log:
       даёт клиент протокола AG-UI поверх TanStack AI (`useChat`, поток `TEXT_MESSAGE_CHUNK`/
       `TOOL_CALL_*`/`RUN_FINISHED`), но прямым текстом не хранит беседу и не рисует UI
       (`NEUROBOX_CLIENT.md`: «своего лица у бокса сейчас нет»). Готовых чат-примитивов в
-      `packages/ui`/Ark UI нет (проверено `mcp__ark-ui__list_components`) — ожидаемо, рынок эту
+      `web-core/ui`/Ark UI нет (проверено `mcp__ark-ui__list_components`) — ожидаемо, рынок эту
       часть тоже не считает решённой headless-китом. Снаружи: у TanStack AI (тот же вендор, что
       `neurobox`) есть headless UI-слой `@tanstack/ai-solid/ui` (актуальный путь, старый пакет
       `@tanstack/ai-solid-ui` — deprecated реэкспорт) — `Chat/ChatMessages/ChatMessage/ChatInput/
@@ -511,7 +511,7 @@ log:
       stick-to-bottom через invisible anchor + IntersectionObserver, подавляется, если юзер сам
       прокрутил вверх читать историю; композер — многострочный с авто-ростом, стоп-кнопка вместо
       сабмита во время стрима; виртуализация списка — нужна на больших историях, но это уже не
-      «база», а следующий слой. Кирпичи `packages/ui` (Ark): `scroll-area` под список сообщений,
+      «база», а следующий слой. Кирпичи `web-core/ui` (Ark): `scroll-area` под список сообщений,
       `avatar` уже есть, `field`/`editable` под композер, `highlight` под код, `hotkeys`/
       `clipboard`/`toast`/`presence` — подойдут фичам по мере появления.
 

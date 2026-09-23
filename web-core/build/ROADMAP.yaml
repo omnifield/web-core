@@ -1,0 +1,442 @@
+# Дорожная карта @web-core/build — источник правды по фактически сделанной работе. Статус
+# проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же,
+# что у web-core/store (categories → items, log → журнал решений); без milestones — у пакета
+# нет освоенной поставки с датами релиза, только сделанное и открытое.
+
+categories:
+  - category: Конфиг приложения
+    items:
+      - id: define-config
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: defineConfig() — конфиг приложения
+        description: |
+          Означает: `vite.config.ts` потребителя — три строки, версия Vite и `vite-plugin-solid`
+          решаются здесь.
+
+      - id: dev-source-alias
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Соседи по воркспейсу видны исходниками
+        description: |
+          Означает: правка исходника соседа доезжает до браузера без пересборки — дев-сервер
+          не отдаёт вчерашний `dist`.
+          Реализация: алиас, посчитанный машинно по признаку симлинка из `node_modules`, не
+          список имён — см. FAQ.md.
+
+      - id: generated-css-on-request
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: CSS соседа порождается на запрос
+        description: |
+          Означает: `dist/css/*.css` прошлой сборки не показывается приложению — ни на свежем
+          клоне (где его нет вовсе), ни устаревшим после правки перечня в коде соседа.
+          Реализация: способность соседа читается с его `exports` (подпуть `./generate`),
+          порождатель грузится через `ssrLoadModule`, `hotUpdate` достраивает связь.
+
+      - id: host-true
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: server.host — все интерфейсы
+        description: |
+          Означает: дев-сервер в контейнере виден и с хоста, и пульту, проверяющему живость по
+          `127.0.0.1` — `localhost` резолвится в `::1` и до контейнера не доходит.
+
+  - category: Конфиг библиотеки
+    items:
+      - id: define-library-config
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: defineLibraryConfig() — конфиг библиотеки
+        description: |
+          Означает: `ui`/`skin`/`assembly` и подобные зоны не носят собственный сборочный
+          скрипт поверх esbuild — один держатель вместо трёх копий, которые
+          разошлись бы незамеченными.
+
+      - id: raw-jsx-branch
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Ветка solid (сырой JSX) поверх Vite
+        description: |
+          Означает: вход с `solid: true` уезжает двумя ветками — `dist/<name>.js` (Vite,
+          разобранный JSX) и `dist/<name>.jsx` (esbuild, сырой JSX для условия `solid`).
+          Реализация: esbuild `jsx: "preserve"` в `closeBundle`, потому что `oxc.jsx: "preserve"`
+          в library mode Vite 8 не работает вовсе — см. FAQ.md.
+
+      - id: prepare-lifecycle
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: prepare — оснастка собирается на установке
+        description: |
+          Означает: свежий клон поднимается `pnpm install`-ом без отдельной команды сборки
+          оснастки. Единственная зона репозитория с этим скриптом — остальные пакеты видны
+          через исходники алиасом, и собирать их на установке значило бы вернуть ровно ту
+          вчерашнюю сборку, от которой уходит вся тема.
+
+  - category: vitest
+    items:
+      - id: solid-jsx-transform
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: JSX-трансформ в раннере
+        description: |
+          Означает: `vite-plugin-solid` в `plugins` — тест Solid-компонента разбирается так же,
+          как в реальном приложении.
+
+      - id: resolve-conditions
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: resolve.conditions development+browser
+        description: |
+          Означает: `solid-js/web` резолвится в клиентскую ветку (иначе `render()` падает), и
+          условие `solid` дотягивает зависимости, отдающие непреобразованный JSX.
+
+      - id: jsdom-environment
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: jsdom-окружение
+        description: |
+          Означает: `test.environment: "jsdom"` — есть документ, в который рендерить. `jsdom` —
+          необязательный peer, не тянется тем, кто пресет не зовёт.
+
+      - id: deps-inline-by-extension
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Транзитивные JSX-зависимости не внешнятся
+        description: |
+          Означает: тест на компоненте кита не падает `Unknown file extension ".jsx"`, даже
+          когда JSX-зависимость (`@kobalte/core` и т.п.) приезжает транзитивно, а не объявлена
+          у потребителя напрямую.
+          Реализация: `test.server.deps.inline: [/\.[jt]sx(\?|$)/]` — правило по расширению
+          файла, не по списку имён пакетов.
+
+      - id: vitest-workspace-source-alias
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Алиас соседа-исходника — тоже в /vitest
+        description: |
+          Означает: `defineTestConfig()` резолвит соседей по воркспейсу тем же машинным
+          признаком симлинка, что и дев-сервер `defineConfig()` — правка исходника соседа
+          (`ui`/`skin`/`assembly` и т.п.) видна тестам потребителя сразу, без пересборки его
+          `dist`.
+          Реализация: `findWorkspaceSources()` (`src/vite/workspace-source.ts`) была уже
+          самодостаточной функцией, не завязанной на хук Vite — `defineTestConfig()` зовёт её
+          напрямую с `resolve(process.cwd())` и подключает `aliases` в свой `resolve.alias`,
+          второй раз логика не переписана. `test.server.deps.inline` по расширению
+          продолжает ловить JSX соседа и через алиас на исходник — второе условие не
+          потребовалось.
+
+  - category: env
+    items:
+      - id: runtime-env-fromenv
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: fromEnv() — рантайм-ридер env, подпуть /env
+        description: |
+          Означает: приложение читает первое непустое значение из списка env-ключей одной
+          функцией из `build`, не своей копией парсера. Единственный подпуть пакета, чей код
+          реально уезжает в бандл потребителя, а не только конфигурирует сборку — см. FAQ.md
+          «Пакет раньше называл себя "без рантайм-кода"…».
+
+  - category: TS для серверов
+    items:
+      - id: tsconfig-node-profile
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: /tsconfig-node — профиль без DOM/JSX
+        description: |
+          Означает: серверный потребитель наследует базу без браузерных допущений одной строкой
+          `extends`, как фронтенд наследует `/tsconfig`.
+          Реализация: `src/tsconfig/node.json`, общая база с фронтенд-профилем — `src/tsconfig/shared.json`.
+
+      - id: web-core-node-runner
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Бинарник web-core-node
+        description: |
+          Означает: сервер запускается `.ts`-файлом напрямую (`web-core-node src/server.ts`,
+          `web-core-node watch ...`), без ручного шага компиляции и без выбора раннера
+          потребителем.
+          Реализация: тонкая обёртка над `tsx/cli` (`src/bin.mjs`), доступна потребителю
+          через `pnpm`-симлинк `bin` прямой зависимости.
+
+  - category: Поставка
+    items:
+      - id: json-configs-ship-via-dist
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: Конфиги и бинарник едут через dist
+        description: |
+          Означает: тарбол не тащит внутренние `README.md`/`FAQ.md`/`ROADMAP.yaml` — npm/pnpm
+          всегда включает `README.md` любой директории, участвующей в `files`, и это не
+          отключается негейшенами. `/tsconfig`, `/tsconfig-node` и бинарник копируются в `dist/`
+          сборочным шагом, `files` манифеста — снова `["dist", "README.md"]`, как у остальных
+          пакетов кита.
+
+  - category: Документация
+    items:
+      - id: readme-engine-template
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: README по общему шаблону "движок"
+        description: |
+          Означает: Анатомия/Использование/Настройки/Состояния/IO/Сборки/Рецепт заполнены
+          фактами без обоснований (обоснования — FAQ.md), по образцу `web-core/store`. Заменил
+          прежний заход с отдельной триадой README/FAQ/ROADMAP на каждый подпуть (`src/vite/`,
+          `src/vitest/`, `src/tsconfig/`, `src/node/`) — у движка одна тройка на весь пакет,
+          подпути внутри неё строки таблицы, не отдельные документы.
+
+  - category: Не сделано
+    items:
+      - id: rebuild-test-suite
+        type: feature
+        status: Backlog
+        priority: High
+        milestone: null
+        name: Восстановить настоящие пробы зоны
+        description: |
+          Означает: раньше зона проверялась настоящей сборкой тестового приложения, реальными
+          HTTP-запросами к дев-серверу и разбором тарбола `pnpm pack` — сейчас `test/` в
+          репозитории нет вовсе (снесён попутно вместе с соседним дев-инструментом). Сейчас зона проверена
+          только вручную (build/typecheck/смок-тесты) в рамках текущей правки, не автоматическим
+          прогоном. См. FAQ.md.
+
+      - id: migrate-existing-js-servers
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: Перевести оставшиеся JS-серверы на TS
+        description: |
+          Означает: инструмент (профиль + раннер) готов, серверы ещё не переведены — это задача
+          владельцев тех зон, не `build`.
+
+      - id: retire-workspace-source-alias
+        type: feature
+        status: Backlog
+        priority: Low
+        milestone: null
+        name: Снести алиас `workspace-source.ts`, когда все соседи опубликуют `development`
+        description: |
+          Означает: пока хотя бы один пакет-сосед не публикует условие `"development"` в своём
+          `exports`, `resolve.alias`-подмена (`findWorkspaceSources`/`workspaceSourcePlugin`,
+          `src/vite/workspace-source.ts`) остаётся единственным способом видеть его исходник в
+          деве/тестах — снимать её раньше значило бы вернуть регресс, который чинили `dev-source-
+          alias`/`vitest-workspace-source-alias`. Как только миграция соседей на условие
+          `exports` завершится (задача владельцев тех пакетов, не `build` — см. FAQ.md
+          «Почему соседи по воркспейсу подменяются алиасом»), альтернативная сторона алиаса
+          (JS/TS-резолв, не CSS-порождение) станет мёртвым кодом — снести. Часть
+          `generated-css.ts`/CSS-порождение на запрос эта задача не трогает: у неё другая
+          природа (вызов функции вместо чтения файла), условием `exports` не закрывается.
+
+      - id: typecheck-workspace-source-alias
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: Типы соседа-исходника — приёмная часть в tsconfig для условия `development`
+        description: |
+          Означает: сторона `build` готова — `customConditions: ["development"]` в общей базе
+          `src/tsconfig/shared.json` (наследуют оба профиля, `/tsconfig` и `/tsconfig-node`).
+          Как только сосед публикует у себя в `exports` условие `"development": "./src/..."`
+          (ключ раньше `types`/`default` — резолвер берёт первый подошедший по порядку), `tsc
+          --noEmit`/IDE потребителя видят исходник соседа тем же путём, каким Vite/Vitest уже
+          видят его сегодня через `resolve.alias`. Публикация условия у каждого соседа — решение
+          владельца ТОГО пакета (меняет публикуемую поверхность, см. FAQ.md), не `build`; сама
+          правка `build` — чисто аддитивная и не активна, пока ни один сосед условие не
+          опубликовал (проверено: типчек реального приложения-потребителя до/после правки —
+          идентичный набор ошибок).
+          Алиас `workspace-source.ts` остаётся действовать и после — он несёт дев-цикл для ещё
+          не мигрировавших соседей и не мешает уже мигрировавшим. Снос алиаса, когда миграция
+          соседей завершится — отдельный пункт, `retire-workspace-source-alias`.
+
+log:
+  - id: runtime-env-fromenv
+    type: plan
+    date: 2026-09-13
+    summary: >
+      Добавлен подпуть `/env` (`src/env.ts`, экспорт `fromEnv`) — рантайм-код, впервые в этом
+      пакете. Повод: `fromEnv` дублировался бы в каждом приложении, которое читает список
+      env-ключей с запасным именем (первый потребитель — приложение со своим файлом адресов служб),
+      хотя список префиксов, которые вообще доезжают до бандла (`VITE_`/`PRESETS_`/`NEUROBOX_`),
+      уже определён здесь, в `envPrefix` `defineConfig()` (`src/vite/app.ts`) — разъехались бы
+      молча при правке одного без другого. Заречено с user: прежняя фраза «рантайм-кода в пакете
+      нет ни строки» (README «Главное») была фактом на момент написания, не запретом жанра
+      `tooling` — прецедент смешения рантайма и оснастки в одном пакете уже есть у
+      `@web-core/mcp` (тот же `genus: tooling`, рантайма там больше: весь сервер). README/FAQ
+      поправлены под новый факт — снята фраза «нет ни строки», добавлена точка поверхности
+      (шесть частей вместо пяти), FAQ получил разбор «почему теперь не так». Проверено:
+      `pnpm run typecheck`/`pnpm run build` зелёные (потребовалась `"vite/client"` в `types`
+      собственного `tsconfig.json` пакета — раньше не был нужен, весь код был node-side), ручной
+      прогон через реальный `vitest` (временный `test/env.smoke.test.ts`, убран после проверки):
+      резолв по префиксу, запасное имя, обрезка пробелов — все три случая верны.
+      Сам этот потребитель на новый экспорт не переведён этой правкой — он в зоне другого
+      владельца, вне `web-core/build`.
+
+  - id: typecheck-workspace-source-alias
+    type: plan
+    date: 2026-09-12
+    summary: >
+      Заресёрчено вместе с user, направление подтверждено архитектором: `resolve.alias` — приём
+      бандлера, у `tsc`/IDE его нет, они читают `exports` пакета напрямую. Рынок для этого
+      разрыва уже несёт штатный рычаг — условие `exports` (`development`/`production`), которое
+      Vite резолвит из коробки (сам подставляет условие по режиму serve/build, без плагина), а
+      TS с 5.4+ читает через `compilerOptions.customConditions` (у нас TS 5.9.3, `moduleResolution:
+      "bundler"` уже стоял). `defineTestConfig()` (`src/vitest/index.ts`) уже держал
+      `resolve.conditions: ["development", "browser"]` — вхолостую, потому что ни один сосед
+      условие `development` не публиковал. Добавлено: `customConditions: ["development"]` в
+      `src/tsconfig/shared.json` (общая база `/tsconfig`+`/tsconfig-node`) — единственная правка
+      кода со стороны `build`. Дальше — не `build`: публикация `"development": "./src/..."` в
+      `exports` каждого пакета-соседа — решение владельца ТОГО пакета (меняет публикуемую
+      поверхность, старый довод FAQ «Почему алиас, а не условие» этим не отменяется, а сужается
+      до Vite/Vitest — там алиас остаётся оправданным умолчанием). Проверено: `pnpm run build`
+      + `pnpm run typecheck` пакета — зелёные; `pnpm run typecheck` в реальном
+      приложении-потребителе (сосед `@web-core/skin`, условие `development` ещё не публикует)
+      — тот же набор ошибок до и
+      после правки, включая исходный репортнутый баг (`useComponentSkinData` не виден типам) —
+      он остаётся, но теперь ожидаемо: закрывается миграцией `@web-core/skin`, не `build`.
+      `resolve.alias` (`workspace-source.ts`) не тронут — снос за отдельным пунктом
+      (`retire-workspace-source-alias`), когда миграция соседей завершится.
+
+  - id: vitest-workspace-source-alias
+    type: plan
+    date: 2026-09-11
+    summary: >
+      `defineTestConfig()` (`src/vitest/index.ts`) подключает `resolve.alias` через
+      `findWorkspaceSources(resolve(process.cwd()))` — ту же функцию, что дев-сервер
+      `defineConfig()` зовёт из `workspaceSourcePlugin` (`src/vite/app.ts`). Извлекать общую
+      часть заново не потребовалось: `findWorkspaceSources()` уже была самодостаточной функцией
+      в `src/vite/workspace-source.ts`, не привязанной к хуку Vite `config()` — только читала
+      `projectRoot` внутри плагина. Проверено на реальном приложении, собранном этой оснасткой
+      (19 alias-записей найдено, каждая ведёт в `web-core/<сосед>/src/...`, не в `dist`), живой
+      пробник — временный экспорт
+      в `web-core/trace/src/index.ts`, отсутствующий в `dist`, тест потребителя увидел его без
+      пересборки соседа, пробник убран. `test.server.deps.inline` (правило по расширению
+      `.jsx`/`.tsx`) продолжает ловить JSX соседа и через алиас на исходник — второе условие не
+      потребовалось. `tsc`/typecheck и `vite build` пакета зелёные, регрессий в существующих
+      прогонах тех же двух приложений не внесено (замер до и после правки — идентичные
+      14 упавших/18 прошедших тестов, причина упавших не в этой правке — отдельный
+      pre-existing дефект вне зоны `build`). Резолв типов соседа через `dist/*.d.ts` в
+      `tsc --noEmit`/IDE этой правкой не затронут — заведён отдельно
+      (`typecheck-workspace-source-alias`).
+
+  - id: genus-tooling-not-engine
+    type: plan
+    date: 2026-09-04
+    summary: >
+      genus:engine было моим собственным выбором («без DOM — значит движок»), не проверенным на
+      том, есть ли внутри реально ОДИН механизм. Его не было: `/vite`, `/vitest`,
+      `/tsconfig`+`/tsconfig-node`, `web-core-node` не делят ни данных, ни состояния — общая
+      только тема (сборочный инструментарий), не общий движок. User подтвердил: набор утилит, не
+      движок, и завёл под это отдельный genus — `tooling` (`оснастка без рантайм-кода в
+      поставке», `web-core/build` — первый пилот этого genus). Попытка сделать `/vite`
+      фиктивным корнем `.` (по образцу assembly/store) отменена: она честно описывала бы только
+      одну из четырёх частей как "главную", а остальные — как её сателлитов, которыми они не
+      являются (например, `/tsconfig-node`+`web-core-node` вообще не про Vite). Оставлены четыре
+      равноправных именованных подпути, без корня `.`.
+
+  - id: engine-architecture-not-folder-per-subpath
+    type: plan
+    date: 2026-09-04
+    summary: >
+      genus:engine был взят, но структура `src/` была ровно тем анти-паттерном, который store уже
+      один раз отклонил у себя (см. его FAQ.md/ROADMAP.yaml, "folder-per-subpath" отклонён user):
+      пять папок одного уровня, по одной на каждый подпуть `exports`, без точки входа и без
+      разбивки по смыслу внутри — россыпь функций по директориям, не движок. Переделано по
+      образцу `web-core/assembly`: `src/vite/` — самая большая часть, расколота на концерны
+      (`app.ts` — приложение, `library.ts` — библиотека, `workspace-source.ts` — внутренний
+      помощник), `index.ts` стал тонким барелем (как `assembly/src/engine/index.ts`), а не
+      содержательным файлом. Два tsconfig-профиля и их общая база — однотипные вещи, собраны в
+      одну папку `src/tsconfig/` (`frontend.json`/`node.json`/`shared.json`), как у store
+      `addons/` (persist/undo/reset/validate — одна папка на четыре подпути). Раннер — один
+      файл `src/bin.mjs` без отдельной папки: сравнимо с однофайловыми модулями `addons/`, не
+      обязан быть в собственной директории только потому, что у него свой подпуть в `exports`.
+
+  - id: main-section-and-inline-emoji
+    type: plan
+    date: 2026-09-04
+    summary: >
+      Репозиторий доуточнил шаблон доки сущности: раздел «Главное» (шапка-бейдж + вступительный
+      абзац) обязан идти собственным `<h2>` первым в порядке разделов, а не висеть текстом перед
+      первым заголовком; эмодзи нужны не только в заголовках разделов, но и внутри самого текста
+      описаний. README.md пакета приведён под оба уточнения.
+
+  - id: docs-collapsed-to-single-triad
+    type: plan
+    date: 2026-09-04
+    summary: >
+      Репозиторий формализовал единый шаблон доки сущности: одна тройка
+      README/FAQ/ROADMAP.yaml на пакет, фиксированный порядок
+      разделов (Анатомия→Использование→Настройки→Состояния→IO→Сборки→Рецепт), эталон для
+      genus:engine — `web-core/store`. Прежний заход (отдельная тройка докой на каждый подпуть
+      `src/vite/`, `src/vitest/`, `src/tsconfig/`, `src/node/`) собран в одну тройку в корне;
+      код в этих папках не тронут — правка только докой.
+
+  - id: json-configs-ship-via-dist
+    type: plan
+    date: 2026-09-04
+    summary: >
+      `/tsconfig`, `/tsconfig-node` и bin `web-core-node` переехали с прямой ссылки на `src/`
+      на `dist/` (копируются туда шагом сборки). Причина — npm/pnpm ВСЕГДА включает `README.md`
+      любой директории, участвующей в `files`, независимо от `!`-негейшенов: пока конфиги
+      отдавались прямо из `src/tsconfig/`+`src/node/`+`src/shared/`, в тарбол утекали доки этих
+      тем. Через `dist/` (там документов нет) поставка снова чистая — только код и конфиг.
+
+  - id: js-source-extensions-removed
+    type: plan
+    date: 2026-09-04
+    summary: >
+      `SOURCE_EXTENSIONS` дев-алиаса (`src/vite/workspace-source.ts`) больше не ищет исходник
+      соседа в `.js`/`.jsx`/`.mjs` — только `.ts`/`.tsx`/`.mts`. Причина: правило репозитория
+      «дев-пространство — TS-only», алиас не обязан легитимизировать JS-исходник соседа поиском.
+
+  - id: node-theme-added
+    type: plan
+    date: 2026-09-04
+    summary: >
+      Добавлены `/tsconfig-node` и бинарник `web-core-node` — ответ на то, что серверы в
+      репозитории (служба хранения пресетов, MCP-сервер зоны) писали JS руками не по выбору, а из-за
+      отсутствия TS-пути. `moduleResolution: "bundler"`, не `nodeNext` — см. FAQ.md.
+
+  - id: tracker-references-removed
+    type: plan
+    date: 2026-09-04
+    summary: >
+      Убраны все ссылки на тикеты внешнего трекера (были в README/FAQ/ROADMAP и в комментариях
+      кода) — по новому правилу репозитория: трекер меняется, тикеты закрываются и
+      переименовываются, а причина решения должна пониматься из текста самой доки, ни разу не
+      открыв трекер.

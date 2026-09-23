@@ -2,7 +2,7 @@ package kinds
 
 import "encoding/json"
 
-// Palette — зеркало `Palette` (packages/skin/src/engine/look/types.ts): `name`/`author` типовые
+// Palette — зеркало `Palette` (web-core/skin/src/engine/look/types.ts): `name`/`author` типовые
 // скаляры, `scales`/`dimensions`/`light`/`dark` (SkinVariables) — именованные JSON-поля: у GraphQL
 // нет типа "словарь с произвольными ключами", а разложить их по ключу и незачем — ни один профиль
 // потребления не выбирает отдельную переменную, все берут палитру целиком (recipe-assembly-json-

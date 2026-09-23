@@ -1,4 +1,4 @@
-// Изолирует находку из select-in-slot-repro.test.tsx до голого движка (`packages/assembly` +
+// Изолирует находку из select-in-slot-repro.test.tsx до голого движка (`web-core/assembly` +
 // kitComponentRenderer, БЕЗ apps/skin's Renderer/componentHandle) — растим `items` ПО ОДНОМУ,
 // реальными отдельными тиками (setTimeout, не один synchronous .set()), как клик «Добавить»
 // девять раз подряд, а не один set() с готовым массивом.

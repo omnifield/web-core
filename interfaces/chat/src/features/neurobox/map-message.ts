@@ -7,7 +7,7 @@ export const AGENT_PARTICIPANT_ID = "agent";
 
 /** Бокс текстовый (`NEUROBOX_CLIENT.md`) — `tool-result.content` в форме массива на практике не
  *  встречается, но тип вендора это допускает. Тот же приём защиты, что `toWireContent` в
- *  `packages/neurobox/src/engine/connection.ts` на исходящей стороне. */
+ *  `web-core/neurobox/src/engine/connection.ts` на исходящей стороне. */
 function contentText(content: string | ReadonlyArray<unknown>): string {
   if (typeof content === "string") return content;
   return content

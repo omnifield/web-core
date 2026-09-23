@@ -32,57 +32,57 @@ models:
 # без овнера — и на этом я один раз поставил задачу несуществующему адресату.
 zones:
   style:
-    paths: [packages/style]
-    description: "набор значений оформления — шкалы, размерности, роли. Здесь же стоял `packages/style-tools` (инструменты стилизации, выделявшиеся из `style` разрезом): папки на диске нет, и путь снят 2026-09-18 — boundary на несуществующую папку не защищает ничего, но выглядит как защита. Разрез возобновится — путь вернуть вместе с папкой."
+    paths: [web-core/style]
+    description: "набор значений оформления — шкалы, размерности, роли. Здесь же стоял `web-core/style-tools` (инструменты стилизации, выделявшиеся из `style` разрезом): папки на диске нет, и путь снят 2026-09-18 — boundary на несуществующую папку не защищает ничего, но выглядит как защита. Разрез возобновится — путь вернуть вместе с папкой."
   ui:
-    paths: [packages/ui]
+    paths: [web-core/ui]
     description: примитивы на Ark/Zag — 1-to-1 DOM, ноль стилей по умолчанию, паспорт компонента
   router:
-    paths: [packages/router]
+    paths: [web-core/router]
     description: "пакет для роутинга"
   assembly:
-    paths: [packages/assembly]
+    paths: [web-core/assembly]
     description: "механика сборки — дерево узлов, реестр из паспортов, правки дерева, проверка вложенности, отрисовка по данным. Средство, а не решение: своего вида не приносит."
   store:
-    paths: [packages/store]
+    paths: [web-core/store]
     description: оснастка сборки — подпути /vite, /tsconfig, /vitest
   build:
-    paths: [packages/build]
+    paths: [web-core/build]
     description: оснастка сборки — подпути /vite, /tsconfig, /vitest
   lint:
-    paths: [packages/lint]
+    paths: [web-core/lint]
     description: "машинный контроль кода: Solid-канон (eslint-plugin-solid) сегодня, кодстиль/импорты (Biome) — в работе"
   mcp:
-    paths: [packages/mcp]
+    paths: [web-core/mcp]
     description: "тонкий переиспользуемый MCP-сервер  — каркас, которым ЛЮБОЙ продукт на фреймворке подключает агента: фреймворк отдаёт готовые интроспекционные инструменты (паспорта кита, пресеты), продукт добавляет свои поверх одним вызовом. Не про одного конкретного агента  — про общий протокол подключения."
   generators:
-    paths: [packages/generators]
+    paths: [web-core/generators]
     description: ""
   query:
-    paths: [packages/query]
+    paths: [web-core/query]
     description: "универсальны пакет для запросов для  rest и graphQl"
   io:
-    paths: [packages/io]
-    description: "универсальный вход/выход данных — паспорт формы компонента (`entity/io.ts` читает отсюда `z`) и слоистый движок переходников (L0 тождество / L1 переименование ключей / L2 правила полей и мутация значений / L3 форма целиком с повторами, открыт). Средство, а не решение: не знает ни про скин, ни про конкретный компонент — `packages/io` не импортирует `packages/skin` и не будет (решено user, 2026-08-29)."
+    paths: [web-core/io]
+    description: "универсальный вход/выход данных — паспорт формы компонента (`entity/io.ts` читает отсюда `z`) и слоистый движок переходников (L0 тождество / L1 переименование ключей / L2 правила полей и мутация значений / L3 форма целиком с повторами, открыт). Средство, а не решение: не знает ни про скин, ни про конкретный компонент — `web-core/io` не импортирует `web-core/skin` и не будет (решено user, 2026-08-29)."
   form:
-    paths: [packages/form]
-    description: "проекция дерево×io-схема→валидность (@web-core/assembly+@web-core/io) — вторая нога механики assembly (та — дерево→рендер, эта — дерево→валидатор), не форма из инпутов. Не рендерит, не владеет состоянием (@tanstack/solid-form отклонён и снесён). Ось валидации на useKitLife — cross-zone в packages/ui, паспорт (packages/skin) не тронут. Заведён 2026-09-12, роль пересмотрена тем же днём. См. packages/form/ROADMAP.yaml."
+    paths: [web-core/form]
+    description: "проекция дерево×io-схема→валидность (@web-core/assembly+@web-core/io) — вторая нога механики assembly (та — дерево→рендер, эта — дерево→валидатор), не форма из инпутов. Не рендерит, не владеет состоянием (@tanstack/solid-form отклонён и снесён). Ось валидации на useKitLife — cross-zone в web-core/ui, паспорт (web-core/skin) не тронут. Заведён 2026-09-12, роль пересмотрена тем же днём. См. web-core/form/ROADMAP.yaml."
   solid:
-    paths: [packages/solid, canons/solidJS]
+    paths: [web-core/solid, canons/solidJS]
     description: "движок связки с Solid (`@web-core/solid`, 🏷️ framework). Зона заведена 2026-09-18: папка с полной тройкой доков жила без владельца, то есть поднять owner-сессию в неё было нельзя вовсе. Рыночный канон по Solid (`canons/solidJS`) отдан сюда же — он про эту же тему."
   trace:
-    paths: [packages/trace]
+    paths: [web-core/trace]
     description: "движок perf-трейсов (`@web-core/trace`, 🏷️ diagnostics) — ядро без фреймворка плюс необязательный Solid-плагин. Зона заведена 2026-09-18: папка была без владельца."
   neurobox:
-    paths: [packages/neurobox]
-    description: "клиент для бокса нейробокс (менеджер рантаймов агентов, протокол AG-UI — см. корневой NEUROBOX_CLIENT.md) поверх @tanstack/ai-client/@tanstack/ai-solid. Заведён 2026-09-13, детали user обсудил с владельцем напрямую. См. packages/neurobox/ROADMAP.yaml."
+    paths: [web-core/neurobox]
+    description: "клиент для бокса нейробокс (менеджер рантаймов агентов, протокол AG-UI — см. корневой NEUROBOX_CLIENT.md) поверх @tanstack/ai-client/@tanstack/ai-solid. Заведён 2026-09-13, детали user обсудил с владельцем напрямую. См. web-core/neurobox/ROADMAP.yaml."
   feeder:
     paths: [interfaces/feeder]
-    description: "первая сущность нового корня interfaces/ (между packages/ и apps/): сводит @web-core/generators+@web-core/io в переиспользуемый UI настройки/загрузки данных для больше чем одного приложения. Заведён 2026-09-14 (фундамент — architect напрямую, зоны без овнера ещё не было); три задуманных режима (зод-схема→дерево, ручки по шаблону версии, файл) не реализованы. См. interfaces/feeder/{README,FAQ}.md и ROADMAP.yaml."
+    description: "первая сущность нового корня interfaces/ (между web-core/ и apps/): сводит @web-core/generators+@web-core/io в переиспользуемый UI настройки/загрузки данных для больше чем одного приложения. Заведён 2026-09-14 (фундамент — architect напрямую, зоны без овнера ещё не было); три задуманных режима (зод-схема→дерево, ручки по шаблону версии, файл) не реализованы. См. interfaces/feeder/{README,FAQ}.md и ROADMAP.yaml."
   chat:
     paths: [interfaces/chat, canons/chat]
     description: "второй кейс корня interfaces/ — назначение не определено, разбирает user с owner-сессией напрямую. Заведён 2026-09-14 (фундамент по тому же приёму, что feeder — architect напрямую). См. interfaces/chat/{README,FAQ}.md и ROADMAP.yaml."
-  # Зоны products/ стоят здесь ВРЕМЕННО и уедут отдельными продуктами. В packages/ им нельзя:
+  # Зоны products/ стоят здесь ВРЕМЕННО и уедут отдельными продуктами. В web-core/ им нельзя:
   # там база.
   tables:
     paths: [canons/filter-tables-graphs]
@@ -103,7 +103,7 @@ zones:
     paths: [apps/studio/.mcp]
     description: "MCP-сервер студии — тулы для агента поверх @web-core/mcp (было skin-mcp). Папка вложена в зону studio-app, владелец у неё свой: более специфичный путь выигрывает. Канон оформления (`canons/ui-skin`) остался зоне skin — делить его напополам значило бы вернуть то пересечение, из-за которого зоны и разводили."
   skin:
-    paths: [canons/ui-skin, packages/skin]
+    paths: [canons/ui-skin, web-core/skin]
     description: "производство оформлений для безголового кита — своя логика, кит остаётся голым. У продукта СВОЙ архитектор: заявки сюда приходят от него, а не ставятся ему."
   reference:
     paths: [apps/reference]
@@ -115,7 +115,7 @@ zones:
     paths: [products/windshift]
     description: "self-hosted трекер работы, вендорится целиком отдельным Go-проектом. Тот самый трекер, которым продукт пользуется как источником истины по задачам — но это ЕГО КОД, а не служба: работа по задачам идёт через Windshift MCP. Зона заведена 2026-09-18: папка была без владельца."
   cli:
-    paths: [packages/cli]
+    paths: [web-core/cli]
     description: "ручки выпуска и проверок для машины: тонкий фасад поверх штатной механики pnpm (интенты → план → версии → публикация) плюс приёмка установкой вне репозитория. Заведена 2026-09-23 по решению user: девопс дёргает глагол с JSON-выходом и внятным кодом возврата, а не ковыряется в пакетах и не держит в голове, кто с кем синхронен по версии. Имя зоны шире выпуска НАМЕРЕННО — сюда же лягут другие машинные ручки, когда понадобятся. Теги и релизы здесь НЕ делаются: они на стороне рабочего репозитория."
   plugins:
     paths: [canons/plugins, canons/solid-plugins]

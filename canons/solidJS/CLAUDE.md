@@ -2,7 +2,7 @@
 
 зона **`solid`** · владелец: **owner-solid** · сессия: `WEBCORE_SCOPE=solid claude`
 
-Зона держит несколько папок — все они твои: `packages/solid/`, `canons/solidJS/`.
+Зона держит несколько папок — все они твои: `web-core/solid/`, `canons/solidJS/`.
 
 **Дока этой папки — твой рабочий контекст, читается до первой правки:**
 

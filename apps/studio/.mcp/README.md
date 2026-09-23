@@ -19,7 +19,7 @@
 
 🎨 MCP-сервер для создания скина web-core — используйте, если агенту (не человеку — для человека
 есть визуальный редактор) нужно собрать/проверить/сохранить палитру, форму компонента, наряд или
-сборку. Ручки на уже готовую механику `packages/skin`, не новая механика — сервер разведывает кит
+сборку. Ручки на уже готовую механику `web-core/skin`, не новая механика — сервер разведывает кит
 (паспорта компонентов), проверяет ДО сохранения (два прохода: ссылки и адрес) и кладёт результат в
 службу пресетов (`backend/presets`, Go+bbolt). **v1 — только текст**: CSS-текст (`generateSkinCss`)
 и структурированные отчёты проверок, без скриншота — живого рендера в headless-браузере в
@@ -353,7 +353,7 @@ MCP-тулы (`list_presets`/`get_preset` локально, `save_preset` на �
 | `get_passport` | `{ component, root, parts, variantAxis, settings, selfAssembly }` — без анатомии-дубля/editor-слайса/сборок/io (те — `list_components`/`get_assemblies`/`get_io_schema`) |
 | `list_presets` | `{ items: [{label, name, savedAt}], nextCursor? }` (с `kind` в аргументе) / `{palette:[...], form:[...], ...}` (без `kind` — обзор пяти видов, каждая группа той же формы) — без `id`/`kind` в самой записи, мёртвый вес и дубль контекста, см. `ROADMAP.yaml` |
 | `get_preset` | конверт записи целиком (`{id, label, name, kind, savedAt, state}`) |
-| `check_*` | отчёт с флавами (форма своя у каждого — см. `packages/skin` README); `check_palette` рядом с `flaws` отдаёт `categoryClashes` (`{categories, places:[{half, step, distance}], means}` — одна запись на пару); `check_form` при `ok:true` дополнительно отдаёт `tagGroups` (`variantTags` наоборот — тег → варианты, из `@web-core/skin/tags`) — готовая раскладка под свайперы витрины |
+| `check_*` | отчёт с флавами (форма своя у каждого — см. `web-core/skin` README); `check_palette` рядом с `flaws` отдаёт `categoryClashes` (`{categories, places:[{half, step, distance}], means}` — одна запись на пару); `check_form` при `ok:true` дополнительно отдаёт `tagGroups` (`variantTags` наоборот — тег → варианты, из `@web-core/skin/tags`) — готовая раскладка под свайперы витрины |
 | `assemble_preview` | `{report, gaps}` инлайном + CSS отдельным `resource_link` (`skin-css://<uuid>`, читать `resources/read`) — не `{report, gaps, css}` одним телом |
 | `save_preset` | `{ saved }` — сохранённый конверт (`PresetRecord`, не булево) |
 | `list_feedback` | `{ items: [{id, label, tool, sign, status, at}], nextCursor? }` — без тела заявки, оно в `get_feedback(id)` |
@@ -389,9 +389,9 @@ MCP-тулы (`list_presets`/`get_preset` локально, `save_preset` на �
 | Тег с кириллицей в имени | `save_preset({kind:"tag", state:{name:"статусы"}})` | служба пресетов отказывает `bad_name` — имя тега тот же slug-формат, что у `name` любой записи |
 | Тег по значению варианта (реальная форма) | `save_preset(kind:"form")` на живой `omnifield-button` с `variantTags:{error:["status"],success:["status"],warning:["status"]}` | сохранено; `primary`/`secondary`/`tertiary`/`error-quiet` автоматически получили `["default"]`, не переданные явно |
 | Неизвестный тег по значению варианта | `variantTags:{error:["no-such-tag"]}` на реальной форме | флав `unknown-tag` с адресом `variantTags.error`, `css` в ответе тоже пропадает (сигнал непротиворечив) |
-| Механика тегов из `@web-core/skin/tags` (после переезда) | реальный `check_form` с известными/неизвестными тегами через живой сервер, свежий рестарт | `tagGroups` собран верно (`default` первым, `status` вторым), `unknown-tag` по-прежнему ловится — поведение не изменилось после переноса чистой механики в `packages/skin` |
+| Механика тегов из `@web-core/skin/tags` (после переезда) | реальный `check_form` с известными/неизвестными тегами через живой сервер, свежий рестарт | `tagGroups` собран верно (`default` первым, `status` вторым), `unknown-tag` по-прежнему ловится — поведение не изменилось после переноса чистой механики в `web-core/skin` |
 | Финальная сверка перед первым деплоем на VPS | `save_content`/`author`-guard/`report_feedback`/`assemble_preview`/`browser_*` одним прогоном через `stdioPeer` | все семь шагов зелёные; попутно найдена и починена реальная утечка в `@web-core/mcp/peer` — см. следующую строку |
-| `stdioPeer` без `env` не путает окружения | тот же прогон, ДО починки: `SKIN_MCP_ADMIN_AUTHOR`/`SKIN_MCP_CHROME_EXECUTABLE` заданы в оболочке, но не у спавненного `pnpm start` | `author`-guard молча пропускал чужую перезапись `omnifield-*`, `browser_screenshot` не находил Chrome — оба симптома исчезли после `stdioPeer(..., {env: process.env})`, см. `packages/neurobox/FAQ.md` |
+| `stdioPeer` без `env` не путает окружения | тот же прогон, ДО починки: `SKIN_MCP_ADMIN_AUTHOR`/`SKIN_MCP_CHROME_EXECUTABLE` заданы в оболочке, но не у спавненного `pnpm start` | `author`-guard молча пропускал чужую перезапись `omnifield-*`, `browser_screenshot` не находил Chrome — оба симптома исчезли после `stdioPeer(..., {env: process.env})`, см. `web-core/neurobox/FAQ.md` |
 | `save_content` — `data` печатает `"type": "object"` в JSON Schema | `client.listTools()`, `inputSchema.properties.data` до/после замены `z.unknown()` на `z.record(z.string(), z.unknown())` | ДО: `{"description": "..."}` без `type` — MCP-клиенты не понимали, что нужен объект, слали `data` строкой, служба честно отказывала `expected object, received string`; ПОСЛЕ: `{"type":"object", ...}` |
 
 <h2 id="рецепт">🎨 Рецепт</h2>

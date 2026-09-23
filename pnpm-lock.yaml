@@ -19,19 +19,19 @@ importers:
         version: 0.13.13(solid-js@1.9.14)
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../packages/skin
+        version: link:../../web-core/skin
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../packages/solid
+        version: link:../../web-core/solid
       '@web-core/style':
         specifier: ^0.4.0
-        version: link:../../packages/style
+        version: link:../../web-core/style
       '@web-core/trace':
         specifier: ^0.4.0
-        version: link:../../packages/trace
+        version: link:../../web-core/trace
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../packages/ui
+        version: link:../../web-core/ui
       solid-js:
         specifier: ^1.9.14
         version: 1.9.14
@@ -44,10 +44,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../packages/build
+        version: link:../../web-core/build
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../packages/lint
+        version: link:../../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -71,7 +71,7 @@ importers:
         version: 1.170.30(solid-js@1.9.14)
       '@web-core/assembly':
         specifier: ^0.4.0
-        version: link:../../packages/assembly
+        version: link:../../web-core/assembly
       '@web-core/chat':
         specifier: ^0.3.0
         version: link:../../interfaces/chat
@@ -80,34 +80,34 @@ importers:
         version: link:../../interfaces/feeder
       '@web-core/generators':
         specifier: ^0.4.0
-        version: link:../../packages/generators
+        version: link:../../web-core/generators
       '@web-core/io':
         specifier: ^0.4.0
-        version: link:../../packages/io
+        version: link:../../web-core/io
       '@web-core/neurobox':
         specifier: ^0.4.0
-        version: link:../../packages/neurobox
+        version: link:../../web-core/neurobox
       '@web-core/query':
         specifier: ^0.4.0
-        version: link:../../packages/query
+        version: link:../../web-core/query
       '@web-core/router':
         specifier: ^0.4.0
-        version: link:../../packages/router
+        version: link:../../web-core/router
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../packages/skin
+        version: link:../../web-core/skin
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../packages/solid
+        version: link:../../web-core/solid
       '@web-core/store':
         specifier: ^0.4.0
-        version: link:../../packages/store
+        version: link:../../web-core/store
       '@web-core/style':
         specifier: ^0.4.0
-        version: link:../../packages/style
+        version: link:../../web-core/style
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../packages/ui
+        version: link:../../web-core/ui
       partial-json:
         specifier: ^0.1.7
         version: 0.1.7
@@ -126,10 +126,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../packages/build
+        version: link:../../web-core/build
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../packages/lint
+        version: link:../../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -153,16 +153,16 @@ importers:
         version: 1.30.0(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/io':
         specifier: ^0.4.0
-        version: link:../../../packages/io
+        version: link:../../../web-core/io
       '@web-core/neurobox':
         specifier: ^0.4.0
-        version: link:../../../packages/neurobox
+        version: link:../../../web-core/neurobox
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../../packages/skin
+        version: link:../../../web-core/skin
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../../packages/ui
+        version: link:../../../web-core/ui
       zocker:
         specifier: ^3.0.0
         version: 3.0.0(zod@4.4.3)
@@ -175,10 +175,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../../packages/build
+        version: link:../../../web-core/build
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../../packages/lint
+        version: link:../../../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -193,20 +193,20 @@ importers:
     dependencies:
       '@web-core/neurobox':
         specifier: ^0.4.0
-        version: link:../../packages/neurobox
+        version: link:../../web-core/neurobox
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../packages/ui
+        version: link:../../web-core/ui
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../packages/build
+        version: link:../../web-core/build
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../packages/lint
+        version: link:../../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -230,25 +230,25 @@ importers:
         version: 3.1.0
       '@web-core/generators':
         specifier: ^0.4.0
-        version: link:../../packages/generators
+        version: link:../../web-core/generators
       '@web-core/io':
         specifier: ^0.4.0
-        version: link:../../packages/io
+        version: link:../../web-core/io
       '@web-core/query':
         specifier: ^0.4.0
-        version: link:../../packages/query
+        version: link:../../web-core/query
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../packages/skin
+        version: link:../../web-core/skin
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../packages/solid
+        version: link:../../web-core/solid
       '@web-core/store':
         specifier: ^0.4.0
-        version: link:../../packages/store
+        version: link:../../web-core/store
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../packages/ui
+        version: link:../../web-core/ui
       yaml:
         specifier: ^2.8.1
         version: 2.9.0
@@ -258,10 +258,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../packages/build
+        version: link:../../web-core/build
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../packages/lint
+        version: link:../../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -281,7 +281,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/.release:
+  web-core/.release:
     dependencies:
       '@web-core/cli':
         specifier: workspace:*
@@ -303,7 +303,7 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  packages/assembly:
+  web-core/assembly:
     dependencies:
       '@web-core/trace':
         specifier: workspace:*
@@ -343,7 +343,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/build:
+  web-core/build:
     dependencies:
       '@typescript/typescript6':
         specifier: ^6.0.2
@@ -389,7 +389,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/cli:
+  web-core/cli:
     dependencies:
       commander:
         specifier: ^15.0.0
@@ -420,7 +420,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/form:
+  web-core/form:
     dependencies:
       '@web-core/assembly':
         specifier: workspace:*
@@ -466,7 +466,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/generators:
+  web-core/generators:
     dependencies:
       '@web-core/io':
         specifier: workspace:*
@@ -494,7 +494,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/io:
+  web-core/io:
     dependencies:
       fast-json-patch:
         specifier: ^3.1.1
@@ -522,7 +522,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/lint:
+  web-core/lint:
     dependencies:
       '@babel/core':
         specifier: ^8.0.1
@@ -550,7 +550,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/lint/test/consumer:
+  web-core/lint/test/consumer:
     dependencies:
       '@web-core/lint':
         specifier: workspace:*
@@ -560,7 +560,7 @@ importers:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
 
-  packages/mcp:
+  web-core/mcp:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
@@ -594,7 +594,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/neurobox:
+  web-core/neurobox:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
@@ -649,7 +649,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/query:
+  web-core/query:
     dependencies:
       '@tanstack/query-persist-client-core':
         specifier: ^5.102.8
@@ -701,7 +701,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/router:
+  web-core/router:
     dependencies:
       '@tanstack/router-plugin':
         specifier: ^1.168.35
@@ -747,7 +747,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/skin:
+  web-core/skin:
     dependencies:
       '@tanstack/ai':
         specifier: ^0.54.0
@@ -820,7 +820,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/solid:
+  web-core/solid:
     dependencies:
       '@solid-primitives/keyed':
         specifier: ^1.5.3
@@ -851,7 +851,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/store:
+  web-core/store:
     dependencies:
       '@web-core/solid':
         specifier: workspace:*
@@ -903,7 +903,7 @@ importers:
         specifier: ^5.32.6
         version: 5.32.6
 
-  packages/style:
+  web-core/style:
     dependencies:
       '@web-core/trace':
         specifier: workspace:*
@@ -946,7 +946,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/trace:
+  web-core/trace:
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
@@ -961,7 +961,7 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
-  packages/ui:
+  web-core/ui:
     dependencies:
       '@tanstack/solid-table':
         specifier: ^9.1.2
@@ -1119,17 +1119,17 @@ importers:
     dependencies:
       '@web-core/cli':
         specifier: workspace:*
-        version: link:../packages/cli
+        version: link:../web-core/cli
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
         specifier: workspace:*
-        version: link:../packages/build
+        version: link:../web-core/build
       '@web-core/lint':
         specifier: workspace:*
-        version: link:../packages/lint
+        version: link:../web-core/lint
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)

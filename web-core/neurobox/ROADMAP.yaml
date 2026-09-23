@@ -1,0 +1,855 @@
+# Дорожная карта @web-core/neurobox — источник правды по фактически сделанной работе. Статус
+# проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же,
+# что у web-core/router/web-core/query/web-core/form (categories → items, log — журнал решений).
+#
+# Пакет заведён 2026-09-13 архитектором по прямой просьбе user — клиент для бокса нейробокс
+# (менеджер рантаймов агентов, протокол AG-UI; полное описание — в документации самого бокса,
+# здесь не пересказывается). Детали уже обсуждены user с владельцем этого пакета напрямую — этот
+# файл только заводит шаблон (package.json/конфиги/голый реэкспорт), содержание — открытая работа
+# владельца. Семь развилок ниже разобраны архитектором и user тем же днём (см. log,
+# client-adapter-decisions-resolved) — решения приняты, код ещё не написан, поэтому статусы
+# остаются Backlog: тот же принцип, что и везде в репо — Done ставится рядом с реализацией и
+# проверкой, не рядом с решением.
+
+categories:
+  - category: Поверхность
+    items:
+      - id: full-vendor-reexport
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "Полный реэкспорт @tanstack/ai-client (`.`) и @tanstack/ai-solid (`./solid`)"
+        description: |
+          `export * from "@tanstack/ai-client"` / `export * from "@tanstack/ai-solid"` —
+          единственная точка резолва, тем же приёмом, что `@web-core/router`/`@web-core/query`/
+          `@web-core/form`. Разбор, почему взят именно TanStack AI, а не свой клиент под AG-UI —
+          FAQ.md. Отправная точка, не конечная форма — пакет растёт своей обвязкой поверх вендора
+          по мере пунктов ниже, не остаётся голым реэкспортом.
+
+  - category: "Решено архитектором и user — реализация за владельцем"
+    items:
+      - id: auth-headers-server-side-only
+        type: decision
+        status: Backlog
+        priority: High
+        milestone: null
+        name: "Authorization + X-User-Login — пока НЕ трогаем, токен статичный как сегодня"
+        description: |
+          Раздел «Доступ» в документации бокса: `X-User-Login` бокс не проверяет — «кто назвался,
+          тот и владелец», подстановка из браузера в теории позволяет назваться чужим именем.
+          РЕШЕНО (user, 2026-09-13): авторизацией сейчас не занимаемся — токен один на всех,
+          заголовки ставятся там же, где и сегодня (на клиенте), серверный прокси-слой не заводим.
+          Возврат к этому пункту — отдельным заходом, когда/если авторизация станет предметом
+          работы, не блокер для остальной части пакета.
+
+      - id: run-agent-input-shape
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "Свой ConnectConnectionAdapter — штатный fetchServerSentEvents не собирает context бокса"
+        description: |
+          `forwardedProps`/`context` (раздел «Прогон» протокола бокса) — чем агент думает и
+          что знает о месте (страница/компонент/вариант), два РАЗНЫХ поля конверта. РЕШЕНО (сверено
+          чтением `dist/esm/connection-adapters.js` пакета `@tanstack/ai-client@0.31.1`, не по
+          доке): `buildRunAgentInputBody()` внутри `fetchServerSentEvents()` шлёт `context: []`
+          ЗАШИТО, `data`/`options.body` сливаются только в `forwardedProps`. Значит используем не
+          `fetchServerSentEvents`, а пишем свой `ConnectConnectionAdapter` (`connect(messages, data,
+          abortSignal, runContext)` → `AsyncIterable<StreamChunk>`, тип пакета уже экспортирует) —
+          он и собирает `context` из `data`, и ставит `Authorization`/`X-User-Login`. Сборку
+          `messages` в wire-формат переизобретать не нужно — `convertMessagesToModelMessages`/
+          `normalizeToUIMessage`/`modelMessagesToUIMessages` уже публичный реэкспорт пакета.
+          Открыто по-прежнему (не архитектура, а поверхность): типизированные обёртки над
+          `GET /api/catalog/recipes`/`/passports` для имён `forwardedProps`, или сырые fetch —
+          см. `catalog-endpoints-typed-or-raw`.
+
+      - id: tool-call-result-reactivity
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "Реакция на TOOL_CALL_RESULT — бесплатно через onChunk, ничего своего писать не надо"
+        description: |
+          Бокс прямо называет `TOOL_CALL_RESULT` «тем, ради чего стоит слушать
+          поток» — по нему видно, что реально изменено, ДО конца прогона («агент сохранил данные —
+          перезапроси и переключи показ»). РЕШЕНО (сверено чтением `types.d.ts`): `ChatClientOptions`
+          несёт `onChunk?: (chunk: StreamChunk) => void`, зовётся на КАЖДЫЙ кадр, включая
+          `ToolCallResultEvent` (`type: 'TOOL_CALL_RESULT'`, поля `toolCallId`/`content` — то же,
+          что шлёт бокс). Не нужна своя обвязка поверх connection-адаптера — только фильтр по
+          `chunk.type` в `onChunk`, который передаётся потребителем пакета как обычная опция
+          `useChat`.
+
+      - id: cancel-request-wired-into-connect
+        type: decision
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "POST /cancel дожимается САМИМ connect() по abortSignal — не отдельная функция для потребителя"
+        description: |
+          `POST /api/agent/{threadId}/cancel` — отдельный запрос, не поле конверта, а `stop()` из
+          `useChat` по умолчанию рвёт только локальный `fetch` через `AbortSignal`, бокс об этом не
+          узнаёт. Бокс прямо предупреждает про свой известный баг: после голого обрыва
+          соединения следующее сообщение может зависнуть до таймаута (`agent-silent`).
+          РЕШЕНО (user, 2026-09-13, вариант А из двух предложенных): свой `connect()` подписывается
+          на переданный ему `abortSignal` и САМ шлёт `POST /cancel` по его срабатыванию — потребитель
+          пакета просто зовёт штатный `stop()`, не обязан помнить про вторую ручку бокса. Известный
+          баг бокса (поток может замолчать и после нашей отмены) этим не чинится — не наша поломка,
+          но раз он документирован, поверхность пакета (тип состояния потока/README) должна явно
+          называть сценарий «после отмены — новый поток», не оставлять потребителя удивляться молча.
+
+          ⚠️ **Ловушка при реализации** (найдена ревью со стороны бокса, не блокер решения выше, но
+          обязательна к учёту в коде): `POST /cancel` НЕЛЬЗЯ слать с тем же `abortSignal`, который
+          только что сработал — сработавший сигнал оборвёт и сам запрос отмены, не дав ему дойти до
+          бокса. Нужен отдельный сигнал (свой `AbortController` на сам вызов `/cancel`, с разумным
+          таймаутом) или вызов вовсе без сигнала — не переиспользовать входной `abortSignal` дважды.
+
+      - id: spend-tracking-in-tokens
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "GET /spent — типизированный сырой снимок, дельты пакет не считает"
+        description: |
+          Раздел «Расход» в документации бокса: `cost_micros` — накопительный итог, вычислять
+          цену хода вычитанием уже как-то «соврало почти втрое» по словам бокса — сам протокол
+          рекомендует ориентироваться на токены (`cache_read_tokens` растёт быстрее всего, лучше
+          показывает налог на длинный разговор). РЕШЕНО (user, 2026-09-13): пакет отдаёт снимок
+          как есть — `{thread, runs, prompt_tokens, completion_tokens, cache_read_tokens,
+          cost_micros}` — БЕЗ самостоятельного вычисления дельт; дизайн отображения расхода в UI
+          (считать ли разницу токенов между вызовами) — дело потребителя, не пакета. Форма ТИПИЗИРУЕТСЯ
+          (не сырой `unknown`) — узкая, явно названная боксом ручка, не растущий открытый протокол
+          (тот же принцип, что у `catalog-endpoints-typed-or-raw`, только в обратную сторону).
+
+      - id: feedback-both-kinds
+        type: feature
+        status: Done
+        priority: Low
+        milestone: null
+        name: "POST /feedback — типизированная ручка, praise наравне с friction"
+        description: |
+          Бокс прямо просит записывать хорошее наравне с плохим — «по одним жалобам
+          не видно, что работает». Агент пишет сюда сам при затыке в боксе; от потребителя — то,
+          что сказал человек. Не писать сюда про чужие зоны (у зон свои ручки обратной связи).
+          РЕШЕНО (user, 2026-09-13): форма явно названа боксом (`kind: friction|praise`, `what`,
+          `where`, `workaround`) — типизируем, тем же принципом, что `spend-tracking-in-tokens`.
+
+      - id: catalog-endpoints-typed-or-raw
+        type: decision
+        status: Done
+        priority: Low
+        milestone: null
+        name: "Каталожные ручки бокса — СЫРЫЕ, не типизированные: растущий протокол"
+        description: |
+          `GET /api/catalog/*`, `/api/agents`, `/api/mcp/servers`, `/api/health` — источник имён
+          для `forwardedProps` и картины того, что бокс вообще умеет. РЕШЕНО (user, 2026-09-13):
+          сырые fetch-обёртки, БЕЗ типизированной формы ответа — сам бокс называет себя протоколом,
+          который «растёт», и молча пропускает незнакомые поля конверта; жёсткая типизация здесь
+          рассинхронится с боксом при первом же его обновлении. Общий принцип, найденный этим же
+          разговором: явно названные боксом СТАБИЛЬНЫЕ формы (`/spent`, `/feedback`) —
+          типизируем; открытые РАСТУЩИЕ списки (каталоги) — сырые.
+
+  - category: "MCP-клиент — перенос web-core/mcp/src/peer+browser (не удаляем оригинал, пока не перенесено)"
+    items:
+      - id: peer-replaced-by-ai-mcp-client
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "httpPeer/stdioPeer (web-core/mcp/src/peer) → createMCPClient (@tanstack/ai-mcp)"
+        description: |
+          Контекст: `web-core/mcp` НЕ удаляется целиком — `register-tool`/`transport` незаменимы
+          (TanStack не строит MCP-серверы, только клиент), это отдельно решено и не пересматривается
+          здесь. Но `/peer` (`httpPeer`/`stdioPeer`, наш рукописный MCP-КЛИЕНТ) — ровно то, что
+          `@tanstack/ai-mcp` уже даёт лучше, обещано раньше в разговоре и до сих пор не сделано —
+          этот пункт закрывает тот долг.
+
+          Проверено по-настоящему (`npm view`+распакованный тарболл `@tanstack/ai-mcp@0.3.10`, не
+          пересказ доки): API почти 1:1 совпадает с нашим `Peer`.
+
+          | Наше (`web-core/mcp/src/peer`) | TanStack (`@tanstack/ai-mcp`) |
+          |---|---|
+          | `httpPeer(url, info?)` | `createMCPClient({ transport: { type: "http", url, headers? } })` |
+          | `stdioPeer(command, args?, {env?})` | `createMCPClient({ transport: stdioTransport({ command, args?, env?, cwd? }) })` — `stdioTransport` из `@tanstack/ai-mcp/stdio`, Node-only подпуть (то же разделение, что у нас `stdioPeer`) |
+          | `Peer.callTool(name, args)` | `MCPClient.callTool(name, args)` — ТА ЖЕ сигнатура, тот же тип ответа (`Awaited<ReturnType<Client['callTool']>>`, тот же `@modelcontextprotocol/sdk` — `ai-mcp@0.3.10` зависит от `@modelcontextprotocol/sdk@^1.29.0`, той же линии SDK, что и наш `web-core/mcp`) |
+          | `Peer.close()` | `MCPClient.close()` (+ `[Symbol.asyncDispose]` — можно `await using`, апгрейд, которого у нас не было) |
+          | `env` не задан — SDK сам даёт обрезанный безопасный набор | то же самое поведение — тот же `StdioClientTransport` под капотом, наш довод про supply-chain (chrome-devtools-mcp — чужой процесс) переносится без изменений |
+
+          Значит перенос механический на уровне вызовов `callTool`/`close` — логика `browser.ts`
+          (regex-парсинг `pageId` из текстового списка, `textOf(content)`) не меняется вообще, она
+          про формат ответа chrome-devtools-mcp, не про то, чей клиент его вызвал.
+
+          Открыто (решить при реализации, не архитектура): где живёт новый код — предложение:
+          подпуть `@web-core/neurobox/mcp` (тот же зонтик "всё, что на @tanstack/ai-*", которым
+          сейчас является этот пакет), но само имя подпути не зафиксировано, решает владелец/user.
+
+      - id: browser-wrapper-ported
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "createBrowser (web-core/mcp/src/browser) переезжает на новый MCP-клиент"
+        description: |
+          `createBrowser` (newPage/navigate/screenshot/snapshot/click, обёртка над
+          `chrome-devtools-mcp` через `stdioPeer`) — зависит от `peer-replaced-by-ai-mcp-client` выше,
+          переносится тем же заходом: единственное, что меняется в теле функции — конструктор клиента
+          (`stdioPeer("npx",[...])` → `createMCPClient({transport: stdioTransport({command:"npx",
+          args:[...]})})`), сама логика вызовов тулов chrome-devtools-mcp не трогается.
+
+      - id: mcp-migration-consumers
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: "Потребители /peer и /browser — на новый импорт, старые не трогать до переключения"
+        description: |
+          Два реальных места зовут сегодняшний `web-core/mcp/src/peer`/`/browser`, оба вне этого
+          пакета — переключить оба, когда перенос выше готов:
+          - движок браузера в MCP-сервере зоны скинов — тонкая обёртка над `createBrowser`
+            (путь к Chrome приходит переменной окружения), меняется только импорт.
+          - скрипт выкладки того же сервера — `stdioPeer("pnpm",["start"])` (спавнит СВОЙ
+            локальный сервер, доверенный процесс — `env: process.env` передаётся явно, как и сегодня)
+            + `httpPeer(<адрес боевого сервера>)` — оба зовутся напрямую, не через обёртку браузера.
+          `web-core/mcp/src/peer`/`/browser` НЕ удалять, пока оба потребителя не переключены и не
+          проверены живьём — не оставлять зону без рабочего пути посередине переноса.
+
+      - id: mcp-remainder-after-peer-migration
+        type: decision
+        status: Superseded
+        priority: null
+        milestone: null
+        name: "ОТМЕНЕНО — см. server-tools-relocated/transport-relocated/pagination-relocated/zone-feedback-relocated"
+        description: |
+          Была ошибка архитектора, не решение user: он спутал «TanStack не умеет строить
+          MCP-сервер» (правда) с «значит register-tool/transport не могут переехать в
+          web-core/neurobox» (не следует вообще). Технической причины держать их именно в
+          web-core/mcp нет — это наш код на @modelcontextprotocol/sdk, ему всё равно, в каком
+          пакете лежать. User поправил это прямым текстом 2026-09-13, третий раз за разговор.
+          Правильный план — ниже, новая категория.
+
+  - category: "Полный перенос остатка web-core/mcp → web-core/neurobox (после — удаление web-core/mcp целиком)"
+    items:
+      - id: server-tools-relocated
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "registerTool/ok/err (web-core/mcp корень) → @web-core/neurobox/server"
+        description: |
+          `registerTool` (обязательные `access`-annotations, input/output как настоящие Zod-схемы
+          через `@modelcontextprotocol/sdk`), `ok()`/`err()` (конверт ответа по спеке MCP). Зависит
+          только от `@modelcontextprotocol/sdk` и `@web-core/io` (`z`) — ни одной зависимости на
+          `web-core/mcp` как пакет, переезд — перенос файлов + правка импортов внутри них, не
+          переписывание логики. Новый подпуть `@web-core/neurobox/server` (имя обсуждаемо).
+          Тесты `web-core/mcp/test/register-tool.test.ts` переезжают тем же приёмом, что
+          `test/mcp.test.ts` (полное зеркало, не общий файл — так уже сделано для peer).
+
+      - id: transport-relocated
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "createServer (web-core/mcp/transport) → @web-core/neurobox/server (или свой подпуть)"
+        description: |
+          Бутстрап stdio/Streamable HTTP (`createServer`), сессии по `mcp-session-id`,
+          `auth`/`host`/`allowedHosts`/`allowedOrigins` хуки. Зависит от `node:http`/`node:crypto`
+          и `@modelcontextprotocol/sdk` — опять же ни одной зависимости на пакет `web-core/mcp`
+          как таковой. Открыто (поверхность, не архитектура): один подпуть `/server` вместе с
+          `register-tool`, или отдельный `/transport`, как было в оригинале — решает владелец.
+          Тесты `web-core/mcp/test/transport.test.ts` переезжают тем же приёмом (реальный
+          `StreamableHTTPClientTransport` на поднятый сервер, не мок).
+
+      - id: pagination-relocated
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "paginate/limitSchema (web-core/mcp/pagination) → @web-core/neurobox/pagination"
+        description: |
+          Курсорная пагинация листингов + общий `limitSchema` (`max(100)`, не голый
+          `z.number().positive()` — иначе в JSON Schema утекает предельное целое языка). Зависит
+          только от `@web-core/io`. Самый маленький и самый чистый перенос из всех — ни MCP-протокол,
+          ни TanStack тут вообще не при чём, чистая утилита.
+
+      - id: zone-feedback-relocated
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "reportFeedback/listFeedback/resolveFeedback (web-core/mcp/feedback) → свой подпуть, НЕ смешивать с sendNeuroboxFeedback"
+        description: |
+          ⚠️ Не то же самое, что `@web-core/neurobox`'s уже существующий `sendNeuroboxFeedback` —
+          та ручка про «как работал бокс» (`POST /api/feedback/{threadId}` бокса), эта — про «как
+          сработал ОДИН MCP-тул зоны» (GraphQL к схеме службы хранения пресетов, зовётся
+          из тулов `report_feedback`/`list_feedback`/`resolve_feedback` MCP-сервера зоны). Обе
+          сущности реальны и обе нужны, имена/подпуть должны развести их явно (например
+          `@web-core/neurobox/zone-feedback`, не `/feedback` — этот слот уже занят смыслом бокса) —
+          решает владелец при реализации, здесь фиксируется только НЕЛЬЗЯ смешивать.
+
+      - id: mcp-package-fully-retired
+        type: decision
+        status: Backlog
+        priority: High
+        milestone: null
+        name: "web-core/mcp удаляется ЦЕЛИКОМ — после переноса выше И переключения потребителей"
+        description: |
+          Порядок (user, 2026-09-13): сначала `web-core/neurobox` становится полным — весь список
+          выше плюс уже сделанные `peer`/`browser` — только ПОТОМ MCP-сервер зоны скинов переводится
+          на новые импорты (`mcp-migration-consumers`, отдельное ТЗ, другая зона), и только когда оба
+          реальных потребителя (движок браузера того сервера и скрипт его выкладки) переключены и
+          проверены живьём — `web-core/mcp` удаляется целиком, без остатка. Не начинать правку той
+          зоны до готовности `web-core/neurobox`.
+
+  - category: "Механика тулов — @web-core/neurobox/tool (наследник дисциплины register-tool: access обязателен)"
+    items:
+      - id: tool-definition-mechanic
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "toolDefinition() — общая обёртка над @tanstack/ai, не про skin и не про какой-либо конкретный пакет"
+        description: |
+          Контекст (архитектор и user, 2026-09-13, живой разбор в чате): деление на три слоя —
+          (1) МЕХА — как вообще устроен тул, живёт здесь, в `@web-core/neurobox`, не привязана ни
+          к одному продуктовому пакету; (2) ПАКЕТ (`web-core/skin` и любой другой) — знает только
+          свой вход-выход, экспортирует голую функцию + готовый `toolDefinition()` вокруг нЕё
+          (схему своего контракта пакет знает лучше всех, это не решение потребителя); (3) ЗОНА
+          АПП — решает, какой НАБОР тулов реально открыть агенту и с каким описанием, потому что
+          только апп знает, что видит юзер («агент = юзер, 99% случаев» — user, дословно).
+          Пакеты остаются абстрактными, не привязанными к конкретному апп — это НЕ пересматривается,
+          апп-специфичный выбор живёт в апп-зоне, не здесь.
+
+          Проверено по реальным тайпингам `@tanstack/ai@0.54.0`, не по памяти
+          (`activities/chat/tools/tool-definition.d.ts`): `ToolDefinitionConfig` несёт
+          `metadata?: Record<string, unknown>` — сюда наша обёртка кладёт обязательный `access`
+          (`"read" | "write" | "destructive"`, та же дисциплина, что была у `registerTool` —
+          находка изначального аудита MCP-сервера зоны скинов, где ни один тул её не нёс, не теряем её
+          при переезде на новый фундамент). `.server(execute)` возвращает объект с `execute`
+          внутри — `tool.execute(args)` для MCP-обёртки реально вызывает функцию напрямую, не
+          выдуманный API.
+
+          Набросок формы (обсуждено в чате, не финальный код):
+          ```ts
+          import { toolDefinition as tsToolDefinition } from "@tanstack/ai";
+
+          export function toolDefinition<In, Out>(def: {
+            name: string;
+            description: string;
+            access: "read" | "write" | "destructive"; // обязателен, не опционален
+            inputSchema: In;
+            outputSchema: Out;
+          }) {
+            return tsToolDefinition({ ...def, metadata: { access: def.access } });
+          }
+          ```
+          Открыто при реализации: подпуть — предложение `/tool`, не зафиксировано; как читать
+          `access` обратно из `metadata` типобезопасно на стороне MCP-обёртки (`registerTool` в
+          `@web-core/neurobox/server` ждёт узкий union, `metadata` типизирован как
+          `Record<string, unknown>` у вендора) — решает владелец.
+
+      - id: skin-package-tool-exports
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: "web-core/skin — первый потребитель мехи (не единственный пакет, кому это понадобится)"
+        description: |
+          НЕ входит в этот пакет (`web-core/neurobox`) — задача `web-core/skin`, заводится там
+          отдельным ТЗ, когда мехa (`tool-definition-mechanic`) готова. Означает: операции вроде
+          `check_palette`/`check_form`/`check_assembly`/`check_outfit`/`save_preset` (сегодня
+          живут ТОЛЬКО в MCP-сервере зоны скинов, у самой витрины скинов аналога нет вообще —
+          сверено `grep`'ом живьём в этом же разговоре) экспортируются из `web-core/skin` двумя
+          вещами: голой функцией и `toolDefinition()`-обёрткой вокруг неё, обе публичные. Какой апп
+          это в итоге использует (сегодня — никакой, витрина read-only) — не забота пакета.
+
+      - id: app-zone-tool-registry
+        type: decision
+        status: Backlog
+        priority: Low
+        milestone: null
+        name: "Кто в апп-зоне собирает список тулов агенту — открытый вопрос, не этот пакет"
+        description: |
+          Третий слой (апп решает набор+описание, регистрирует через `@web-core/neurobox/server`
+          или через клиентские ручки бокса в браузере) —
+          НЕ задача `web-core/neurobox`. Открытый вопрос на будущее (не сейчас): сливается ли
+          MCP-сервер зоны скинов в саму витрину как единая зона регистрации, или остаётся отдельным
+          процессом, который просто ИМПОРТИРУЕТ тулдефы из витрины. Не решать здесь — записано,
+          чтобы не забыть, когда дойдёт очередь до той зоны.
+
+  - category: "Правки после ревью бокса (2026-09-14) — connect() пропускает clientTools туда, откуда ответ нечем вернуть"
+    items:
+      - id: client-tools-passthrough-bug
+        type: bug
+        status: Done
+        priority: Critical
+        milestone: null
+        name: "connection.ts:60 — tools: runContext?.clientTools ?? [] живьём ломает клиентские тулы бокса"
+        description: |
+          Найдено ревью бокса, дословно: «Вчера строка была безобидной: бокс `tools` игнорировал.
+          Сегодня — нет. Всё, что TanStack положит в `clientTools`, бокс объявит агенту настоящей
+          ручкой». Сценарий поломки — ровно тот, что архитектор и user разбирали в чате раньше (см.
+          `tool-mechanic-design-agreed`/переписку про «свои ручки в браузере» из протокола
+          бокса), но вывод тогда НЕ был записан пунктом роадмапа — эта строка осталась с самого
+          первого коммита `connect()` (`run-agent-input-shape`), до того как стало известно про
+          механизм клиентских тулов бокса вообще:
+
+          1. Кто-то регистрирует `.client()`-тул штатно через `useChat({tools: [...]})`.
+          2. `runContext.clientTools` уносит его в `tools[]` конверта — бокс объявляет агенту.
+          3. Агент зовёт — ход замирает, ждёт `POST /agent/{threadId}/tool/{toolCallId}`.
+          4. Но никто его не шлёт: `ChatClient` идёт СВОИМ путём —
+             `addToolResult()`→`checkForContinuation()`→новый `streamResponse()`→новый `POST
+             /api/agent` (та самая механика, разобранная раньше в этом же файле, `chat-client.js`).
+          5. Бокс: `409` («поток ждёт результат ручки приложения») — новая, недавно добавленная
+             защита с их стороны поймала то, что раньше тихо повисло бы до `tool-abandoned`.
+
+          В пакете сегодня НЕТ НИ ОДНОГО `POST /tool/`-вызова вообще — обвязки для клиентских тулов
+          бокса не существует, а канал для них уже открыт голым `clientTools`-проксированием.
+
+          РЕШЕНИЕ (согласовано раньше в чате, не пересматривается): `tools[]` НЕ берётся из
+          `runContext.clientTools`. `createNeuroboxConnection` получает свою опцию (например
+          `clientTools`) — список `{name, description, inputSchema, execute}`, которые:
+          - объявляются в `tools[]` САМИ (не через `runContext.clientTools`);
+          - НЕ регистрируются в `useChat`'s штатном `tools`-механизме вообще — `ChatClient` не
+            должен знать об их существовании как о «своих» тулах, иначе попробует штатный путь;
+          - исполнение и доставка результата — целиком внутри `connect()`: поймать
+            `TOOL_CALL_START`/`ARGS`/`END` по имени из СВОЕГО списка, исполнить, `POST
+            /api/agent/{threadId}/tool/{toolCallId}`, дальше читать тот же ещё открытый поток —
+            та же механика, что уже реализована для `/cancel` (`cancel-request-wired-into-connect`),
+            тот же приём (свой `AbortController`, не переиспользовать чужой сигнал, там же
+            актуально и для таймаута `client_tool_deadline_seconds`).
+
+      - id: threadid-fail-loud
+        type: bug
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "threadId: runContext?.threadId ?? generateId(\"thread\") — тихая подстановка прячет забытый threadId"
+        description: |
+          Найдено ревью бокса: `connection.ts:53`. Если `threadId` не пришёл — каждое сообщение
+          заводит НОВЫЙ поток тихо, выглядит рабочим. По факту: процесс агента холодный на каждый
+          ход, состояние MCP-зон (вкладка браузера) теряется каждый раз, расход не сходится по
+          `threadId` (`/spent` считает по потоку). РЕШЕНИЕ: бросать, не подставлять — отсутствие
+          `threadId` это ошибка конфигурации потребителя пакета, не штатный случай со своим
+          поведением по умолчанию.
+
+      - id: context-value-narrow-to-string
+        type: bug
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "NeuroboxContextEntry.value: unknown — протокол несёт строку, не что угодно"
+        description: |
+          Найдено ревью бокса: реальный конверт бокса несёт `context: [{description, value}]` со
+          `value` СТРОКОЙ (пример в его документации — `"value": "button"`). Тип пакета сегодня
+          `value: unknown` — пропускает мимо TypeScript объект/число, которые бокс примет и
+          отклонит `422` уже на проводе, не на компиляции. Сузить до `string`.
+
+log:
+  - id: box-review-bugs-fixed
+    type: bug
+    date: 2026-09-14
+    summary: >
+      Все три находки ревью бокса реализованы одним заходом. `client-tools-passthrough-bug`
+      (Critical): `connection.ts`'s `tools[]` больше НЕ читает `runContext.clientTools` вообще —
+      новая опция `createNeuroboxConnection({ clientTools: [{name, description, parameters,
+      execute}] })`, объявляется в `tools[]` сама, `useChat`'s штатный `tools`-механизм про эти
+      ручки не знает (не даём `ChatClient` пробовать свой путь доставки параллельно с нашим).
+      Исполнение — новый `deliverClientToolResults()`, обёртка-генератор вокруг
+      `parseNeuroboxEventStream`: кадры уходят наружу как есть (`yield` до разбора), при этом ловит
+      `TOOL_CALL_START`/`ARGS`/`END` по имени из своего списка, копит `delta`, на `END` исполняет
+      `execute()` и шлёт `POST /api/agent/{threadId}/tool/{toolCallId}` — та же механика и та же
+      ловушка, что у `/cancel` (свой `AbortController`/таймаут — `toolResultTimeoutMs`, не
+      переиспользует входной `abortSignal`), но в отличие от `sendCancel` ошибку доставки НЕ
+      глотает (бросает из `connect()`) — недоставленный результат бокс ждёт до `tool-abandoned`,
+      это достаточно серьёзно. Ошибка внутри `execute()` — другое дело, едет боксу как
+      `{failed: true}`, не роняет `connect()`.
+      `threadid-fail-loud` (Medium): `requireThreadId()` бросает вместо `?? generateId("thread")` —
+      `runId` по-прежнему автогенерируется (свежий `runId` на ход безвреден, вредно повторение
+      `threadId`).
+      `context-value-narrow-to-string` (Medium): `NeuroboxContextEntry.value: unknown` → `string`.
+      Оговорка в FAQ.md — `connect()`'s `data`-параметр типизирован вендором как
+      `Record<string, any>`, так что сужение реально форсируется только там, где потребитель явно
+      типизирует объект как `NeuroboxContextEntry` (включая внутренний cast в
+      `buildNeuroboxRunInput`), не на каждом вызове `connect()` — честно зафиксировано, не выдано
+      за большее, чем есть.
+      Тесты — `test/connection.test.ts`: threadId бросает и НЕ шлёт fetch; `NeuroboxContextEntry`
+      с `value: 42` — `@ts-expect-error`, тип действительно не пропускает; свои `clientTools` едут
+      в `tools[]`, `runContext.clientTools` НЕ едет; полный живой сценарий доставки — `TOOL_CALL_
+      START/ARGS/ARGS/END` → `execute()` с правильно собранными args → `POST /tool/{id}` с верным
+      телом → продолжение того же потока (`TOOL_CALL_RESULT`/`RUN_FINISHED` после doPOST, кадры на
+      выходе в правильном порядке); отдельно — `execute()` кидает → `{failed: true}` с текстом
+      ошибки, не падение `connect()`. Итог: 76/76 (было 71), `pnpm typecheck`/`lint`/`build` —
+      зелёные. Git по-прежнему только чтение.
+
+  - id: box-review-found-client-tools-hole
+    type: finding
+    date: 2026-09-14
+    summary: >
+      Внешнее ревью (агент бокса, после пуша `dev` для живого теста) нашло три проблемы в
+      `src/engine/connection.ts`. Критичная: `tools: runContext?.clientTools ?? []` пробрасывает
+      ЛЮБОЙ штатно зарегистрированный TanStack client tool в `tools[]` бокса — раньше поле
+      игнорировалось, теперь бокс реально исполняет протокол клиентских тулов
+      («Свои ручки в браузере»), и штатный путь `ChatClient` (`addToolResult`→новый `connect()`)
+      не совпадает с ожиданием бокса (`POST /tool/{toolCallId}` на тот же поток) — сценарий
+      поломки, разобранный архитектором и user в чате раньше (в тот же день, до этой реализации), но
+      не превращённый тогда в пункт роадмапа — пробел архитектора, не владельца пакета: обсуждение
+      было, запись — нет, код с дырой уехал в прод-проверку раньше, чем решение было формализовано.
+      Две находки ниже приоритетом: тихий `threadId`-фолбэк (должен падать, не подставлять) и
+      `NeuroboxContextEntry.value: unknown` (протокол несёт строку, тип должен сузиться). Все три
+      записаны категорией `client-tools-passthrough-bug`/`threadid-fail-loud`/
+      `context-value-narrow-to-string`, ничего не реализовано, статусы `Backlog`.
+
+  - id: tool-definition-mechanic-implemented
+    type: feature
+    date: 2026-09-14
+    summary: >
+      `tool-definition-mechanic` реализован (user: "супер! погнали!"). Оба открытых вопроса решены
+      владельцем: подпуть — `@web-core/neurobox/tool` (предложенное имя подтверждено, не изменено);
+      чтение `access` обратно из `metadata` — отдельная функция `accessOf()` в том же модуле,
+      структурно типизированная (`{ metadata?: Record<string, unknown> }`), не завязанная на
+      конкретное имя типа вендора (`ToolDefinitionInstance`/`ServerTool`/`ClientTool`/их `Any*`
+      варианты — все несут `metadata` через общий `Tool`, сверено чтением `types.d.ts`, не по памяти).
+      `src/tool/index.ts`: `toolDefinition(options)` — тонкая обёртка над `@tanstack/ai`'s
+      `toolDefinition()`, требует `access` (не опционален — та же дисциплина, что была у
+      `registerTool` до переезда на `@tanstack/ai`), кладёт в `metadata`. Approval-поля вендора
+      (`needsApproval`/`approvalSchema`) сознательно НЕ проброшены — не было в запросе, решение
+      зафиксировано в FAQ.md, не молчаливый пробел. `accessOf()` бросает на отсутствующем/неверном
+      `access`, не отдаёт `undefined` — та же дисциплина, что у `registerTool`, не даём дыре
+      сдвинуться на шаг дальше по цепочке. `@tanstack/ai` переведён из фантомной (была доступна
+      только через `@tanstack/ai-client`/`@tanstack/ai-mcp`, использовалась структурно без прямого
+      импорта — тот же приём, что раньше для `StreamChunk`/`MCPClient`) в прямую зависимость: здесь
+      её типы (`ToolDefinition`/`ToolDefinitionConfig`/`SchemaInput`) именуются напрямую в публичной
+      сигнатуре, структурный обход больше не годится.
+      Тесты — `test/tool.test.ts`: `access` в `metadata` после `toolDefinition()`, сохраняется через
+      `.server(execute)` (включая реальный вызов `execute` с проверкой результата) и `.client()`,
+      `accessOf()` читает все три уровня access, бросает на пустом/неверном значении.
+      Сознательно НЕ сделано (не входило в этот пункт, читается из описания трёхслойного деления):
+      никакого моста между `toolDefinition()`-построенным тулом и `registerTool()` из
+      `@web-core/neurobox/server` — это решение апп-зоны (`app-zone-tool-registry`, Low, не сейчас) о
+      том, ЧЕРЕЗ ЧТО регистрировать тул агенту (MCP-сервер или клиентские тулы бокса), не задача
+      меха-слоя. Итог: 71/71 (было 65), `pnpm typecheck`/`lint`/`build` — зелёные, `dist/tool.js`+
+      `dist/tool.d.ts` собираются. Git — по-прежнему только чтение, ничего не закоммичено.
+
+  - id: tool-mechanic-design-agreed
+    type: plan
+    date: 2026-09-14
+    summary: >
+      User описал видение (не по коду — «в перспективе»): плагин/меха тулов не должна жить внутри
+      `web-core/skin` — пакеты абстрактны, не привязаны к апп, а «агент = юзер в 99% случаев»,
+      значит НАБОР и ОПИСАНИЕ тулов, реально открытых агенту, — знание апп, не пакета. Архитектор
+      предложил трёхслойное деление (меха/пакет/апп-зона), user подтвердил дословно: «да! это то
+      что я и имел ввиду!». Набросок кода обсуждён в чате на примере `savePreset`, сверен по
+      реальным тайпингам `@tanstack/ai@0.54.0`'s `tool-definition.d.ts` (не по памяти): `metadata`
+      — реальное поле конфига, `.server(fn)` реально несёт `execute` на возвращаемом объекте.
+      Записаны три пункта: `tool-definition-mechanic` (сама меха, эта зона, High),
+      `skin-package-tool-exports` (НЕ эта зона — задача `web-core/skin`, когда меха будет готова),
+      `app-zone-tool-registry` (открытый вопрос на будущее про витрину скинов и её MCP-сервер, не
+      решается сейчас). Ничего не реализовано, план записан до кода.
+
+  - id: full-mcp-relocation-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      Все четыре пункта `full-mcp-relocation-plan-written` реализованы одним заходом (user: "погнали
+      по плану"). Открытые вопросы решены при реализации (владелец): `register-tool`+`transport` —
+      ОДИН подпуть `@web-core/neurobox/server`, не два раздельных (файловое разделение в
+      `web-core/mcp` было организацией модуля, не смыслом импорта — тот же принцип, что уже у
+      `/mcp` = peer+browser вместе); `zone-feedback` — подпуть НЕ `/feedback` (тот смысл занят
+      `sendNeuroboxFeedback` в `.`), разбор — FAQ.md.
+      `server-tools-relocated`+`transport-relocated`: `src/server/register-tool.ts`+`transport.ts`,
+      код скопирован БЕЗ изменений кроме одной строки — текст ошибки `registerTool()` теперь называет
+      `@web-core/neurobox`, не `@web-core/mcp` (самоидентификация пакета, не поведение).
+      `pagination-relocated`: `src/pagination/index.ts`, дословно, включая обе находки в комментариях
+      (мёртвый default=50, утечка `Number.MAX_SAFE_INTEGER` в JSON Schema без верхней границы) — они
+      про историю решения, не про код текущего пакета, но переписывать их as-if-найдено-заново было
+      бы искажением истории находки.
+      `zone-feedback-relocated`: `src/zone-feedback/index.ts`, дословно — `FeedbackEntry`/
+      `FeedbackInput`/`FeedbackDown`/`FeedbackRefused`/`reportFeedback`/`listFeedback`/`resolveFeedback`,
+      с явным комментарием о неймспейс-конфликте с `sendNeuroboxFeedback`.
+      Зависимости: `@web-core/io` (пагинация — `z`/`limitSchema`) и `@web-core/query` (zone-feedback —
+      `graphqlRequest`/`gql`/`ClientError`) добавлены в `dependencies`. `@web-core/mcp` УБРАН из
+      `devDependencies` целиком: `test/mcp.test.ts` (написан для `peer-replaced-by-ai-mcp-client`)
+      переключён на СВОЙ новый `createServer`/`registerTool`/`ok` из `src/server/index.ts` вместо
+      старого `@web-core/mcp`/`@web-core/mcp/transport` — как только собственный эквивалент появился,
+      продолжать зависеть от старого пакета для проверки нового было бы противоречием цели переноса.
+      Тесты — четыре новых файла, ПОЛНЫЕ зеркала оригиналов (не общие с web-core/mcp, тот же принцип,
+      что у peer/browser): `test/register-tool.test.ts`, `test/transport.test.ts` (реальный HTTP,
+      сессии, auth/allowedHosts/allowedOrigins — все 12 кейсов), `test/pagination.test.ts`,
+      `test/zone-feedback.test.ts` (мок fetch, все 8 кейсов включая различение FeedbackDown/
+      FeedbackRefused). Итог: 65/65 (было 31), `pnpm typecheck`/`lint`/`build` — зелёные, все шесть
+      подпутей (`.`/`solid`/`mcp`/`server`/`pagination`/`zone-feedback`) собираются со своими `.d.ts`.
+      Git: по прямому указанию user эта сессия НЕ коммитит (только чтение) — изменения остаются
+      рабочим деревом, коммит и разбор истории (включая инцидент со случайным чужим коммитом
+      `a7474914`) — на архитекторе при подготовке к мёржу.
+      Осталось по плану: `mcp-migration-consumers` (переключение MCP-сервера зоны скинов — чужая
+      зона, отдельное ТЗ) и `mcp-package-fully-retired` (удаление `web-core/mcp` целиком — после
+      переключения потребителей). `web-core/mcp` не тронут и не удалён.
+
+  - id: full-mcp-relocation-plan-written
+    type: plan
+    date: 2026-09-13
+    summary: >
+      Архитектор ошибся, user поправил прямым текстом: архитектор утверждал, что `register-tool`/
+      `transport` (web-core/mcp) не могут переехать в web-core/neurobox, потому что «TanStack не
+      умеет строить MCP-сервер» — это правда про TanStack, но не довод про наш СОБСТВЕННЫЙ код на
+      `@modelcontextprotocol/sdk`, которому всё равно, в каком пакете жить. Просьба user была прямая:
+      показать конкретное место, которое физически не может переехать — архитектор не смог, такого
+      места нет. `mcp-remainder-after-peer-migration` (прошлая запись с этим выводом) помечена
+      Superseded, не удалена — ошибка остаётся видна в истории, не стирается задним числом.
+      Записан полный план: `register-tool`+`transport`+`pagination`+`feedback` (zone-level,
+      переименовать при переносе — НЕ путать с уже существующим `sendNeuroboxFeedback`, box-level,
+      разные сущности под похожими именами) переезжают в web-core/neurobox новыми подпутями.
+      Порядок фиксирован user: сначала web-core/neurobox становится полным (весь список плюс уже
+      готовые peer/browser), потом и только потом — MCP-сервер зоны скинов (`mcp-migration-consumers`,
+      отдельная зона, отдельное ТЗ), и только после того как оба реальных потребителя переключены и
+      проверены живьём — `web-core/mcp` удаляется ЦЕЛИКОМ, без остатка (`mcp-package-fully-retired`).
+      Не начинать работу над той зоной до готовности `web-core/neurobox`.
+
+  - id: browser-wrapper-ported-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      `browser-wrapper-ported` реализован — ровно как в описании пункта: тело `createBrowser`
+      скопировано из `web-core/mcp/src/browser/index.ts` в `web-core/neurobox/src/mcp/browser.ts`
+      БЕЗ ИЗМЕНЕНИЙ, единственная правка — источник `stdioPeer` (`./index.js` этого же подпути
+      вместо `../peer/index.js` старого пакета). Регэксп-парсинг ответов chrome-devtools-mcp
+      (`newPage`'s `[selected]`, `textOf(content)`) не трогался — он про формат ответа стороннего
+      MCP-сервера, не про то, чей клиент его вызвал, что и предполагал пункт роадмапа.
+      Экспортирован из `src/mcp/index.ts` (`export * from "./browser.js"`) — тот же подпуть
+      `@web-core/neurobox/mcp`, не отдельный `./mcp/browser`: пункт не заводил новый под-подпуть,
+      весь Node-only MCP-код одного зонтика.
+      Тесты — `test/browser.test.ts`, точная копия `web-core/mcp/test/browser.test.ts`
+      (`describe.skipIf(!hasChrome)` — тот же принцип: реальный headless Chromium, не мок; в этом
+      окружении бинарник нашёлся, оба теста прогнались ЖИВЬЁМ против настоящего chrome-devtools-mcp
+      через npx, не пропущены). Итог: 31/31 (было 29), `pnpm typecheck`/`lint`/`build` — зелёные.
+      `web-core/mcp/src/browser` не тронут — тот же принцип, что и у `/peer`: оригинал остаётся,
+      пока `mcp-migration-consumers` не переключит реальных потребителей (MCP-сервер зоны скинов —
+      чужая зона, отдельное ТЗ её владельцу).
+
+  - id: peer-replaced-by-ai-mcp-client-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      `peer-replaced-by-ai-mcp-client` реализован. Открытый вопрос («где жить новому коду») решён:
+      `@web-core/neurobox/mcp` — новый подпуть, добавлен в `package.json`'s `exports` и
+      `vite.config.ts`'s `entries` (`{name:"mcp", source:"src/mcp/index.ts"}`, без `solid:true` —
+      Node-only, не браузерный код).
+      `src/mcp/index.ts`: `httpPeer`/`stdioPeer`/`Peer`/`PeerInfo`/`StdioPeerOptions` — ИМЕНА и
+      ФОРМА 1:1 с `@web-core/mcp/peer`, реализация поверх `createMCPClient`+`stdioTransport` из
+      `@tanstack/ai-mcp` (не поверх сырого `@modelcontextprotocol/sdk`, как было). Лень подключения
+      сохранена: `createMCPClient()` (сам по себе `async`, коннект внутри) зовётся ТОЛЬКО из
+      `connect`-колбэка `peerFrom()`, вызываемого на первый `callTool`, не на объявление peer — тот
+      же тест "does not open a connection before the first callTool", что проходил на оригинале.
+      Добавлен `[Symbol.asyncDispose]` — бесплатный апгрейд от `MCPClient`, `await using` вместо
+      обязательного ручного `close()`.
+      Находка при реализации (не архитектурная, деталь типов): `MCPClient["callTool"]`'s
+      возвращаемый тип структурно слабее сырого `Client.callTool` — `content` резолвился в
+      `unknown` (поймано typecheck'ом теста, не чтением доки). Решено тем же приёмом, что был в
+      оригинале: `Peer.callTool` явно типизирован как `Promise<CallToolResult>` (`@modelcontextprotocol/
+      sdk/types.js`) с `as`-кастом на выходе `MCPClient.callTool()`. `@modelcontextprotocol/sdk`
+      из-за этого — в `dependencies` пакета (публичная сигнатура, не только тесты).
+      Тесты — `test/mcp.test.ts`, ПОЛНОЕ зеркало `web-core/mcp/test/peer.test.ts` (та же фикстура
+      `test/fixtures/stdio-ping-server.mjs`, скопирована, не расшарена — фикстура должна быть
+      независимо запускаемым `node`-скриптом): httpPeer живьём против настоящего слушающего
+      HTTP MCP-сервера (`@web-core/mcp/transport`'s `createServer`, взят как devDependency —
+      переписывать сессионную логику `StreamableHTTPServerTransport` заново в фикстуре не стали,
+      разбор — в FAQ.md), lazy-connect для обоих peer, переиспользование ОДНОГО stdio-процесса на
+      несколько вызовов, env-фильтрация по умолчанию и явный passthrough, плюс новый тест на
+      `[Symbol.asyncDispose]` через `await using`. Итог: 29/29 (было 22), `pnpm typecheck`/`lint`/
+      `build` — зелёные, `dist/mcp.js`+`dist/mcp.d.ts` собираются.
+      НЕ входило в эту заявку (следующие пункты той же категории): `browser-wrapper-ported`,
+      `mcp-migration-consumers` (правка MCP-сервера зоны скинов — не зона этого пакета),
+      `mcp-remainder-after-peer-migration` (просто решение/напоминание, кода не требует).
+      `web-core/mcp/src/peer` НЕ удалён и не тронут — верно по плану, оба реальных потребителя ещё
+      не переключены.
+
+  - id: peer-migration-plan-written
+    type: plan
+    date: 2026-09-13
+    summary: >
+      User предложил удалить весь `web-core/mcp` теперь, когда `@web-core/neurobox` готов —
+      архитектор поймал нестыковку: `neurobox` закрыл только апп↔бокс (AG-UI чат), а раньше обещанный
+      перенос `/peer` на `@tanstack/ai-mcp` ни разу не был сделан, про него забыли посреди работы над
+      семью пунктами `client-adapter-decisions-resolved`. Ничего из `web-core/mcp` фактически не
+      перенесено на момент этой записи. Решено (user): не торопиться, `web-core/mcp` сегодня никем не
+      используется активно — записать план переноса `/peer`+`/browser` сюда, позвать владельца
+      отдельным заходом, `web-core/mcp` не трогать, пока перенос не закрыт и оба потребителя
+      (движок браузера MCP-сервера зоны скинов и скрипт его выкладки) не переключены и не
+      проверены живьём.
+      API `@tanstack/ai-mcp@0.3.10` сверен по-настоящему (`npm view`+распакованный тарболл, не по
+      доке): `createMCPClient({transport})`'s `callTool`/`close` почти 1:1 с нашим `Peer`, `stdioTransport`
+      живёт в `@tanstack/ai-mcp/stdio` (Node-only подпуть), зависит от той же линии
+      `@modelcontextprotocol/sdk@^1.29.0`, что и `web-core/mcp` сам. Перенос ожидается механическим на
+      уровне вызовов — `browser.ts`'s regex-парсинг ответов chrome-devtools-mcp не меняется, он не
+      про клиента, а про формат ответа стороннего сервера.
+
+  - id: url-building-deduplicated
+    type: fix
+    date: 2026-09-13
+    summary: >
+      Ревью со стороны бокса (внешний архитектор) вернуло `feedback-and-catalog-implemented`
+      обратно: запрошенный в прошлом ревью общий хелпер сборки URL с `encodeURIComponent` не был
+      сделан — `feedback.ts` повторил сырую интерполяцию `${baseUrl}/api/feedback/${threadId}`,
+      третью копию того же паттерна (после `connection.ts`'s `/cancel` и `spend.ts`'s `/spent`).
+      Починено: `neuroboxUrl(baseUrl, ...segments)` в `access.ts` — кодирует каждый сегмент через
+      `encodeURIComponent`, дефолтит отсутствующий `baseUrl` в относительный путь. Все три места
+      переведены на него (`connection.ts` — обе ссылки, основной POST и `/cancel`; `spend.ts`'s
+      `/spent`; `feedback.ts`'s POST). `catalog.ts` НЕ тронут — там нет динамических сегментов
+      (все семь путей статичные строки), инъекция невозможна, архитектор явно исключил его из
+      требования.
+      Тесты: новый `test/access.test.ts` — `neuroboxUrl` отдельно (join, дефолт без baseUrl,
+      кодирование `/`-инъекции и кириллицы/пробела), `resolveAccessHeaders` (строка и async-геттер).
+      `test/connection.test.ts` — добавлен регресс-тест: threadId со слэшем в реальном вызове
+      `/cancel` через `connect()`+abort даёт корректно закодированный URL, не лишний сегмент пути.
+      `test/spend.test.ts`/`test/feedback.test.ts` — старые ассерты на сырую кириллицу в URL
+      переписаны на `encodeURIComponent(...)` (сам факт, что они сломались при вводе хелпера,
+      подтверждает: раньше кириллица в threadId ехала в путь как есть). Итог: `pnpm typecheck`/
+      `lint`/`test` (22/22)/`build` — зелёные.
+
+  - id: feedback-and-catalog-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      Оставшиеся два пункта категории закрыты — оба Low, оба ровно по решению 2026-09-13, без
+      расширения сверх названного. `feedback-both-kinds`: `src/engine/feedback.ts`,
+      `sendNeuroboxFeedback(threadId, feedback, options)` — типизированное тело `{kind:
+      friction|praise, what, where, workaround?}` на `POST /api/feedback/{threadId}`, на общей
+      `access.ts`. `workaround` сделан необязательным — решение внутри реализации (доком явно не
+      зафиксировано ни так, ни этак): осмыслен для `friction`, для `praise` обычно нечего обходить.
+      `catalog-endpoints-typed-or-raw`: `src/engine/catalog.ts` — семь сырых обёрток
+      (`fetchNeuroboxRecipes`/`Passports`/`Agents`/`Seeds`/`Refusals`/`McpServers`/`Health`), каждая
+      `Promise<unknown>` без схемы, по одной на документированную ручку (не один универсальный
+      `fetchCatalog(path)`) — так имена видны в автодополнении, а не только в строке пути.
+      `fetchNeuroboxHealth` — единственная без `NeuroboxAccessOptions`: бокс сам называет её
+      беспарольной («Без токена»), требовать token/userLogin здесь было бы строже самого бокса.
+      Тесты: `test/feedback.test.ts` (friction с workaround, praise без него, не-ok бросает),
+      `test/catalog.test.ts` (все шесть авторизованных ручек таблично + health без заголовков
+      вообще). Итог по пакету: `pnpm typecheck`/`lint`/`test` (16/16)/`build` — зелёные.
+      Категория «Решено архитектором и user — реализация за владельцем» закрыта полностью: все семь
+      пунктов `client-adapter-decisions-resolved` реализованы и проверены.
+
+  - id: spend-tracking-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      `spend-tracking-in-tokens` реализован: `src/engine/spend.ts`, `fetchNeuroboxSpend(threadId,
+      options)` — типизированный `GET /api/agent/{threadId}/spent`, тело `NeuroboxSpend` возвращается
+      КАК ЕСТЬ (`response.json() as NeuroboxSpend`, без рантайм-схемы — узкая явно названная боксом
+      форма, не растущий протокол, тот же довод, что у каталожных ручек в обратную сторону), без
+      вычисления дельт — решение и причина (`cost_micros` — накопительный итог, вычитание уже
+      "соврало почти втрое") record в описании пункта и в README.
+      Заодно вынесена общая `src/engine/access.ts` (`NeuroboxAccessValue`/`resolveAccessHeaders`) —
+      раньше жила только внутри `connection.ts`, теперь делят `connect()` и `fetchNeuroboxSpend`, а
+      следующие типизированные ручки (`feedback-both-kinds`) возьмут её же, не копию.
+      Тесты — `test/spend.test.ts`: снимок доходит как есть с заголовками доступа; не-ok ответ
+      бросает, а не отдаёт частичный снимок. `pnpm typecheck`/`lint`/`test`(5/5)/`build` — зелёные.
+
+  - id: tool-call-result-reactivity-closed-with-example
+    type: feature
+    date: 2026-09-13
+    summary: >
+      Ревью со стороны бокса (внешний архитектор) приняло реализацию `connect-adapter-implemented`
+      без блокеров, с одной находкой: `toWireContent()` (`src/engine/connection.ts`) молча
+      отбрасывает не-текстовые части сообщения (картинка/вложение/результат тула из UIMessage),
+      оставляя только текст — сегодня верно (бокс текстовый, его протокол мультимодальность
+      не описывает), но без объяснения читалось бы как забытый кейс. Зафиксировано комментарием в
+      коде и записью в `FAQ.md` — решать заново явно, если бокс когда-нибудь начнёт принимать
+      не-текстовые части, не расширять склейку тихо.
+      Заодно закрыт `tool-call-result-reactivity`: писать в пакете нечего — `ChatClientOptions.onChunk`
+      уже зовётся на каждый кадр, включая `TOOL_CALL_RESULT` (см. `client-adapter-decisions-resolved`
+      ниже) — добавлен только пример фильтра по `chunk.type === 'TOOL_CALL_RESULT'` в README и FAQ,
+      чтобы не искать это заново при следующем использовании пакета.
+
+  - id: connect-adapter-implemented
+    type: feature
+    date: 2026-09-13
+    summary: >
+      Реализованы `run-agent-input-shape` и `cancel-request-wired-into-connect` — вместе, одним
+      `connect()`, как и было решено (не отдельная функция отмены для потребителя).
+      `src/engine/connection.ts`: `createNeuroboxConnection(options)` возвращает
+      `ConnectConnectionAdapter` (тип импортирован из `@tanstack/ai-client`, оба параметра
+      `token`/`userLogin` строка либо (async) геттер — авторизация ставится на клиенте на месте
+      отправки, как решено `auth-headers-server-side-only`). `connect()` сам собирает
+      `RunAgentInput`: `context` вынимается из слитого `{...runContext.forwardedProps, ...data}` по
+      ключу `context` (единственному специальному имени, всё остальное едет как есть в
+      `forwardedProps`) — так `data.context`, поставленный потребителем через `sendMessage(text,
+      { body: { context: [...] } })`, попадает в нужное поле конверта, а не тонет в
+      `forwardedProps` вместе с `recipe`/`passport`/`agent`. Сборка `messages` — через
+      `convertMessagesToModelMessages` (публичный реэкспорт, не приватный `uiMessagesToWire`),
+      дальше плоское `{id, role, content}`; `content`, если пришёл частями (`ContentPart[]`),
+      схлопывается в строку по текстовым частям — бокс ждёт строку. Ответ разбирается вручную
+      построчным SSE-парсером (`data: {...}` кадры, без учёта NDJSON/резюмируемости — бокс
+      признаётся, что реконнект к идущему прогону не поддерживает, воспроизводить механику
+      резюмируемых стримов вендора незачем). Отмена: слушатель на входной `abortSignal` шлёт
+      `POST {threadId}/cancel` на СВОЁМ `AbortController` с таймаутом (по умолчанию 5с) — не на
+      сработавшем входном сигнале (ловушка `cancel-abortsignal-reuse-trap-found` ниже), ошибка
+      самого запроса отмены проглатывается (fire-and-forget из обработчика события, сообщать
+      некому). Экспортирован из `src/engine/index.ts` рядом с голым реэкспортом вендора, значит и
+      из `@web-core/neurobox` (`.`) — README/FAQ обновлены под факт, не только план.
+      Тесты (`test/connection.test.ts`, новый `node`-проект в `vitest.config.ts` — единственный
+      framework-agnostic модуль пакета, JSDOM/Solid ему не нужны): (1) `context` уходит в конверт
+      отдельно от `forwardedProps`, заголовки доступа выставлены; (2) отсутствующий `context` не
+      протекает в `forwardedProps`, дефолтится пустым массивом; (3) отмена реально уходит на СВЕЖЕМ
+      сигнале, не на входном — проверено адресно (`signal !== controller.signal`, `signal.aborted
+      === false` в момент запроса). `pnpm typecheck`/`lint`/`test`/`build` — все зелёные.
+      Осталось нетронутым той же категории: `spend-tracking-in-tokens`, `feedback-both-kinds`,
+      `catalog-endpoints-typed-or-raw` — не входили в эту заявку.
+
+  - id: cancel-abortsignal-reuse-trap-found
+    type: finding
+    date: 2026-09-13
+    summary: >
+      Ревью со стороны бокса (внешний архитектор) подтвердил все семь решений
+      client-adapter-decisions-resolved как обоснованные фактом, не пересказом, и нашёл одну
+      реальную ловушку в реализации `cancel-request-wired-into-connect`: если `POST /cancel` уйдёт
+      с тем же `abortSignal`, который только что сработал (отменился), запрос отмены оборвётся сам,
+      не дойдя до бокса — нужен отдельный сигнал/таймаут на сам вызов `/cancel`, не переиспользование
+      входного. Зафиксировано в описании пункта и в FAQ.md. Не блокер решения (вариант А остаётся в
+      силе), только деталь реализации. Внешняя сторона считает пакет готовым к реализации.
+
+  - id: client-adapter-decisions-resolved
+    type: plan
+    date: 2026-09-13
+    summary: >
+      Архитектор и user разобрали все семь пунктов категории «Открытое» подряд, по одному. Три
+      технических находки подтверждены не пересказом доки, а чтением реального кода установленного
+      пакета (`node_modules/.pnpm/@tanstack+ai-client@0.31.1.../dist/esm/*.d.ts`+`.js`):
+      (1) `fetchServerSentEvents()`'s `buildRunAgentInputBody()` шлёт AG-UI поле `context` ЖЁСТКО
+      пустым массивом (`context: []`) — `data`/`options.body` уходят только в `forwardedProps`,
+      значит штатный адаптер физически не может собрать конверт бокса, где `context` — отдельное от
+      `forwardedProps` поле; пакету нужен свой `ConnectConnectionAdapter`, не голый вызов
+      `fetchServerSentEvents`. (2) `ChatClientOptions.onChunk` существует и зовётся на каждый
+      `StreamChunk`, включая `ToolCallResultEvent` (`type: 'TOOL_CALL_RESULT'`, `toolCallId`/
+      `content`) — реакция на результат тула до конца прогона достаётся бесплатно, своей обвязки не
+      требует. (3) Публичный реэкспорт пакета уже несёт `convertMessagesToModelMessages`/
+      `normalizeToUIMessage`/`modelMessagesToUIMessages` — сборку `messages` в wire-формат для
+      своего `connect()` переизобретать не придётся, даже раз приватный `uiMessagesToWire` наружу
+      не экспортирован.
+      Решения user по остальным пунктам: авторизацию сейчас не трогаем (токен статичный, как
+      сегодня); отмену дожимает сам `connect()` по `abortSignal`, не отдельная функция потребителя
+      (вариант А из двух предложенных); `/spent` и `/feedback` — типизированные снимки без
+      самостоятельного счёта дельт; каталожные ручки бокса — сырые, потому что бокс сам называет
+      протокол растущим. Из последних двух вывели общий принцип на весь пакет: явно названные
+      стабильные формы бокса — типизируем, открытые растущие списки — нет.
+      Статусы пунктов остались `Backlog` осознанно — решения приняты, код ещё не написан
+      (`src/`, помимо голого реэкспорта из `full-vendor-reexport`, не тронут).
+
+  - id: package-scaffolded
+    type: plan
+    date: 2026-09-13
+    summary: >
+      User обсудил детали с будущим владельцем пакета напрямую (вне этого разговора) — заявка
+      архитектору была узкой: завести шаблон пакета + зону владения, содержание и роадмап
+      владелец пишет сам, архитектор обсуждает план ПОСЛЕ. Разобрано и подтверждено чтением реальной
+      документации бокса (не по памяти): бокс — менеджер
+      рантаймов агентов поверх открытого протокола AG-UI, свой формат был и выброшен намеренно.
+      TanStack AI (`@tanstack/ai-client`+`@tanstack/ai-solid`, версии сверены `npm view` —
+      0.31.1/0.21.1 на дату заведения) подтверждён официальной докой как полностью AG-UI-совместимый
+      в обе стороны — `RunAgentInput`-конверт, не проприетарный формат, работает с ЛЮБЫМ
+      AG-UI-совместимым бэкендом, не только собственным серверным пакетом TanStack. Заполнено по
+      образцу `web-core/form` (последний пилот текущей формы шаблона — vite.config.ts с
+      `defineLibraryConfig`, `.`+`./solid` подпути): package.json, tsconfig/vite/vitest/eslint
+      конфиги, `src/index.ts`+`src/engine/index.ts` (голый реэкспорт `@tanstack/ai-client`),
+      `src/solid/index.ts` (голый реэкспорт `@tanstack/ai-solid`), README/FAQ начерно. Содержания
+      нет — открытые вопросы названы (категория выше) по факту прочтения документации бокса
+      целиком, не додуманы.

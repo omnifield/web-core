@@ -5,7 +5,7 @@ import { createPresetsClient, type PresetKind } from "@web-core/skin/presets";
 
 export type { PresetKind };
 
-/** Путь ручки у службы раздачи — GraphQL, единая точка входа (REST снят, см. `packages/skin/src/
+/** Путь ручки у службы раздачи — GraphQL, единая точка входа (REST снят, см. `web-core/skin/src/
  *  presets/client.ts`). Не настройка. */
 const GRAPHQL_PATH = "/graphql";
 
@@ -13,7 +13,7 @@ const GRAPHQL_PATH = "/graphql";
 const LOCAL = "http://127.0.0.1:8787";
 
 /** Корень воркспейса по маркеру, вверх от места запуска. Тот же приём и тот же довод, что в
- *  `packages/build` (`vite/app.ts`): считать `../..` от файла нельзя — пакет резолвится
+ *  `web-core/build` (`vite/app.ts`): считать `../..` от файла нельзя — пакет резолвится
  *  симлинком, а сервер запускают из разных папок. */
 function workspaceRoot(from: string = process.cwd()): string | undefined {
   let dir = resolve(from);

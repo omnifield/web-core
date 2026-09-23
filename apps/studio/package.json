@@ -2,7 +2,7 @@
   "name": "@web-core/studio",
   "version": "0.0.0",
   "private": true,
-  "description": "Зона skin: витрина компонентов и содержимое скинов. Механика — во фреймворке (packages/skin, packages/assembly); здесь то, что показываем и чем одеваем.",
+  "description": "Зона skin: витрина компонентов и содержимое скинов. Механика — во фреймворке (web-core/skin, web-core/assembly); здесь то, что показываем и чем одеваем.",
   "license": "UNLICENSED",
   "type": "module",
   "imports": {

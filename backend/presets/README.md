@@ -183,7 +183,7 @@ curl -s http://127.0.0.1:8787/graphql -H 'content-type: application/json' -d '{
 
 **Устойчивая обвязка сверху** — `@web-core/skin/presets` (`createPresetsClient`,
 `createPresetsSkinSource`) говорит на СТАРОМ REST-контракте, которого у этой службы больше нет
-(см. FAQ.md, «Чего в фиче нет»): её переезд на GraphQL — `packages/query`, следующий шаг ПОСЛЕ
+(см. FAQ.md, «Чего в фиче нет»): её переезд на GraphQL — `web-core/query`, следующий шаг ПОСЛЕ
 этой заявки, другая зона. До того, как он сделан, этот клиент этой службой пользоваться не может.
 
 <h2 id="настройки">🎚️ Настройки</h2>

@@ -77,7 +77,7 @@ type Content implements Preset {
   author: String
 }
 
-"""tagLabel — человеческое имя тега (packages/skin/src/tags), отдельное от Preset.label верхнего
+"""tagLabel — человеческое имя тега (web-core/skin/src/tags), отдельное от Preset.label верхнего
 уровня: на живой записи прода (tag/status) это два разных значения ("status" / "Статусы")."""
 type Tag implements Preset {
   id: ID!

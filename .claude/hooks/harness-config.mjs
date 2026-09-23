@@ -60,7 +60,7 @@ function coerce(raw) {
 /**
  * Коэрция значения: inline flow-массив `[a, b, c]` → массив коэрцированных элементов
  * (пустой `[]` → `[]`, хвостовая запятая отбрасывается); иначе — скаляр через coerce.
- * Нужно для `zones.<z>.paths: [packages/a, packages/b]` (BRAIN2-1). Block-list (`- x`)
+ * Нужно для `zones.<z>.paths: [web-core/a, web-core/b]` (BRAIN2-1). Block-list (`- x`)
  * не поддерживаем — в harness.yaml его нет.
  */
 function coerceValue(raw) {

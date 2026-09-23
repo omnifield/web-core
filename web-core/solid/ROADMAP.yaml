@@ -1,0 +1,225 @@
+# Дорожная карта @web-core/solid — источник правды по фактически сделанной работе. Статус
+# проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же,
+# что у web-core/router/build (categories → items, log → журнал решений); без milestones — у
+# пакета нет освоенной поставки с датами релиза, только сделанное и открытое.
+
+categories:
+  - category: Резолв вендора
+    items:
+      - id: reactive-core-reexport
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Полный реэкспорт solid-js
+        description: |
+          Означает: `@web-core/solid` — единственная точка резолва реактивного ядра
+          (`createSignal`, `onMount`, `onCleanup`, …), та же логика, что у `@web-core/router`
+          для `@tanstack/solid-router`. Полный реэкспорт, не отбор по имени — см. FAQ.md.
+
+      - id: web-reexport
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Полный реэкспорт solid-js/web
+        description: |
+          Означает: `@web-core/solid/web` зеркалит DOM-специфичный вход вендора (`render`,
+          `Portal`, `hydrate`) отдельным подпутём — та же граница, что вендор сам проводит между
+          `solid-js` и `solid-js/web`.
+
+  - category: Точка монтирования
+    items:
+      - id: mount-app-root-contract
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: mountApp() и контракт #root
+        description: |
+          Означает: скелет приложения потребителя — один вызов `mountApp(() => <App />)` плюс
+          `<div id="root">` в `index.html`. Собственное добавление пакета (не реэкспорт
+          `solid-js`), поэтому отдельный подпуть `./mount`, не в барели `.`/`./web`. Точку
+          монтирования рантайм ищет сам, идентификатор не аргумент сигнатуры — см. FAQ.md.
+
+      - id: single-root-dispose
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Уничтожение прежнего корня при повторном mountApp()
+        description: |
+          Означает: HMR и ручной рестарт не копят живые Solid-корни на одном `#root` — прежний
+          `dispose` вызывается до нового `render()`. Ручка держится `WeakMap` узел→`dispose`, не
+          модульной переменной — см. FAQ.md.
+
+      - id: explicit-mount-error
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: Внятный отказ без #root
+        description: |
+          Означает: отсутствие `<div id="root">` в документе — это `Error` с текстом, что
+          добавить, а не тихий пустой экран.
+
+  - category: Примитивы комьюнити
+    items:
+      - id: keyed-subpath
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Подпуть ./keyed — Key и остальной @solid-primitives/keyed
+        description: |
+          Означает: `<Key each by>` — поток по списку, где узел держится за НАЗВАННЫЙ ключ, а не
+          за ссылку на элемент (`<For>`) и не за позицию (`<Index>`). Полный реэкспорт вендора
+          (`Key`, `Entries`, `MapEntries`, `SetValues`, `Rerun`, `keyArray`), отдельным подпутём —
+          третье происхождение кода, не `solid-js` и не наше собственное. Зависимость обычная, не
+          peer — см. FAQ.md.
+
+      - id: rootless-subpath
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: Подпуть ./rootless — корни, которые кто-то гасит
+        description: |
+          Означает: `createSingletonRoot` (один общий корень на всех потребителей, со счётчиком
+          слушателей и гашением по уходу последнего), `createSubRoot` (корень, гаснущий вместе с
+          владельцем), `createRootPool` (пул с лимитом и переиспользованием) плюс
+          `createDisposable`, `createCallback`, `createHydratableSingletonRoot`. Полный реэкспорт
+          вендора, включая два устаревших псевдонима — первый случай, когда у взятого примитива
+          внутри есть устаревший состав; правило дословного реэкспорта оставлено, цена названа в
+          FAQ.md и в паспорте примитива. Повод пришёл заявкой от владельца `@web-core/store`: его
+          кэш подписок заводит корень на каждый набор аргументов и не гасит ни одного. Зависимость
+          уже стояла в дереве транзитивно через Kobalte, той же версии, — установка изменила
+          lockfile на три строки.
+
+  - category: Документация
+    items:
+      - id: own-triad
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: README/FAQ/ROADMAP по шаблону genus engine
+        description: |
+          Означает: пакет документирован как самостоятельная сущность, по образцу
+          `web-core/router`/`web-core/query` (вендор-обёртка), а не строкой в чужой доке.
+
+      - id: examples-by-case
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: EXAMPLES.md — рабочий код по кейсам, движок и примитивы врозь
+        description: |
+          Означает: у пакета есть страница «как этим пользоваться» отдельно от README (устройство)
+          и FAQ (почему так), по форме `interfaces/feeder`. Главное её деление — род содержимого:
+          движок (Solid как есть плюс `mountApp`) и примитивы (взятое у комьюнити), потому что
+          путать их дорого. Каждый пример прогнан на коде, не написан по памяти. Примитивы сам файл
+          НЕ разбирает — держит вывеску и ссылку, разбор живёт у примитива.
+
+      - id: primitives-folder
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: Папка PRIMITIVES/ — файл на взятый примитив плюс бэклог
+        description: |
+          Означает: единый список читался как перечень доступного из пакета, хотя описывал ЧУЖОЙ
+          каталог — ~85 примитивов комьюнити, из которых подключён один. Теперь форма отвечает
+          смыслу: `BACKLOG.md` — очередь того, что нужно, но НЕ взято (импортировать оттуда
+          нечего), рядом по файлу на каждый взятый (`keyed.md` — паспорт, состав, примеры,
+          грабли). Взяли примитив — строка уезжает из бэклога в собственный файл, и это видно по
+          самой раскладке, а не по значку в строке. Заодно адреса доков переведены с мёртвого
+          `/docs/<name>` на живой `/package/<name>/`.
+
+  - category: Не сделано
+    items:
+      - id: write-test-suite
+        type: feature
+        status: Backlog
+        priority: High
+        milestone: null
+        name: Написать реальные пробы пакета
+        description: |
+          Означает: оснастка проб появилась вместе с подпутём `./keyed` (`vitest.config.ts` —
+          JSDOM плюс `vite-plugin-solid`, условия `development`/`browser`), и покрыт ею пока
+          только сам `./keyed`. Остаётся: смоук на реэкспорт `.`/`./web`
+          (`createSignal`/`onMount`/… — все `function`, как в `test/router.test.tsx`) и
+          `mount.test.tsx` (настоящее приложение в JSDOM — узел в `#root`, уничтожение прежнего
+          корня при повторном вызове, отказ без `#root`), по образцу теста, который был у старого
+          `@web-core/shared`.
+
+      - id: migrate-direct-solid-imports
+        type: feature
+        status: Backlog
+        priority: Medium
+        milestone: null
+        name: Перевести зоны кита на @web-core/solid
+        description: |
+          Означает: сегодня `assembly`/`store`/`ui`/`trace`/… импортируют `solid-js` напрямую —
+          пакет существует, но единственной точкой резолва фактически не стал. Переезд НЕ разовый
+          рефакторинг всего кита — идёт по мере того, как architect решает добавить сюда
+          очередную вещь (как `mountApp()` стал первым поводом завести сам пакет). Первый
+          кандидат — `apps/reference`/`apps/skin`/`apps/ewc`: их `main.tsx` уже сегодня зовут
+          мёртвый импорт `mount` из `@web-core/shared`, чинить его правильно сразу на
+          `@web-core/solid/mount`, а не возвращать к `@web-core/shared`.
+
+log:
+  - id: package-created-for-mount
+    type: plan
+    date: 2026-09-05
+    summary: >
+      Пакет заведён по прямому указанию user: framework-мостик над `solid-js`, форма — как у
+      `@web-core/router`/`@web-core/query` (полный реэкспорт вендора вместо прямого импорта по
+      всему киту). Первый практический повод завести его именно сейчас — `mountApp()`: точке
+      входа приложения нужен был дом после того, как её выгнали и из `@web-core/shared` (два
+      инструмента без общего механизма), и из `@web-core/trace` (трейсер не должен монтировать
+      приложение, см. `@web-core/trace/FAQ.md`). `solid-js` — peer-зависимость, как у каждой
+      Solid-зоны кита: фасад не должен сам стать источником второй копии Solid в дереве.
+      Публичный адрес: `mountApp` — `@web-core/solid/mount` (был `@web-core/trace/mount`, а до
+      того голый `mount` из `@web-core/shared`). Открыто: ни одна зона кита ещё не переведена на
+      импорт отсюда вместо прямого `solid-js` — переезд идёт постепенно (`id:
+      migrate-direct-solid-imports`), и три приложения (`apps/reference`/`apps/skin`/`apps/ewc`)
+      сегодня зовут несуществующий `mount` из `@web-core/shared` — их `main.tsx` не мои файлы,
+      чинить не входит в эту ревизию.
+
+  - id: first-community-primitive-taken
+    type: plan
+    date: 2026-09-19
+    summary: >
+      Заявка user: нужен `<Key each by>` для потока по списку с названным ключом. Сверка с рынком
+      показала, что это готовый `@solid-primitives/keyed@1.5.3` (`solidjs-community`, peer
+      `solid-js ^1.6.12`, своих зависимостей нет) — не наша предметная область, берём вендора,
+      а не пишем свой `keyArray`. Решение тянуть зависимость в поставку принял user (владелец
+      зоны зависимость только предлагает). Этим пакет получил ТРЕТИЙ род содержимого поверх двух
+      прежних: не только зеркало `solid-js` и собственное добавление, но и примитив комьюнити,
+      взятый готовым — отсюда правило «подпуть называет происхождение кода» и адрес `./keyed` по
+      имени вендорского пакета. Заодно у пакета впервые появилась оснастка проб
+      (`vitest.config.ts`: JSDOM + `vite-plugin-solid`, условия `development`/`browser` — без них
+      `solid-js/web` отдаёт серверную сборку), пока покрывающая только `./keyed`. Открыто:
+      обновление `pnpm-lock.yaml` от установки зависимости лежит ВНЕ зоны — коммитит architect.
+
+  - id: rootless-taken-memo-declined
+    type: plan
+    date: 2026-09-21
+    summary: >
+      Заявка владельца `@web-core/store` на два примитива сразу; решение архитектора — взять
+      первый, второй отклонить. Взят `@solid-primitives/rootless@1.5.4`: повод настоящий (кэш
+      подписок в сторе копит реактивные корни без вытеснения), а `createSingletonRoot` даёт ровно
+      недостающую механику — счётчик слушателей и гашение корня по уходу последнего. Цена
+      оказалась нулевой для репозитория: пакет и его `@solid-primitives/utils` уже стояли в дереве
+      транзитивно через Kobalte, той же версии, поэтому установка добавила в `pnpm-lock.yaml` три
+      строки. Отклонён `@solid-primitives/memo@1.5.1`: просили `createLazyMemo`, но пакет тянет
+      `@solid-primitives/scheduled` ради трёх функций, которые вендор сам пометил устаревшими, а
+      нужная функция к нему не обращается вовсе — строка осталась в бэклоге с этой оговоркой.
+      Здесь же впервые решён вопрос, который у `keyed` не вставал: у взятого примитива внутри
+      оказался устаревший состав (`createBranch`, `createSharedRoot`). Правило дословного
+      реэкспорта оставлено без исключения — ручной отбор имён развязал бы дрейф с выпусками
+      вендора, — а цена названа в FAQ.md и в паспорте примитива. Решение архитектора по смежному
+      шву: `@web-core/store` переходит на `@web-core/solid` целиком, а не тянет отдельный примитив
+      мимо фасада; сама эта работа идёт в зоне стора, здесь только фиксируется, что ребро
+      разрешено. Открыто: `pnpm-lock.yaml` лежит ВНЕ зоны — коммитит architect.

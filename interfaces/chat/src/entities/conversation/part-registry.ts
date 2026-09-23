@@ -6,7 +6,7 @@ export type PartRenderer<TPart extends Part = Part> = Component<{ readonly part:
 // Хранится типостёртым до `PartRenderer<Part>` — сужение `TPart` → `Part` небезопасно формально,
 // но безопасно по факту: `rendererOf` всегда ищут по ТОМУ ЖЕ `type`, которым `renderer` был
 // зарегистрирован, так что часть на входе рендера всегда нужной формы. Тот же приём, что словарь
-// загрузчиков иконок (`packages/ui/src/icon/components/root.tsx`).
+// загрузчиков иконок (`web-core/ui/src/icon/components/root.tsx`).
 const renderers = new Map<string, PartRenderer<Part>>();
 
 /** Точка расширения ядра: фича зовёт один раз (обычно на модуле), дальше `PartView` находит

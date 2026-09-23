@@ -1,0 +1,426 @@
+# Дорожная карта @web-core/io — источник правды по фактически сделанной работе. Статус
+# проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же,
+# что у web-core/build, web-core/store, web-core/assembly и web-core/router (categories → items,
+# log — журнал решений); без milestones — у пакета нет освоенной поставки с датами релиза, только
+# сделанное и открытое.
+
+categories:
+  - category: Реестр паспортов формы
+    items:
+      - id: io-registry
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`createIoRegistry()` — регистрация и чтение паспорта по имени компонента"
+        description: |
+          Означает: `register`/`get`/`require`/`has`/`list`, явный отказ на неизвестное имя
+          (`require`) и на повторную регистрацию тем же именем (`register`) — не тихий
+          `undefined`/тихая перезапись.
+
+      - id: registry-not-zod-native
+        type: decision
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "Свой реестр по строковому имени, не `z.registry()`"
+        description: |
+          Означает: проверено чтением исходника `zod@4.4.3` — `$ZodRegistry` ключуется ссылкой
+          на схему (`WeakMap`), публичного поиска по строковому `id` нет. Разбор — FAQ.md.
+
+  - category: Кодеки L0/L1
+    items:
+      - id: identity-codec
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`identityCodec()` — L0, форма источника уже совпадает с паспортом"
+        description: |
+          Означает: тривиальный `z.codec`, `decode`/`encode` — тождество, но разбор/тип/проверка
+          всё равно идут через схему.
+
+      - id: rename-keys-codec
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`renameKeysCodec()` — L1, структура та же, ключи другие"
+        description: |
+          Означает: `codec`, построенный из плоского словаря «их-ключ → наш-ключ» (приём JSON-LD
+          `@context`); `encode` строится из ТОГО ЖЕ словаря автоматически (`invert`), второй
+          словарь руками не заводится. Явный отказ на неоднозначный словарь (два чужих ключа в
+          один наш).
+
+  - category: L2 — правила полей
+    items:
+      - id: field-rules-transferred
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "Перенос `products/tables/src/adapter/{model,apply,steps}.ts` — `Step`/`FieldRule`"
+        description: |
+          Означает: закрытый набор `Step` (`trim`/`date`/`dictionary`/…) и `FieldRule`
+          (путь-цель/путь-источник/цепочка шагов/`onFail`), обобщённые от `Row`/`FieldSpec`
+          таблиц до `Record<string, unknown>`. Разбор рынка (JSON-LD, R2RML, XSLT, Avro) не
+          повторяется здесь — сделан один раз в `products/tables/src/adapter/model.ts` до
+          переноса.
+
+      - id: collect-field-rule-report
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`collectFieldRuleReport()` — счётчик бед по множеству записей"
+        description: |
+          Означает: `converted`/`rejected` считаются, одинаковые беды агрегируются в один
+          `issue` с `count` и примерами, `unmapped` называет чужие поля без единого правила —
+          не молчим, а показываем «37 не легли».
+
+      - id: field-rules-codec
+        type: feature
+        status: Rejected
+        priority: Medium
+        milestone: null
+        name: "`fieldRulesCodec()` — L2, обёрнутое `codec`'ом (снято 2026-09-10)"
+        description: |
+          Означало: `decode` собирает канон по правилам и проверяет output-схемой, бракованная
+          запись — явный `throw`, не тихий `null`. `encode` не был реализован (throw, не
+          притворство). Снято решением [[field-rules-two-way]] — `codec`-обёртка поверх
+          `applyFieldRules` оказалась лишним слоем: приём и отдача не делят состояние, значит
+          не нужен общий объект с `decode`/`encode`, обе стороны — два прямых вызова
+          `applyFieldRules` с разными списками правил. Разбор — FAQ.md.
+
+      - id: field-rules-two-way
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "L2 в обе стороны — приём и отдача как два НЕЗАВИСИМЫХ списка `FieldRule[]`"
+        description: |
+          Флоу (обсуждение с user 2026-09-10): схема — самостоятельный ресурс (скелет чужого
+          ответа: ключи + тип, без значений, например из образца ответа ручки OpenAPI). Адаптер —
+          дочерний ресурс СХЕМЫ, не компонента: живёт, пока жива схема, на одну схему можно
+          навесить сколько угодно адаптеров (под аккордеон, под select, ...). Компонент про
+          адаптеры не знает вообще — только свой `entity/io.ts`.
+
+          Внутри адаптера связь поле-в-поле человек пишет РУКАМИ в обе стороны отдельно: «поле
+          схемы → поле компонента» (приём) и «поле компонента → поле схемы» (отдача) — второе НЕ
+          выводится машиной из первого. Значит вопрос «как развернуть `round()`/`dictionary` с
+          коллизией» снят целиком: `applyFieldRules`/`collectFieldRuleReport` уже умеют «список
+          правил + запись → результат» и для этого не нужно ничего добавлять — движок вызывается
+          дважды, с разными списками правил и ролями source/target поменянными местами.
+
+          Решение user 2026-09-10: `fieldRulesCodec` снят целиком (не переписан на два списка) —
+          `codec`-обёртка поверх `applyFieldRules` лишняя, раз оба направления — два прямых
+          вызова без общего состояния между ними. Сделано: `fieldRulesCodec` убран из
+          `field-rules.ts`/`engine/index.ts`, тест заменён на «приём и отдача — два независимых
+          списка `FieldRule[]`» ([[field-rules-codec]] — Rejected), README/FAQ обновлены.
+
+  - category: Пути (JSON Pointer)
+    items:
+      - id: fast-json-patch-adopted
+        type: bug
+        status: Done
+        priority: High
+        milestone: null
+        name: "`lookup`/`pointerOf` — через `fast-json-patch`, не своя ТРЕТЬЯ реализация RFC 6901"
+        description: |
+          Означает: раньше здесь была третья независимая ручная реализация того же алгоритма
+          (первые две — `web-core/assembly`'s `resolveDataBinding`, снятый адаптер таблиц).
+          Исправлено 2026-08-29 (находка user) — взят `fast-json-patch` (8.4M скачиваний/неделю,
+          MIT, zero-dep). Тот же долг исправлен тем же способом у `web-core/assembly` в этом же
+          заходе. Разбор — FAQ.md.
+
+      - id: assign-discover-paths-own
+        type: decision
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "`assign` (запись) и `discoverPaths` (перечень путей) — свои, не с рынка"
+        description: |
+          Означает: RFC 6902 `add` требует существующего родителя (спецификация, не пробел
+          `fast-json-patch`) — автодостройка вложенности не закрыта рынком без веса отдельного
+          пакета. Кандидат `json-ptr` отклонён — все версии помечены `deprecated`, признак
+          отзыва пакета. Разбор — FAQ.md.
+
+      - id: pointer-surface-public
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`assign` и `segmentsOf` — разбор пойнтера и запись по нему в поверхности пакета"
+        description: |
+          Означает: `assign` дописан в реэкспорт `engine/index.ts` (раньше экспортировался из
+          модуля, но наружу пакета не выходил), приватная `tokens` переименована в `segmentsOf` и
+          отдана наружу — обратная к `pointerOf`, режет пойнтер на сегменты со снятием `~0`/`~1`.
+          Поведение обеих функций не менялось: `assign` так же мутирует переданный аккумулятор и
+          достраивает вложенность ОБЪЕКТАМИ (числовой сегмент — обычный ключ, не индекс массива);
+          оба свойства теперь названы в README и покрыты тестами, а не держатся на приватности.
+
+          ТЗ — заявка owner-feeder, 2026-09-20: зона дважды упёрлась в отсутствие этих операций
+          (сборка дерева слотов из плоских путей `describeSchema`, сборка ответа обратно в форму
+          потребителя) и завела у себя копию разбора пойнтера, которую снимет вслед за этим
+          выпуском. Копия правил экранирования — то, что этот пакет уже снимал однажды
+          ([[fast-json-patch-adopted]]), поэтому решение — отдать свои функции, а не оставлять
+          чужую вторую реализацию. Прежний довод «`assign` наружу не отдаём, он мутирует» снят:
+          он закрывал меньшую опасность ценой большей. Разбор — FAQ.md.
+
+          Версия пакета: считаю правильным МИНОР — состав публичной поверхности вырос.
+
+      - id: describe-sample-schema
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "`describeSample`/`describeSchema` — плоский список СКАЛЯРНЫХ листьев (сэмпл/zod-схема), JSON Pointer"
+        description: |
+          Означает: перенос из `apps/skin` — `entities/schema` (`skeletonOf`+`fieldsOfSkeleton`,
+          сырой JSON-сэмпл) и `entities/component/utils/schema-outline` (`schemaOutline`,
+          zod-схема через `z.toJSONSchema`) были ДВУМЯ независимыми обходчиками одной задачи, на
+          своём формате пути (`a.b[]`). Здесь — один общий тип результата (`PathType`) и путь в
+          формате JSON Pointer (`/a/b/0`), тот же, что у `FieldRule.from`/`.target` — значение из
+          дропдауна мастера сведения сразу валидный `FieldRef`, без конвертации туда-обратно.
+          Leaf-only (в отличие от `discoverPaths`, который отдаёт узлы промежуточных объектов
+          тоже — для `unmapped`, трогать не стал). Эджкейсы `schemaOutline` (`$ref`-цикл →
+          `"recursive"`, сериализация схемы падает → `[]`) сохранены как были — порт поведения, не
+          переосмысление. ТЗ — от owner apps/skin, 2026-09-11. Разбор — FAQ.md.
+
+  - category: Подбор и заготовки
+    items:
+      - id: compatible-items
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "`compatibleItems()` — L0-фильтр по целой теме заготовок"
+        description: |
+          Означает: записи темы, которые проходят схему КАК ЕСТЬ, в исходном порядке; не
+          адаптирует и не чинит несовпавшее — это отбор среди своих заготовок (этап 1), не
+          разбор чужой формы (адаптер, этап 2/3).
+
+      - id: pack-registry
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "`createPackRegistry()` — реестр заготовок по теме, без схемы"
+        description: |
+          Означает: тема — голый словарный контент, не знает и не обязана знать, для какого
+          компонента её записи когда-нибудь подойдут. Тем же приёмом отказов, что у
+          `IoRegistry`.
+
+  - category: Структура пакета
+    items:
+      - id: index-engine-split
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "src/index.ts (поверхность) + src/engine/*.ts (содержание)"
+        description: |
+          Означает: `src/index.ts` — один `export * from "./engine/index.js"`, без единой
+          строки своей логики. Семь файлов (`registry`/`codecs`/`field-rules`/`steps`/`paths`/
+          `compatible`/`packs`) и реэкспорт `z` переехали в `src/engine/` — по образцу
+          web-core/store/web-core/assembly/web-core/router/web-core/query. Раньше все лежали
+          плоско в корне `src/` вместе с `index.ts`. Разбор — FAQ.md.
+
+      - id: eslint-lint-zone
+        type: feature
+        status: Done
+        priority: Low
+        milestone: null
+        name: "`eslint.config.js` через `@web-core/lint`, `lint` = `eslint . && typecheck`"
+        description: |
+          Означает: пакет подключён к общему пресету ESLint зоны `lint` (`defineConfig()`), как
+          и все остальные пакеты кита — раньше `lint` был только `typecheck` без прогона eslint.
+
+  - category: Документация
+    items:
+      - id: readme-engine-template
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: "README по общему шаблону «движок»"
+        description: |
+          Означает: Анатомия/Использование/Настройки/Состояния/IO/Сборки/Рецепт заполнены
+          фактами без обоснований (обоснования — FAQ.md), по образцу web-core/store/packages/
+          assembly/web-core/router/web-core/query. Каждый пример «Рецепта» и «Использования»
+          прогнан по-настоящему (node на собранном `dist/`), не выведен по памяти.
+
+      - id: faq-roadmap-filled
+        type: feature
+        status: Done
+        priority: Medium
+        milestone: null
+        name: FAQ.md и ROADMAP.yaml — первое заполнение
+        description: |
+          Означает: FAQ.md сгруппирован по темам (поверхность / пути JSON Pointer / L2 правила
+          полей), прежнее содержание README (обоснование `fast-json-patch`, отказ от
+          `z.registry()`, `z` через пакет) перенесено сюда прозой «почему», факты остались в
+          README.
+
+  - category: Не сделано
+    items:
+      - id: l3-restructuring
+        type: feature
+        status: Done
+        priority: High
+        milestone: null
+        name: "L3 — реструктуризация формы (путь + повтор)"
+        description: |
+          Означает: следующий слой после L0 (тождество)/L1 (переименование ключей)/L2 (правила
+          полей одной записи) — работа с формой ЦЕЛИКОМ, включая повторы
+          (массивы записей внутри чужого ответа), а не значениями уже найденной одной записи.
+          Поиск «где в чужом ответе лежит массив записей» (`discoverRowSets` из снятого адаптера
+          таблиц) в L2 сознательно не перенесён — это предмет L3.
+
+          Начато ПОСЛЕ стабилизации [[field-rules-two-way]] (фундамент прежде следующего слоя,
+          решение user 2026-09-10). Перенесены три функции из `products/tables/src/adapter/
+          paths.ts`/`apply.ts` (сняты `ae8b4f1`, до переноса ещё на `Row` таблиц, не на
+          `Record<string, unknown>`), новый файл `src/engine/rows.ts`, тем же приёмом, каким
+          сюда уже переехал `steps.ts`:
+
+            - `discoverRowSets(input, depth = 4)` — обход дерева, ищет места похожие на массив
+              записей (`[0]` — объект), отдаёт список путей-кандидатов; не выбирает сам, только
+              предлагает — путь выбирает человек, настраивающий адаптер.
+            - `discoverRowPaths(input, rows, depth = 6)` — взяв выбранный путь до набора,
+              показывает пути ВНУТРИ первой записи — то, из чего собираются `FieldRule` в L2.
+            - `collectRowsReport(input, rows, fields, extra?)` — тонкая обёртка вокруг
+              `collectFieldRuleReport` (старый `AdapterSpec`/`apply.ts` таблиц, обобщённый до
+              `Record<string, unknown>`): достаёт массив по пути и передаёт дальше без изменений;
+              путь мимо набора — отдельный `error: string`, не тот же отчёт, что «запись не
+              собралась» (структурная беда ≠ беда данных).
+
+          Обе стороны (приём/отдача) симметричны тому же приёму, что в [[field-rules-two-way]]:
+          `rows` для приёма и `rows` для отдачи — тоже два независимых пути, второй не выводится
+          из первого (`collectRowsReport` вызывается дважды с разными `rows`/`fields`, как и
+          `applyFieldRules` на слое L2).
+
+          README (Анатомия/Использование — 8-й сценарий/Настройки/Состояния/IO/Сборки) и FAQ.md
+          (раздел «L3 — форма целиком») обновлены. Тесты — `test/rows.test.ts`. Typecheck/тесты/
+          lint зелёные, примеры README прогнаны через собранный `dist/`.
+
+      - id: field-rules-codec-encode
+        type: feature
+        status: Rejected
+        priority: Low
+        milestone: null
+        name: "`fieldRulesCodec.encode` — сознательно не реализован"
+        description: |
+          Означает: обратный путь для шагов вроде `dictionary`/`date`/`round` неоднозначен без
+          отдельного решения о том, как каждый шаг инвертируется — такое решение пока не принято,
+          не забыто. Разбор — FAQ.md.
+
+log:
+  - id: pointer-surface-opened
+    type: plan
+    date: 2026-09-20
+    summary: >
+      [[pointer-surface-public]] закрыт по заявке owner-feeder. `assign` добавлен в реэкспорт
+      `src/engine/index.ts`; приватная `tokens` переименована в `segmentsOf` (имя читается снаружи
+      и стоит в паре с `pointerOf`, обратной к которой является) и тоже выведена наружу. Код самих
+      функций не тронут — только видимость и имя. Тест `test/paths.test.ts` переведён на публичную
+      точку `../src/index.js` (прямой импорт `../src/engine/paths.js` больше не нужен) и дополнен:
+      round-trip `pointerOf`/`segmentsOf` с `~0`/`~1`, пустой путь, экранированный ключ целиком, и
+      отдельный тест на то, что `assign` достраивает вложенность объектами — `"/items/0/label"`
+      даёт `{ items: { "0": { label: "x" } } }`, не массив (проверено прогоном, не выведено по
+      памяти: свойство прежде нигде не было названо и потребитель мог ждать индекса массива).
+      README (Анатомия, девятый сценарий «Использования», IO вход/выход, Сборки) и FAQ (прежний
+      «почему `assign` не в поверхности» переписан в «почему теперь в поверхности») обновлены.
+      Тесты/typecheck/lint/build зелёные, пример README прогнан через собранный `dist/`.
+
+  - id: l3-rows-review-fixes
+    type: plan
+    date: 2026-09-10
+    summary: >
+      Ревью [[l3-restructuring]] нашло три вещи в `rows.ts`, все подтверждены чтением кода и
+      тестов и исправлены: (1) `discoverRowPaths` при ненайденном пути `rows` молча брала весь
+      входной объект вместо явной «пути нет» — ломало Lab-флоу (устаревший путь-кандидат из
+      `discoverRowSets` подсовывал бы не те поля для маппинга без сигнала об ошибке); теперь
+      явный `[]` на `!found.found`, тем же приёмом, что уже был у `collectRowsReport`. (2)
+      `collectRowsReport` тихо выбрасывала не-объектные записи набора (`null`, строки) ДО
+      подсчёта — прямое нарушение принципа пакета «ничего не выбрасываем молча»; теперь считаются
+      в `total`/`rejected`, попадают отдельным `issue` (`target: rows`, `reason: "запись — не
+      объект"`, `count`, примеры). (3) Мёртвая ветка `rows === "" ? input : ...` в
+      `collectRowsReport` — `lookup(input, "")` и так возвращает `found: true, value: input`
+      (`paths.ts`), ветка была равна остальной части выражения без себя — снята. Тесты добавлены
+      на оба бага (`test/rows.test.ts`). Typecheck/тесты/lint/build зелёные.
+
+  - id: l3-rows-added
+    type: plan
+    date: 2026-09-10
+    summary: >
+      [[l3-restructuring]] закрыт: новый `src/engine/rows.ts` — `discoverRowSets` (кандидаты на
+      «набор записей» в чужом ответе, только предлагает), `discoverRowPaths` (пути внутри первой
+      записи выбранного набора), `collectRowsReport` (путь до набора + `FieldRule[]` →
+      `collectFieldRuleReport`, структурная ошибка «набора нет» отдельно от отчёта по полям).
+      Прямой перенос трёх функций из `products/tables/src/adapter/paths.ts`/`apply.ts` (сняты
+      `ae8b4f1`), обобщённых с `Row` таблиц до `Record<string, unknown>` — тем же приёмом, каким
+      уже переехали `steps.ts`/`field-rules.ts`. Тест `test/rows.test.ts` — конверт `/data/items`,
+      путь мимо набора даёт `error`, а не тихий пустой отчёт. README получил 8-й сценарий
+      «Использования» и строки в Анатомии/Настройках/Состояниях/IO/Сборках; FAQ.md — раздел
+      «L3 — форма целиком (повторы)» (три «почему»: грубый критерий кандидата, тонкая обёртка
+      вместо своей реализации, свой обход вместо переиспользования `discoverPaths` целиком).
+      Typecheck/тесты/lint зелёные, examples README прогнаны через собранный `dist/`.
+
+  - id: field-rules-codec-removed
+    type: plan
+    date: 2026-09-10
+    summary: >
+      [[field-rules-two-way]] закрыт: `fieldRulesCodec` снят целиком из `field-rules.ts` и
+      `engine/index.ts` (решение user — только `applyFieldRules`, без `codec`-обёртки).
+      Приём и отдача — два независимых списка `FieldRule[]`, отдача не выводится разворотом
+      приёма, движок один и тот же вызывается дважды. Тест `describe("fieldRulesCodec")`
+      заменён на `describe("приём и отдача — два независимых списка FieldRule[]")` — доказывает
+      round-trip через `back: FieldRule[]`, написанный руками отдельно от `fields`. README
+      (Анатомия/Настройки/IO/Сборки) и FAQ.md (раздел L2) обновлены под снятие обёртки. Blast
+      radius — только внутри пакета: `fieldRulesCodec` наружу никто не тянул (grep по репо —
+      только test/README/FAQ/index этого пакета). Typecheck/тесты/lint зелёные после правки.
+
+  - id: adapter-flow-two-way-and-l3
+    type: plan
+    date: 2026-09-10
+    summary: >
+      Обсуждение с user: флоу адаптеров из Lab. Схема — самостоятельный ресурс (скелет чужого
+      ответа: ключи + тип, без значений, берётся из образца ответа ручки OpenAPI). Адаптер —
+      дочерний ресурс СХЕМЫ, не компонента: жизненный цикл идёт за схемой (удалили схему —
+      адаптер удалился, адаптировать больше нечего), на одну схему вешается сколько угодно
+      адаптеров под разные компоненты. Компонент про адаптеры не знает — только свой
+      `entity/io.ts`. Связь поле-в-поле в обе стороны (приём/отдача) человек пишет РУКАМИ
+      отдельно на каждую сторону — второе направление НЕ выводится машиной разворотом первого.
+      Это сняло вопрос «как развернуть `round()`/неоднозначный `dictionary`» — его в такой модели
+      просто нет, `applyFieldRules` уже пригоден для обеих сторон, нужно только перестать считать
+      `encode` производной `decode`. Записаны [[field-rules-two-way]] (L2, ближайшее) и уточнена
+      конкретика [[l3-restructuring]] (следующий слой, после стабилизации L2) — три функции
+      (`discoverRowSets`/`discoverRowPaths`/обёртка над `collectFieldRuleReport`) переносятся из
+      `products/tables/src/adapter/paths.ts` (снят `ae8b4f1`) тем же приёмом, каким уже переехал
+      `steps.ts`.
+
+      ЗА ГРАНИЦЕЙ пакета (явно, чтобы не поймать смешение слоёв): хранение схемы/адаптера как
+      персистентных ресурсов с жизненным циклом, Lab-страница, привязка к бэку пресетов
+      (`backend/presets`, седьмой kind рядом с assembly/content/form/outfit/palette/tag,
+      см. [[backend-presets-zone-direct-work]] в памяти architect) — отдельный трек ПОСЛЕ того как
+      движок преобразований (`web-core/io`) стабилен. Решение user: фундамент прежде следующего
+      слоя, слой прежде хранения.
+
+  - id: readme-faq-roadmap-engine-split
+    type: plan
+    date: 2026-09-04
+    summary: >
+      Пакет приведён к общему шаблону "движок" по образцу web-core/store, web-core/assembly,
+      web-core/router, web-core/query — четвёртому/пятому пилоту. Структура src/ (семь файлов
+      плоско в корне вместе с index.ts) разведена на src/index.ts (поверхность, один реэкспорт) +
+      src/engine/*.ts (содержание) — тесты, которые раньше импортировали каждый файл напрямую
+      (`../src/paths.js` и т.п.), переведены на публичную поверхность (`../src/index.js`), кроме
+      `assign` — он не входит в поверхность, тест импортирует его напрямую из
+      `../src/engine/paths.js`. Добавлены `.gitignore`, `eslint.config.js` (пресет `@web-core/
+      lint`, как у всех соседних пакетов), `@web-core/build`/`@web-core/lint`/`eslint` в
+      devDependencies, `lint` теперь `eslint . && pnpm run typecheck` (раньше — только
+      typecheck). README переписан по разделам (Анатомия/Использование/Настройки/Состояния/IO/
+      Сборки/Рецепт), прежнее содержание (обоснование `fast-json-patch`, отказ от `z.registry()`,
+      `z` через пакет) перенесено в FAQ.md прозой "почему", факты остались в README. Каждый
+      пример в README прогнан по-настоящему через собранный `dist/`, не выведен по памяти.
+      Typecheck/тесты/lint/build прогнаны заново после переезда — все зелёные.

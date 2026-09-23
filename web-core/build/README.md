@@ -1,0 +1,231 @@
+# 🛠️ web-core build
+
+🏷️ build · 🧬 tooling · 📦 `@web-core/build`
+
+## 🧭 Навигация
+
+- ✨ [Главное](#главное)
+- 🧩 [Анатомия](#анатомия)
+- 🚀 [Использование](#использование)
+- 🎚️ [Настройки](#настройки)
+- 🎛️ [Состояния](#состояния)
+- 🔌 [IO](#io)
+- 🏗️ [Сборки](#сборки)
+- 🎨 [Рецепт](#рецепт)
+- ❓ [FAQ](./FAQ.md)
+
+<h2 id="главное">✨ Главное</h2>
+
+Оснастка 🛠️ сборки web-core — используйте, если заводите новое приложение/библиотеку/сервер в
+этом репозитории и не хотите сами подбирать версию Vite, набор плагинов Solid или условия
+разрешения тестов. Шесть точек поверхности закрывают весь цикл: конфиг приложения и конфиг
+библиотеки (`/vite`), пресет тестов (`/vitest`), два профиля типов ⚙️ — для фронтенда и для
+сервера без Vite (`/tsconfig`, `/tsconfig-node`) — TS-раннер серверов (`web-core-node`) и рантайм-
+ридер env для приложений (`/env`). Пять из шести только конфигурируют сборку потребителя и не
+едут в его бандл; `/env` — единственное исключение: тонкая (несколько строк) функция, которая
+сама уезжает 📦 в бандл, потому что список env-префиксов, которые `/vite` вообще проносит наружу
+(`VITE_`/`PRESETS_`/`NEUROBOX_`), и способ их читать — одна тема, и ей лучше жить рядом, чем
+разъезжаться по копиям в каждом приложении. Прецедент смешения рантайма и оснастки в одном
+пакете уже есть у `@web-core/mcp` (тоже `genus: tooling`) — там рантайма даже больше.
+
+<h2 id="анатомия">🧩 Анатомия</h2>
+
+У оснастки без рантайм-кода нет ни DOM, ни внутренней логики, которую можно было бы адресовать
+— «часть» 🧩 здесь означает точку входа/подпуть поставки, а «адрес» — импорт-спецификатор (или
+имя бинарника), которым эта часть достаётся.
+
+| Часть | Адрес | Экспортирует |
+|---|---|---|
+| Конфиг приложения и библиотеки | `@web-core/build/vite` | `defineConfig`, `defineLibraryConfig` |
+| Пресет тест-раннера | `@web-core/build/vitest` | `defineTestConfig` |
+| Профиль типов — фронтенд | `@web-core/build/tsconfig` | JSON, только `extends` |
+| Профиль типов — сервер без Vite | `@web-core/build/tsconfig-node` | JSON, только `extends` |
+| Условие резолва типов соседа-исходника | `customConditions: ["development"]` в общей базе `src/tsconfig/shared.json` | часть обоих профилей, не отдельный подпуть |
+| TS-раннер серверов | бинарник `web-core-node` | CLI (`web-core-node <файл>`, `web-core-node watch <файл>`) |
+| Рантайм-ридер env | `@web-core/build/env` | `fromEnv` |
+
+📂 Шесть частей — пять независимых инструментов, не грани одного движка: у `/vite` и `/vitest`
+нет общих данных, tsconfig-профили — вообще не код, бинарник не знает ни про то, ни про другое, а
+`/env` не знает ни про один из остальных пяти (кроме как темой — списком префиксов, который сам
+не хранит, только читает то, что до него отфильтровал `/vite`). `src/vite/` — самый сложный
+инструмент, поэтому расколот по смыслу: `index.ts` — тонкий барель, `app.ts` — конфиг приложения
+и дев-плагины, `library.ts` — конфиг библиотеки, `workspace-source.ts`/`generated-css.ts` — два
+независимых дев-плагина, каждый в своём файле. `src/vitest/index.ts` — самодостаточен, один файл.
+Оба tsconfig-профиля и их общая база лежат рядом, в одной папке `src/tsconfig/` (`frontend.json`,
+`node.json`, `shared.json`) — они одного рода, а не потому, что подпутей у них два. `src/bin.mjs`
+— раннер, отдельный файл без папки. `src/env.ts` — та же форма: один файл без папки, единственный
+подпуть пакета, который реально исполняется в браузере потребителя, а не только на сборке.
+`src/shared/trace.ts` — единственное, что реально общее: perf-трейсы для `vite`/`vitest`.
+Сборка копирует JSON-конфиги и бинарник в `dist/` тем же раскладом — это то, что реально уезжает
+📦 потребителю (`files` манифеста: только `dist` и этот `README.md`).
+
+<h2 id="использование">🚀 Использование</h2>
+
+**Конфиг приложения:**
+
+```ts
+// vite.config.ts потребителя
+import { defineConfig } from "@web-core/build/vite";
+export default defineConfig();
+```
+
+**Конфиг библиотеки** (`ui`, `skin`, `assembly` и подобные зоны — вместо собственного
+сборочного скрипта поверх esbuild):
+
+```ts
+// vite.config.ts потребителя-библиотеки
+import { defineLibraryConfig } from "@web-core/build/vite";
+export default defineLibraryConfig({
+  entries: [{ name: "index", source: "src/index.ts", solid: true }],
+});
+```
+
+```jsonc
+// package.json потребителя-библиотеки
+"build": "vite build"
+```
+
+**Пресет тестов:**
+
+```ts
+// vitest.config.ts потребителя
+import { defineTestConfig } from "@web-core/build/vitest";
+export default defineTestConfig();
+```
+
+**Профиль типов — фронтенд:**
+
+```jsonc
+// tsconfig.json потребителя
+{
+  "extends": "@web-core/build/tsconfig",
+  "include": ["src", "vite.config.ts"]
+}
+```
+
+**Профиль типов и раннер — сервер без Vite:**
+
+```jsonc
+// tsconfig.json серверного потребителя
+{
+  "extends": "@web-core/build/tsconfig-node",
+  "include": ["src"]
+}
+```
+
+```jsonc
+// package.json серверного потребителя
+{
+  "scripts": {
+    "start": "web-core-node src/server.ts",
+    "dev": "web-core-node watch src/server.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
+```
+
+🔗 Бинарник `web-core-node` потребитель получает через `pnpm`-симлинк `bin` прямой зависимости —
+`tsx` тащить в свои зависимости не нужно, он обычная зависимость самого `build`.
+
+**Рантайм-ридер env** (в коде приложения, не в конфиге сборки):
+
+```ts
+import { fromEnv } from "@web-core/build/env";
+
+const DOCS_URL = fromEnv("VITE_DOCS_URL") ?? "http://localhost:3000/docs";
+```
+
+<h2 id="настройки">🎚️ Настройки</h2>
+
+У оснастки нет одной сущности с общим списком настроек 🎛️ — она сама набор независимых
+инструментов, и опции у каждой фабрики свои:
+`vite.config.ts` принимает то, что вывести неоткуда, `defineLibraryConfig` — состав поставки,
+tsconfig-профили и раннер настроек не принимают вовсе (профиль — готовый JSON, раннер читает
+только CLI-аргументы, которые пробрасывает `tsx`).
+
+| Настройка | Где | Тип | По умолчанию |
+|---|---|---|---|
+| `base` | `defineConfig`, `options.base` | `string` | не задан |
+| `proxy` | `defineConfig`, `options.proxy` | конфиг прокси дев-сервера Vite | не задан |
+| `plugins` | `defineConfig`, `options.plugins` | `Plugin[]` | `[]` |
+| `entries` | `defineLibraryConfig`, `options.entries` | `LibraryEntry[]` (`name`, `source`, `solid?`) | обязательное |
+| Трейсы | глобальный флаг | `globalThis.__WEB_CORE_BUILD_TRACE__: boolean` | `false` |
+
+<h2 id="состояния">🎛️ Состояния</h2>
+
+Настоящих runtime-состояний у статичных фабрик нет — есть режимы 🔀, в которых плагины Vite
+ведут себя по-разному, и переключатель 🩺 трейсов.
+
+| Состояние | Метка | Где |
+|---|---|---|
+| Дев-режим — сосед виден исходником | сработал `resolve.alias` | `/vite`, `apply: "serve"` |
+| Тест-прогон — сосед виден исходником | сработал `resolve.alias` | `/vitest`, `defineTestConfig()` |
+| `tsc`/IDE — типы соседа видны исходником | пакет-сосед опубликовал условие `development` в своём `exports`, оно совпало с `customConditions` потребителя | `/tsconfig`, `/tsconfig-node` |
+| `tsc`/IDE — типы соседа всё ещё из `dist/*.d.ts` | сосед условие `development` пока не опубликовал | `/tsconfig`, `/tsconfig-node` — см. FAQ.md |
+| Дев-режим — CSS соседа порождён функцией | `resolveId`+`load` вернули результат | `/vite`, `generatedCssPlugin` |
+| Дев-режим — CSS соседа остался файлом с диска | `load` вернул `undefined` | `/vite`, нет функции в `./generate` |
+| Сборка — ничего не подменяется | оба дев-плагина `apply: "serve"`, в билде не участвуют | `/vite` |
+| Трейсы включены | `globalThis.__WEB_CORE_BUILD_TRACE__ === true` | `src/shared/trace.ts` |
+
+<h2 id="io">🔌 IO</h2>
+
+<h3>📥 Вход</h3>
+
+| Фабрика | Принимает |
+|---|---|
+| `defineConfig(options?)` | `DefineConfigOptions` (`base?`, `proxy?`, `plugins?`) |
+| `defineTestConfig()` | ничего |
+| `defineLibraryConfig(options)` | `DefineLibraryConfigOptions` (`entries: LibraryEntry[]`) |
+| `web-core-node <файл>` / `watch <файл>` | путь к `.ts`-входу, аргументы пробрасываются `tsx` как есть |
+| `fromEnv(...keys)` | список имён env-ключей, по порядку приоритета |
+
+<h3>📤 Выход</h3>
+
+| Источник | Отдаёт |
+|---|---|
+| `defineConfig` | `UserConfig` Vite — для `export default` в `vite.config.ts` |
+| `defineTestConfig` | `UserConfig` (с полем `test`) — для `export default` в `vitest.config.ts` |
+| `defineLibraryConfig` | `UserConfig` в library mode; для входов с `solid: true` `closeBundle` дописывает `dist/<name>.jsx` рядом |
+| `/tsconfig`, `/tsconfig-node` | готовый JSON для `extends` в `tsconfig.json` потребителя |
+| `web-core-node` | исполняет файл процессом `tsx`, ничего не возвращает вызывающему |
+| `fromEnv` | первое непустое (обрезанное) значение из перечисленных ключей, иначе `undefined` |
+
+<h2 id="сборки">🏗️ Сборки</h2>
+
+⚠️ Автоматических проб сегодня нет — `test/` зоны был снесён попутным коммитом, восстановление
+в бэклоге (`ROADMAP.yaml`, `id: rebuild-test-suite`). Ниже — что фактически проверено ✅ вручную
+(build/typecheck/tarball/дев-сервер настоящего потребителя) в рамках последней ревизии.
+
+| Проверено | Как | Результат |
+|---|---|---|
+| `defineConfig` в реальном приложении | настоящее приложение, собранное этой оснасткой: дев-сервер, HTTP-запрос к корню и к `/src/main.tsx` | `200`, без ошибок в консоли |
+| Соседи по воркспейсу видны исходником | тот же прогон того же приложения (пакеты воркспейса — его соседи) | дев-сервер поднимается, HMR не падает |
+| Соседи по воркспейсу видны исходником и тестам | то же приложение, временный экспорт в `web-core/trace/src/` (нет в `dist`), тест через `@web-core/build/vitest` | тест увидел экспорт без пересборки соседа |
+| `defineConfig`/`defineTestConfig` экспортируются | `import()` собранного `dist/vite/index.js` и `dist/vitest/index.js` | обе функции — `function` |
+| `web-core-node` исполняет `.ts` | ручной прогон на тестовом файле | вывод программы, без ошибок загрузчика |
+| `/tsconfig`, `/tsconfig-node` резолвят `extends` | `tsc --noEmit` на файле, наследующем каждый профиль из `dist/` | оба прохода зелёные |
+| `customConditions` не ломает потребителя без условия `development` в `exports` | `pnpm run typecheck` в приложении-потребителе (сосед `@web-core/skin` условие ещё не публикует) до и после правки | тот же набор ошибок, регрессии нет |
+| Тарбол не тащит лишнего | `pnpm pack`, разбор содержимого архива | только `dist` + корневой `README.md` |
+| `fromEnv` резолвит по префиксу, с запасным именем и обрезкой пробелов | временная проба `test/env.smoke.test.ts` (убрана после проверки) под `vitest run`, `process.env.VITE_SMOKE_KEY*` | все три случая (найден, не найден, обрезка пробелов) прошли |
+
+<h2 id="рецепт">🎨 Рецепт</h2>
+
+Съёмный 🔌 слой поверх `/vite` — `options.plugins` в `defineConfig`: довесок сверх пресетных
+плагинов, для того немногого, что пресет предсказать не может (дев-only статус-роут, прокси
+особого вида).
+
+```ts
+import { defineConfig } from "@web-core/build/vite";
+
+export default defineConfig({
+  plugins: [
+    {
+      name: "dev-status-route",
+      apply: "serve",
+      configureServer(server) {
+        server.middlewares.use("/__status", (_req, res) => res.end("ok"));
+      },
+    },
+  ],
+});
+```

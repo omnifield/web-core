@@ -1,16 +1,16 @@
 "@web-core/cli@0.4.0":
-  dir: packages/cli
+  dir: web-core/cli
   intents:
     - tidy-pandas-travel
 "@web-core/query@0.4.0":
-  dir: packages/query
+  dir: web-core/query
   intents:
     - tidy-pandas-travel
 "@web-core/skin@0.4.0":
-  dir: packages/skin
+  dir: web-core/skin
   intents:
     - tidy-pandas-travel
 "@web-core/ui@0.3.0":
-  dir: packages/ui
+  dir: web-core/ui
   intents:
     - flat-cups-cross

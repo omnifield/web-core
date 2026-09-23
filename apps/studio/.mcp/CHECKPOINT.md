@@ -10,7 +10,7 @@ User собирается залить текущий код на сервер �
 известны, не угадывать и не хардкодить старый локальный.
 
 Контрольный аудит перед заливкой пройден полностью в конце этой сессии: typecheck/тесты/build чистые
-во всех трёх пакетах (`apps/skin/.mcp`, `packages/mcp`, `packages/skin`), живой смоук-тест на
+во всех трёх пакетах (`apps/skin/.mcp`, `web-core/mcp`, `web-core/skin`), живой смоук-тест на
 поднятом локальном сервере (порт 8788) — все документированные числа сошлись день-в-день. Подробности
 — в ROADMAP.yaml/README.md этой зоны, они актуальны на конец сессии, повторно всё не пересчитывать.
 
@@ -37,7 +37,7 @@ M apps/skin/.mcp/src/tools/index.ts
 ?? apps/skin/.mcp/src/tools/shared.ts
 ```
 
-(`packages/mcp`/`packages/skin` — свой чекпоинт см. `packages/mcp/CHECKPOINT.md`.)
+(`web-core/mcp`/`web-core/skin` — свой чекпоинт см. `web-core/mcp/CHECKPOINT.md`.)
 
 В рабочем дереве репозитория ЕСТЬ и другие незакоммиченные файлы вне этой зоны (`apps/skin/src/
 entities/...`, `apps/skin/src/routes/...`, `backend/presets/internal/...`) — НЕ трогать, не моя зона
@@ -55,7 +55,7 @@ entities/...`, `apps/skin/src/routes/...`, `backend/presets/internal/...`) — �
    Файл `tools/index.ts` (500+ строк) разбит на `tools/{kit,presets,feedback,content,browser,
    shared}.ts`. Все описания тулов короткие (1-2 предложения), глубокая документация — в
    `docs/*.md`, читается по требованию через `list_docs`/`get_doc` (НЕ грузится агенту заранее).
-2. **Личность — `X-User-Login`, не аргумент.** `packages/mcp`'s `registerTool` теперь пробрасывает
+2. **Личность — `X-User-Login`, не аргумент.** `web-core/mcp`'s `registerTool` теперь пробрасывает
    `ToolContext` (`{headers, sessionId}`) в каждый хендлер — заголовок настоящего HTTP-запроса, не
    выдумка агента. `resolveAuthor(context, argumentAuthor)` в `tools/shared.ts`: заголовок побеждает
    безусловно, аргумент — только резерв для stdio (без заголовков вовсе). Проверено живьём: попытка
@@ -65,7 +65,7 @@ entities/...`, `apps/skin/src/routes/...`, `backend/presets/internal/...`) — �
    видов сразу. Второй заявкой поймали тот же класс бага в СОСЕДНИХ вызовах того же общего
    `paginate()` — `list_components()` и `list_presets(kind:"form")` тоже отдавали всё целиком без
    `nextCursor`, потому что 50 не был пройден НИ НА ОДНОМ реальном наборе зоны. Починено в движке
-   (`packages/mcp/src/pagination`), одной правкой на все ветки — см. чекпоинт пакета.
+   (`web-core/mcp/src/pagination`), одной правкой на все ветки — см. чекпоинт пакета.
 
 Плюс по мелочи: `resolveVariantTags` теперь ловит опечатку в имени варианта (реверс-проверка, раньше
 тихо игнорировалась), `report_feedback` получил `sign: "issue"|"praise"`, `list_feedback`/
@@ -98,7 +98,7 @@ User подтвердил «по заголовкам всё ок» — закр
 - Тулов в skin-mcp: **25** (21 `readOnlyHint`, 4 нет: `save_preset`/`report_feedback`/
   `resolve_feedback`/`save_content` — все четыре browser-тула, включая `browser_click`, помечены
   `read`).
-- Тестов: `packages/mcp` — **34/34**, `packages/skin` — **79/79**.
+- Тестов: `web-core/mcp` — **34/34**, `web-core/skin` — **79/79**.
 - В службе пресетов: 3 палитры (`omnifield-palette`, `amethyst-palette`, `rosequartz-palette`),
   3 наряда (`omnifield`, `amethyst`, `rosequartz`), 28 форм, 2 тега, 0 сборок, 100+ записей `content`
   (стресс-тест внешнего агента — не мои данные, не трогать).

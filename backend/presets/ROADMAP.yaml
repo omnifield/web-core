@@ -48,7 +48,7 @@ categories:
         description: |
           Ловушка, которую нельзя пропустить: если резолвер, скажем, "варианты компонента" внутри
           дёргает чтение по id в цикле — это ТА ЖЕ болезнь, что и сегодня в
-          `packages/skin/src/presets/client.ts` (см. `finding-n-plus-one` в корневом
+          `web-core/skin/src/presets/client.ts` (см. `finding-n-plus-one` в корневом
           ROADMAP.yaml), просто спрятанная за схемой и переехавшая с клиента на сервер.
 
           Нужен dataloader/батч на уровне резолвера (для Go — например `vikstrous/dataloadgen` или
@@ -106,24 +106,24 @@ categories:
           (`PassportAssembly`) — именованное JSON-поле (gqlgen это умеет) без раскладки глубже.
 
           Почему: `SlotRecipe`/`PartStyles<Part>` — рекурсивная открытая структура (проверено
-          чтением `packages/skin/src/engine/recipe/slot.ts` — `variants`/`settings` это вложенные
+          чтением `web-core/skin/src/engine/recipe/slot.ts` — `variants`/`settings` это вложенные
           `Record<string, PartStyles<Part>>`, сам `PartStyles` — произвольный CSS-in-JS по имени
           партии). Даже ПОЛНАЯ декомпозиция упёрлась бы в JSON-скаляр на самом нижнем уровне (CSS-
           декларации сами по себе открытый объект свойств) — типизированные листья получили бы
           только контейнеры, не реальную типизацию содержимого. `PassportAssembly` той же природы
-          (`packages/skin/src/engine/passport/assembly/nodes.ts`, 91 строка под граф сборки).
+          (`web-core/skin/src/engine/passport/assembly/nodes.ts`, 91 строка под граф сборки).
 
           Три довода, почему не разбирать:
           1. Ни одному из профилей потребления (`mcp-surgical-reads`/`showcase-page-batch`/
              `runtime-wear-once`) это не нужно — все потребляют `recipe`/`assembly` целиком, отдают
-             движку `packages/skin` (`generateSkinCss`/`assemble`), не выбирают поле внутри.
-          2. Декомпозиция завела бы ТРЕТИЙ канон формы (TS в packages/skin + Go-структуры + GraphQL
+             движку `web-core/skin` (`generateSkinCss`/`assemble`), не выбирают поле внутри.
+          2. Декомпозиция завела бы ТРЕТИЙ канон формы (TS в web-core/skin + Go-структуры + GraphQL
              SDL) — тот же класс риска, что уже поймали на `canon-drift-author-tags-assembly`, но
              для целой рекурсивной модели вместо пары скалярных полей.
           3. N+1 не касается: у `recipe`/`assembly` нет ссылок на ДРУГИЕ записи (не связь, а
              внутреннее устройство одной записи) — согласуется с `bbolt-byte-invariant`: бэк
              типизирует границу API и связи, не переизобретает домен-внутреннее устройство записи,
-             которое уже имеет единственный источник правды в `packages/skin`.
+             которое уже имеет единственный источник правды в `web-core/skin`.
 
   - category: Механизм типизации (internal/kinds)
     items:
@@ -142,7 +142,7 @@ categories:
           Видов ШЕСТЬ, не пять — см. `canon-drift-author-tags-assembly`: `assembly`
           (`ComponentAssembly`, сборка ОДНОГО компонента, `{component, assembly}`) уже написан и
           пишется в проде (`apps/skin/.mcp/src/tools/presets.ts`,
-          `packages/skin/src/engine/look/types.ts`), просто на проде сегодня 0 записей этого вида,
+          `web-core/skin/src/engine/look/types.ts`), просто на проде сегодня 0 записей этого вида,
           поэтому его не видно в замерах корневого ROADMAP. Это НЕ то же самое, что будущие
           "сборки-композиции" (композиция НЕСКОЛЬКИХ компонентов, ссылающаяся на сами компоненты,
           из которых собрана) — та вещь ещё не существует как код, `assembly` в этом реестре про
@@ -172,7 +172,7 @@ categories:
           2. `author` — сквозной атрибут владения (см. `authorGuard`,
              `apps/skin/.mcp/src/tools/shared.ts`), MCP подмешивает его в `state` ЛЮБОГО вида при
              сохранении, но объявлен явно только в `ContentState` — `Palette`/`Outfit`/
-             `ComponentAssembly`/`Form` в `packages/skin/src/engine/look/types.ts` о нём молчат,
+             `ComponentAssembly`/`Form` в `web-core/skin/src/engine/look/types.ts` о нём молчат,
              хотя реальные записи (проверено живьём: `tag/status`) несут `{name, label, author}`.
           3. `Outfit.tags` — MCP подмешивает `tags: string[]` в state наряда при сохранении
              (`resolveTags`, `shared.ts`), а интерфейс `Outfit` этого поля не объявляет вовсе.
@@ -180,12 +180,12 @@ categories:
           Решение user дословно: "давай ничего не обходить! все делаем нормально!" — значит НЕ
           заводим Go-структуры без этих полей (иначе валидация ломает прод) и НЕ обходим их
           отдельным нетипизированным путём. Порядок: СНАЧАЛА чинится ТС-канон
-          (`packages/skin/src/engine/look/types.ts` — `author` явным полем у всех пяти
+          (`web-core/skin/src/engine/look/types.ts` — `author` явным полем у всех пяти
           объявленных интерфейсов, `tags` явным полем у `Outfit`), и только ПОСЛЕ этого
           Go-структуры `kinds-registry` пишутся зеркально к исправленному канону — не к
           сегодняшнему, который уже неверен.
 
-          ТС-канон — другая зона (packages/skin), не эта заявка. Синхронизация между зонами —
+          ТС-канон — другая зона (web-core/skin), не эта заявка. Синхронизация между зонами —
           через architect, не самостоятельная догадка овнера backend по чужому файлу.
 
       - id: bbolt-byte-invariant
@@ -247,7 +247,7 @@ categories:
         name: "presets(kind, component) — сузить выдачу до нужных компонентов, не всего аутфита"
         description: |
           Откуда взялась: симптом, который описал user, разбирая профиль `runtime-wear-once`
-          (рантайм-клиент `packages/skin/src/presets/source.ts`, `createPresetsSkinSource`).
+          (рантайм-клиент `web-core/skin/src/presets/source.ts`, `createPresetsSkinSource`).
           Слова user дословно: "Представим ситуацию: у нас аутфит омнифилд, это базовый аутфит,
           в нём формы под все компоненты, под них куча вариантов. Приложение А юзает аутфит
           омнифилд, но не юзает и половины того, что в этом аутфите есть. Одному приложению не
@@ -258,10 +258,10 @@ categories:
 
           Сегодня `source.ts`'s `css()` зовёт `client.list(PRESET_KIND.form)` без фильтра —
           ВСЕ формы всех компонентов аутфита уезжают клиенту одним списком, дальше клиент режет
-          сам (см. `client-graphql-transport` в `packages/skin/ROADMAP.yaml` — там уже назван
+          сам (см. `client-graphql-transport` в `web-core/skin/ROADMAP.yaml` — там уже назван
           этот же класс "два обращения там, где по смыслу одно", здесь та же болезнь на уровне
           не количества запросов, а объёма одного ответа). Движок генерации CSS
-          (`generateSkinCss`/`assemble`, `packages/skin/src/engine/generate`) при этом сам
+          (`generateSkinCss`/`assemble`, `web-core/skin/src/engine/generate`) при этом сам
           ничего "всего" не требует — на вход идёт произвольный массив `forms`, правила CSS
           считаются только по тем формам, что в нём передали. Базовые вещи (переменные палитры,
           шрифт, кейфреймы) считаются от палитры/аутфита целиком и грузиться должны всегда — это
@@ -295,8 +295,8 @@ categories:
           `component` независимы — оба optional, оба можно комбинировать или задавать по
           отдельности, как сегодня работает один `kind`.
 
-          В объём ЭТОЙ заявки НЕ входит: правка клиента (`packages/skin/src/presets/client.ts`)
-          — она заведена отдельным пунктом в `packages/skin/ROADMAP.yaml`
+          В объём ЭТОЙ заявки НЕ входит: правка клиента (`web-core/skin/src/presets/client.ts`)
+          — она заведена отдельным пунктом в `web-core/skin/ROADMAP.yaml`
           (`presets-client-component-filter`) и зависит от формы, которую здесь выберет овнер
           backend — контракт согласуется через architect, когда шаг здесь будет сделан, не
           раньше. Также не входит: прокидывание "какие компоненты нужны странице" из
@@ -493,7 +493,7 @@ categories:
           `kinds-registry`/`component-graph-scope`/`graphql-decision` называли «будущими
           сборками-композициями» и обещали завести отдельным заходом, когда она появится как код.
           Она появилась: механика сборки из целых компонентов сделана
-          (`composeTree`/`CompositionSpec`, `packages/assembly`), студия учится собирать такие
+          (`composeTree`/`CompositionSpec`, `web-core/assembly`), студия учится собирать такие
           композиции и сохранять их, а демо-приложение (`apps/dashboard`) — показывать их вне
           витрины. Не путать с уже существующим `assembly`: тот про сборку ОДНОГО компонента
           (`{component, assembly}`) и остаётся как есть, этот вид его не заменяет и не трогает.
@@ -556,7 +556,7 @@ categories:
 
           ГРАНИЦЫ ЗАЯВКИ: здесь только вид в службе. Сборщик модулей и выгрузка файлом — зона
           `apps/studio` (ведёт user сам); чтение файла без службы — `apps/dashboard`
-          (`modules-from-files`, ТЗ уже записано). Клиентская сторона (`packages/skin/presets`,
+          (`modules-from-files`, ТЗ уже записано). Клиентская сторона (`web-core/skin/presets`,
           MCP-тулы студии) от этого вида не зависит на первом этапе: файл, который человек
           выгружает, — это конверт службы (`PresetInput`), то есть одно и то же содержимое и на
           диске, и в базе.
@@ -568,10 +568,10 @@ categories:
         status: Backlog
         priority: Medium
         milestone: null
-        name: "packages/query — модуль GraphQL-клиента"
+        name: "web-core/query — модуль GraphQL-клиента"
         description: |
           Следующий шаг ПОСЛЕ этого файла, другая зона. Слова user: "перепишем нормально бэк, а
-          потом напишем в packages/query модуль для графКюль". Не входит в объём этой заявки —
+          потом напишем в web-core/query модуль для графКюль". Не входит в объём этой заявки —
           здесь только backend/presets.
 
       - id: consumers-migration-one-by-one
@@ -584,7 +584,7 @@ categories:
           Третий шаг, после `query-graphql-client-module`. Слова user: "точечно пойдём по
           потребителям и всех нормально пересадим и всё хорошо настроим без всяких циклов и
           подобной ерунды". Потребители: `apps/skin` (витрина), `apps/skin/.mcp` (агент), рантайм
-          `packages/skin` (`wear`/`connection`). Каждый — отдельный заход, не одной правкой сразу.
+          `web-core/skin` (`wear`/`connection`). Каждый — отдельный заход, не одной правкой сразу.
 
 log:
   - id: menu-name-is-dead-done
@@ -620,7 +620,7 @@ log:
       Формы сверены с живым кодом зоны, не с пересказом (та же привычка, что раньше поймала
       `canon-drift-author-tags-assembly`): `SchemaDocument` и `Adapter` прочитаны в
       `interfaces/feeder/src/entities/{openapi,adapter}/models/types.ts`, `FieldRule`/`ExtraPolicy`
-      — в `packages/io`. У `menu` канона в TS сегодня нет вовсе — форма взята из описания пункта
+      — в `web-core/io`. У `menu` канона в TS сегодня нет вовсе — форма взята из описания пункта
       (`{name, adapters}`), тем же приёмом, что когда-то `Tag`.
 
       Граница типизации — по решению user 2026-09-20 из двух чтений заявки выбрано каноничное для
@@ -717,8 +717,8 @@ log:
       `store.List`") обновлены.
 
       В объём НЕ входило и не сделано — как и было явно исключено в описании пункта: правка
-      клиента `packages/skin/src/presets/client.ts` (`presets-client-component-filter`, другая
-      зона, `packages/skin/ROADMAP.yaml`) и прокидывание "какие компоненты нужны странице" из
+      клиента `web-core/skin/src/presets/client.ts` (`presets-client-component-filter`, другая
+      зона, `web-core/skin/ROADMAP.yaml`) и прокидывание "какие компоненты нужны странице" из
       `source.ts` выше по цепочке приложений.
 
   - id: feedback-bucket-and-type-done
@@ -746,7 +746,7 @@ log:
 
       Побочный улов при сверке с живым кодом (НЕ часть этого пункта, отдельные находки, ещё не
       заведены отдельными пунктами): (1) у `apps/skin/.mcp` есть свой REST-клиент
-      (`apps/skin/.mcp/src/engine/store.ts`), отдельный от `packages/skin/src/presets/client.ts`
+      (`apps/skin/.mcp/src/engine/store.ts`), отдельный от `web-core/skin/src/presets/client.ts`
       — тоже осиротел переездом на GraphQL, весь MCP-агент (не только фидбэк-тулы) не может
       сегодня говорить с этим бэком; (2) `Query.presets()` без фильтра kind падает целиком на
       первой же записи незарегистрированного вида — на живом стенде уже есть такая (старая
@@ -774,7 +774,7 @@ log:
       ради тестируемости, `cmd/presets` не тронут (структурная типизация). README.md/FAQ.md
       обновлены под оба изменения. Сборка/тесты/`-race` зелёные (43 теста, 5 файлов). Дальше по
       ROADMAP.yaml — architect ведёт коммит/ветку/PR; следующий шаг всей цепи (не эта зона) —
-      `packages/query` GraphQL-клиент.
+      `web-core/query` GraphQL-клиент.
 
   - id: recipe-assembly-scope-cut
     type: plan
@@ -785,7 +785,7 @@ log:
       (`SlotRecipe`) и `ComponentAssembly.assembly` (`PassportAssembly`) — рекурсивные деревья с
       открытыми ключами (произвольный CSS-in-JS по партии/состоянию, граф сборки на 91 строку),
       разложить которые до листовых GraphQL-полей значило бы второй раз построить в Go всю модель
-      `packages/skin/engine/recipe`+`engine/passport/assembly` — недели работы ради полей, которые
+      `web-core/skin/engine/recipe`+`engine/passport/assembly` — недели работы ради полей, которые
       сами не создают N+1 (не ссылаются на другие записи). Овнер предложил границу: типизировать
       связи и плоские скаляры верхнего уровня, оставить `recipe`/`keyframes`/`assembly`
       именованным JSON-скаляром внутри типа. Проверено architect чтением исходников
@@ -799,7 +799,7 @@ log:
     summary: >
       Овнер, прежде чем писать Go-структуры видов, сверил план с реальным кодом/продом (та же
       привычка, что уже раз ловила расхождение на пресетах) и нашёл три места разъезда: вид
-      `assembly` (написан и живёт в проде, `apps/skin/.mcp` + `packages/skin`, просто 0 записей на
+      `assembly` (написан и живёт в проде, `apps/skin/.mcp` + `web-core/skin`, просто 0 записей на
       проде сегодня — не то же самое, что будущие "сборки-композиции") не был назван в плане;
       `author` подмешивается MCP в state ЛЮБОГО вида при сохранении, но явно объявлен только в
       `ContentState`; `Outfit.tags` подмешивается MCP так же, а в интерфейсе `Outfit` не объявлен
@@ -807,7 +807,7 @@ log:
       (тогда typed-валидация начнёт бить существующие живые записи с этими полями) или обходить
       отдельным путём. Решение user дословно: "давай ничего не обходить! все делаем нормально!" —
       порядок зафиксирован в `canon-drift-author-tags-assembly` и `kinds-registry`: сначала
-      правится TS-канон (`packages/skin/src/engine/look/types.ts`, другая зона), потом Go-структуры
+      правится TS-канон (`web-core/skin/src/engine/look/types.ts`, другая зона), потом Go-структуры
       пишутся зеркально к исправленному канону.
 
   - id: kinds-registry-and-schema-shape
@@ -838,6 +838,6 @@ log:
       делаем — клиентов всё равно переписывать, а схема GraphQL аддитивна и не требует ждать, пока
       появятся все узлы графа. Явно зафиксирована ловушка: N+1 не исчезает от смены протокола, без
       dataloader'а в резолверах он просто переезжает на сервер. Порядок работ (три отдельные зоны):
-      этот файл (backend/presets) → packages/query (клиент) → точечный переезд потребителей
+      этот файл (backend/presets) → web-core/query (клиент) → точечный переезд потребителей
       (витрина, MCP, рантайм). Дальше по этому файлу работает овнер backend/presets, ход обсуждают
       с architect по мере продвижения.

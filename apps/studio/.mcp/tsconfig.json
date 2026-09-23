@@ -1,8 +1,8 @@
 {
   "//": [
-    "TS-only сервер (`PWEB-node`, `packages/build`): раньше здесь была своя настройка на голый",
+    "TS-only сервер (`PWEB-node`, `web-core/build`): раньше здесь была своя настройка на голый",
     "JS+JSDoc — пути на TS-сервер без бандлера не было вовсе. Теперь есть — `web-core-node`/",
-    "`tsconfig-node`, тот же профиль, что и у любого другого server-потребителя `packages/build`."
+    "`tsconfig-node`, тот же профиль, что и у любого другого server-потребителя `web-core/build`."
   ],
   "extends": "@web-core/build/tsconfig-node",
   "include": ["src", "test"]

@@ -73,7 +73,7 @@ func main() {
 	mux.HandleFunc("GET /healthz", healthzHandler(db, lim))
 
 	// Дата-лоадеры — свежие на каждый запрос (loaders.Middleware), CORS — на весь mux разом:
-	// GraphQL сюда так же ходят из браузера (packages/query, следующий шаг по ROADMAP.yaml), как
+	// GraphQL сюда так же ходят из браузера (web-core/query, следующий шаг по ROADMAP.yaml), как
 	// раньше ходил REST-клиент.
 	var apiHandler http.Handler = mux
 	apiHandler = loaders.Middleware(db)(apiHandler)

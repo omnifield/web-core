@@ -2,7 +2,7 @@ package kinds
 
 import "encoding/json"
 
-// ComponentAssembly — зеркало `ComponentAssembly` (packages/skin/src/engine/look/types.ts):
+// ComponentAssembly — зеркало `ComponentAssembly` (web-core/skin/src/engine/look/types.ts):
 // сборка ОДНОГО компонента, отданная на хранение. НЕ то же самое, что будущие "сборки-композиции"
 // (композиция НЕСКОЛЬКИХ компонентов, ссылающаяся на сами компоненты, из которых собрана) — той
 // вещи ещё нет как кода (kinds-registry в ROADMAP.yaml). На проде сегодня 0 записей этого вида —

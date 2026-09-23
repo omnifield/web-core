@@ -1,6 +1,6 @@
 package kinds
 
-// Tag — словарь допустимых меток (packages/skin/src/tags — `checkTags`/`TagGroup`). Канонического
+// Tag — словарь допустимых меток (web-core/skin/src/tags — `checkTags`/`TagGroup`). Канонического
 // TS-интерфейса для этого вида нет (в отличие от Palette/Form/Outfit/ContentState/ComponentAssembly
 // — все объявлены в коде, `tag` существовал только как `kind:"tag"` в словаре, форма нигде не
 // типизирована). Форма ниже — по живой записи на проде (`tag/status`: `{name, label, author}`),

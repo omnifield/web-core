@@ -1,0 +1,96 @@
+{
+  "name": "@web-core/generators",
+  "version": "0.4.0",
+  "description": "Generation tooling: a vite/webpack-shaped runner (defineConfig + plugins) plus a CLI to run it. Component scaffolding, barrel sync in place of the ad-hoc web-core/ui/scripts/generate.mjs, is only one consumer; test-data generation (faker) and other template-driven text generation are meant to land alongside it over time as their own plugins. Nothing in the repository is required to depend on this package — each zone opts in.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "exports": {
+    "./extract": {
+      "development": "./src/extract/index.ts",
+      "types": "./dist/extract/index.d.ts",
+      "default": "./dist/extract/index.js"
+    },
+    "./preserve": {
+      "development": "./src/preserve/index.ts",
+      "types": "./dist/preserve/index.d.ts",
+      "default": "./dist/preserve/index.js"
+    },
+    "./engine": {
+      "development": "./src/engine/index.ts",
+      "types": "./dist/engine/index.d.ts",
+      "default": "./dist/engine/index.js"
+    },
+    "./mapping": {
+      "development": "./src/mapping/index.ts",
+      "types": "./dist/mapping/index.d.ts",
+      "default": "./dist/mapping/index.js"
+    },
+    "./fields": {
+      "development": "./src/fields/index.ts",
+      "types": "./dist/fields/index.d.ts",
+      "default": "./dist/fields/index.js"
+    },
+    "./plugins/kit": {
+      "development": "./src/plugins/kit/index.ts",
+      "types": "./dist/plugins/kit/index.d.ts",
+      "default": "./dist/plugins/kit/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      "./extract": {
+        "types": "./dist/extract/index.d.ts",
+        "default": "./dist/extract/index.js"
+      },
+      "./preserve": {
+        "types": "./dist/preserve/index.d.ts",
+        "default": "./dist/preserve/index.js"
+      },
+      "./engine": {
+        "types": "./dist/engine/index.d.ts",
+        "default": "./dist/engine/index.js"
+      },
+      "./mapping": {
+        "types": "./dist/mapping/index.d.ts",
+        "default": "./dist/mapping/index.js"
+      },
+      "./fields": {
+        "types": "./dist/fields/index.d.ts",
+        "default": "./dist/fields/index.js"
+      },
+      "./plugins/kit": {
+        "types": "./dist/plugins/kit/index.d.ts",
+        "default": "./dist/plugins/kit/index.js"
+      }
+    }
+  },
+  "bin": {
+    "web-core-generate": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@web-core/io": "workspace:*",
+    "handlebars": "^4.7.9",
+    "vite": "^8.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@web-core/skin": "workspace:*",
+    "@zag-js/accordion": "^1.43.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

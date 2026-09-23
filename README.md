@@ -70,7 +70,7 @@
 
 🔍 Абстрактный пример: `products/X/internal/Y/` — самостоятельная область (например, все
 инструменты одного назначения) — заводит свою тройку, если внятно объясняет себя одним связным
-текстом. `packages/A/src/engine/` — не отдельный скоуп, а внутренняя реализация одного пакета
+текстом. `web-core/A/src/engine/` — не отдельный скоуп, а внутренняя реализация одного пакета
 `A`: своей тройки у неё нет, потому что это не отдельная область по смыслу, а часть уже
 задокументированной сущности `A`.
 
@@ -82,8 +82,8 @@
 
 > [!WARNING]
 > **У каждого `genus` — СВОЙ шаблон, копировать содержание чужого genus нельзя.** `genus: component`
-> копирует манеру `packages/ui` (`genus: component`, ниже), `genus: engine` — манеру
-> `packages/store`/`packages/assembly` (`genus: engine`), `genus: tooling` — манеру `packages/build`
+> копирует манеру `web-core/ui` (`genus: component`, ниже), `genus: engine` — манеру
+> `web-core/store`/`web-core/assembly` (`genus: engine`), `genus: tooling` — манеру `web-core/build`
 > (`genus: tooling`, первый), `genus: service` — манеру `backend/presets` (`genus: service`,
 > первый), `genus: app` — манеру `apps/studio` (`genus: app`, первый). Внутри `genus: service` есть
 > устоявшаяся подгруппа `mcp` (MCP-серверы зон) — она берёт манеру `apps/studio/.mcp` (первый пилот
@@ -106,7 +106,7 @@
 контракт, а поднимается через `@web-core/mcp` (`genus: tooling`, владеет регистрацией тула,
 транспортом, сессиями, `access`/`isError`-семантикой) и разговаривает с потребителем — агентом, не
 человеческим кодом — протоколом `tools/call`. Дока такой зоны НЕ пересказывает устройство самого
-протокола/транспорта (это уже описано в `packages/mcp`), а держит только то, что специфично именно
+протокола/транспорта (это уже описано в `web-core/mcp`), а держит только то, что специфично именно
 ей: какие тулы, что каждый принимает/отдаёт, свой домен. Первый пилот подгруппы — `apps/studio/.mcp`,
 не единственный будущий: следующая MCP-зона равняется на неё, а не изобретает свой genus заново.
 
@@ -157,7 +157,7 @@
 
 <h3 id="документация-каталоги">🗂️ Каталог — не сущность, и шаблон у него свой</h3>
 
-Каталог верхнего уровня (`packages/`, `apps/`, `interfaces/`, `backend/`, `products/`, `canons/`)
+Каталог верхнего уровня (`web-core/`, `apps/`, `interfaces/`, `backend/`, `products/`, `canons/`)
 — **группа сущностей**, а не сущность. У него нет `genus`, паспорта, анатомии и IO: измерять там
 нечего, и шаблон сущности (Анатомия → Использование → … → Рецепт) на него натягивать нельзя —
 получится вода в семи разделах вместо ответа на вопрос «что это за каталог».
@@ -178,9 +178,9 @@
 > интерфейсов и продуктов описан в доке СВОЕГО каталога; в корневом README — строка со ссылкой.
 > Две таблицы одного состава расходятся молча, и первой устаревает всегда корневая.
 
-Пилоты: [`packages/ui`](./packages/ui/README.md) (`genus: component`),
-[`packages/store`](./packages/store/README.md) (`genus: engine`, первый),
-[`packages/build`](./packages/build/README.md) (`genus: tooling`, первый),
+Пилоты: [`web-core/ui`](./web-core/ui/README.md) (`genus: component`),
+[`web-core/store`](./web-core/store/README.md) (`genus: engine`, первый),
+[`web-core/build`](./web-core/build/README.md) (`genus: tooling`, первый),
 [`backend/presets`](./backend/presets/README.md) (`genus: service`, первый),
 [`apps/studio`](./apps/studio/README.md) (`genus: app`, первый),
 [`apps/studio/.mcp`](./apps/studio/.mcp/README.md) (`genus: service`, группа `mcp`, первый) и
@@ -192,7 +192,7 @@
 фреймворка — компонент кита, отдельная функция, целый движок (`store`, `router`, будущие) —
 описывает себя одним и тем же небольшим набором понятий. Смысл термина закрепляется здесь, один
 раз на весь репозиторий; у каждой сущности он раскрывается в СВОЁМ контексте (см., например,
-паспорт UI-компонента — [`packages/ui/README.md`](./packages/ui/README.md#passport)), но не
+паспорт UI-компонента — [`web-core/ui/README.md`](./web-core/ui/README.md#passport)), но не
 переизобретается заново под другим словом с тем же смыслом.
 
 Первые пять понятий — то, что сущность заявляет о себе ДЕКЛАРАТИВНО, данными, а не кодом,
@@ -232,7 +232,7 @@
 
 | Каталог | Что там | Дока |
 |---|---|---|
-| `packages/` | 🧱 база фреймворка: движки, оснастка, примитивы — публикуются в реестр под `@web-core/*` | [README](./packages/README.md) · [FAQ](./packages/FAQ.md) · [ROADMAP](./packages/ROADMAP.yaml) |
+| `web-core/` | 🧱 база фреймворка: движки, оснастка, примитивы — публикуются в реестр под `@web-core/*` | [README](./web-core/README.md) · [FAQ](./web-core/FAQ.md) · [ROADMAP](./web-core/ROADMAP.yaml) |
 | `interfaces/` | 🎛️ межпродуктовый UI: сводит несколько пакетов под общую задачу, потребителей больше одного | [README](./interfaces/README.md) · [FAQ](./interfaces/FAQ.md) · [ROADMAP](./interfaces/ROADMAP.yaml) |
 | `apps/` | 🖥️ поверхности, доказывающие свойства фреймворка: витрина, эталон, демо-показ | [README](./apps/README.md) · [FAQ](./apps/FAQ.md) · [ROADMAP](./apps/ROADMAP.yaml) |
 | `backend/` | 🗄️ службы со своим процессом, портом и сетевым контрактом | [README](./backend/README.md) · [FAQ](./backend/FAQ.md) · [ROADMAP](./backend/ROADMAP.yaml) |
@@ -277,15 +277,15 @@
 
 **⚙️ Сборка и тесты**
 
-- **Vite** — сборка пакетов и приложений; фабрика конфига живёт в `packages/build` (`/vite`).
-- **Vitest** — тестовый раннер; пресет в `packages/build` (`/vitest`).
-- **TypeScript** — типы и `tsc`-проверки; базовые `tsconfig` в `packages/build` (`/tsconfig`,
+- **Vite** — сборка пакетов и приложений; фабрика конфига живёт в `web-core/build` (`/vite`).
+- **Vitest** — тестовый раннер; пресет в `web-core/build` (`/vitest`).
+- **TypeScript** — типы и `tsc`-проверки; базовые `tsconfig` в `web-core/build` (`/tsconfig`,
   `/tsconfig-node`).
-- **esbuild** — транспайл под капотом сборочных скриптов `packages/build`.
+- **esbuild** — транспайл под капотом сборочных скриптов `web-core/build`.
 
 **✅ Качество кода**
 
-- **ESLint + eslint-plugin-solid** — пресет канона Solid, выраженного машиной, в `packages/lint`.
+- **ESLint + eslint-plugin-solid** — пресет канона Solid, выраженного машиной, в `web-core/lint`.
 - **Prettier** — форматтер редактора (настройка devcontainer), не отдельный CLI-таргет
   репозитория.
 

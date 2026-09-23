@@ -1,6 +1,6 @@
 # Дорожная карта apps/skin/.mcp — источник правды по фактически сделанной работе. Статус
 # проставляется рядом с работой, в момент когда она сделана — не задним числом. Формат тот же,
-# что у packages/mcp/store (categories → items, log → журнал решений); без milestones.
+# что у web-core/mcp/store (categories → items, log → журнал решений); без milestones.
 
 categories:
   - category: Тулы — разведка кита
@@ -110,7 +110,7 @@ categories:
           пустой `categoryClashes`, а палитра с дублем `accent` — `ok:false`, пустой `flaws` и ОДНА
           запись на пару `accent+brand`, где `places` несёт все измерения (каждое ниже порога), а
           `means` совпадает с самым тесным из них. 23/23 зелёных, typecheck зоны — тот же
-          baseline (492 чужие ошибки `--jsx`/DOM-lib в `packages/ui`/`packages/skin`, сверено диффом
+          baseline (492 чужие ошибки `--jsx`/DOM-lib в `web-core/ui`/`web-core/skin`, сверено диффом
           ДО/ПОСЛЕ), eslint чист. Живого HTTP-прогона поднятым сервером не делал.
 
   - category: Тулы — заявки
@@ -221,8 +221,8 @@ categories:
           правки `author` был обычным аргументом — ownership защищала бы от чужой опечатки, но не
           от намеренной (или случайной) путаницы: ничто не мешало любому вызову назваться чужим
           именем.
-          Реализация опиралась на находку в `packages/mcp` (см. tool-handler-request-context в
-          `packages/mcp/ROADMAP.yaml`) — своя обёртка `registerTool` отбрасывала `extra` SDK
+          Реализация опиралась на находку в `web-core/mcp` (см. tool-handler-request-context в
+          `web-core/mcp/ROADMAP.yaml`) — своя обёртка `registerTool` отбрасывала `extra` SDK
           (реальные HTTP-заголовки на каждый вызов), пришлось чинить это первым, до того как здесь
           вообще стало возможно читать заголовок.
           Проверено живьём: клиент с `X-User-Login: bob` пытается сохранить запись alice, ПОДДЕЛАВ
@@ -263,7 +263,7 @@ categories:
         description: |
           Означает: `scales.accent` красит кнопки/ссылки/фокус; ВЕСЬ остальной вид (фон/поверхности/
           бордеры/приглушённый текст) — OKLCH-рэмп из ОДНОГО seed-цвета `scales.neutral`
-          (`packages/style`). «Как X, но бренд другой» — меняется только `accent`. «Своя тема» —
+          (`web-core/style`). «Как X, но бренд другой» — меняется только `accent`. «Своя тема» —
           обязана смениться `neutral`, причём хью-семьёй (таблица сочетаний — реальные значения
           Radix Colors, не выдуманные) И насыщенностью (фон получает лишь долю chroma seed'а —
           блёклый `neutral` даёт технически другую, но неразличимую на глаз тему). `danger`/
@@ -304,7 +304,7 @@ categories:
              сессию), ответ — `{report, gaps}`.
           5. `skinGaps` (`engine/mechanics.ts`) группирует по тексту `means` — адреса списком под
              одним сообщением, не фраза на каждую запись.
-          6. `OutfitFlaw` (`packages/skin/src/engine/look/types.ts`) получил необязательное поле
+          6. `OutfitFlaw` (`web-core/skin/src/engine/look/types.ts`) получил необязательное поле
              `missing?: readonly string[]` для `palette-incomplete` — ПОЛНЫЙ список ролей, `means`
              по-прежнему резюмирует прозой (может усечь для читаемости, но теперь есть и точные
              данные рядом, не только строка с «…»).
@@ -417,7 +417,7 @@ categories:
           проверяема прямо сейчас, а не только на бумаге.
           Проверено живьём: `list_components()` — 20 из 35, `nextCursor` есть, 4754 символа (было
           8271 без cursor); `list_presets(kind:"form")` — 20 из 28, `nextCursor` есть, 4290 символов
-          (было 5932). Тесты `packages/mcp` — 34 зелёных (было 33), включая новый на срабатывание
+          (было 5932). Тесты `web-core/mcp` — 34 зелёных (было 33), включая новый на срабатывание
           default на наборе больше него.
 
       - id: store-client-dedup
@@ -428,7 +428,7 @@ categories:
         name: "engine/store.ts дублирует низкоуровневый провод @web-core/skin/presets — не drop-in"
         description: |
           Означает: `engine/store.ts` — 98 строк рукописного HTTP-клиента (голый `fetch`, свои
-          `StoreRefused`/`StoreDown`), почти дословно повторяющих `packages/skin/src/presets/
+          `StoreRefused`/`StoreDown`), почти дословно повторяющих `web-core/skin/src/presets/
           wire.ts`'s `ask()`/`PresetsRefused`/`PresetsDown`. НЕ drop-in замена на
           `createPresetsClient`, при проверке: его `PresetKind` — закрытый союз `palette|form|
           outfit|assembly` (правильно узко под домен Palette/Form/Outfit/Assembly), а эта зона
@@ -438,11 +438,11 @@ categories:
           реэкспортирована в `@web-core/skin/presets`), тянуть её напрямую в обход публичной
           границы пакета — тоже неверно.
           ПЕРЕСМОТРЕНО (2026-09-09): вывод про "не drop-in" был верен на момент записи, но обе
-          названные причины с тех пор закрыты в `packages/skin` — `tag` (`tag-kind-support`) и
+          названные причины с тех пор закрыты в `web-core/skin` — `tag` (`tag-kind-support`) и
           `content` уже в `PRESET_KIND`. `feedback` вообще ушёл из presets отдельной сущностью
           (`feedback-bucket-and-type`, `backend/presets/ROADMAP.yaml`) — раздувать `PresetKind`
           больше не нужно вовсе. Значит верный путь — НЕ строить второй HTTP-примитив в
-          `packages/mcp`, а звать `createPresetsClient` прямо (drop-in ЕСТЬ теперь) — см.
+          `web-core/mcp`, а звать `createPresetsClient` прямо (drop-in ЕСТЬ теперь) — см.
           `retire-engine-store` и `feedback-tools-migration` ниже, план заменяет этот пункт.
 
       - id: retire-engine-store
@@ -518,7 +518,7 @@ categories:
         name: "tools/feedback.ts — на @web-core/mcp/feedback, три ломающих отличия от старой формы"
         description: |
           Не перенос 1:1 — новая схема (`backend/presets/internal/graphql/feedback.graphql`,
-          `packages/mcp/src/feedback/index.ts`) устроена иначе, три вещи меняются НЕ по вкусу, а
+          `web-core/mcp/src/feedback/index.ts`) устроена иначе, три вещи меняются НЕ по вкусу, а
           потому что так устроены реальные типы:
 
           1. АДРЕСАЦИЯ ЛОМАЕТСЯ: `FeedbackEntry` не несёт имени, только `id`. `get_feedback`/
@@ -552,7 +552,7 @@ categories:
           Мелкая косметика, не блокер: текст отказа от бэка на "уже разобрана" несёт префикс
           `"presets: "` (см. `backend/presets/internal/graphql/feedback.resolvers.go`) — служба
           называет себя чужим именем в сообщении агенту. Можно оставить как есть (не критично,
-          читаемо) или зачистить префикс в `wire()`-обёртке `packages/mcp/feedback` — не эта
+          читаемо) или зачистить префикс в `wire()`-обёртке `web-core/mcp/feedback` — не эта
           заявка, если чистить, то отдельным маленьким заходом там.
 
           Сделано ровно по плану, три ломающих отличия учтены как описано: `id` вместо `name` в
@@ -579,7 +579,7 @@ categories:
         milestone: null
         name: Эталонные скин-варианты по каждому компоненту кита
         description: |
-          Пройти все ~31 компонент packages/ui по одному, для каждого — несколько эталонных
+          Пройти все ~31 компонент web-core/ui по одному, для каждого — несколько эталонных
           вариантов (не одна тестовая форма, как сейчас у большинства). Работа над самими
           компонентами (entity/анатомия) — не зона skin-mcp.
 
@@ -692,7 +692,7 @@ categories:
           Имена экспортов не меняются нигде — замена сводится к правке пути импорта в каждом файле,
           не к переписыванию логики: `@web-core/neurobox`'s `/server`/`/pagination`/`/mcp`/
           `/zone-feedback` — дословный перенос соответствующих частей бывшего `@web-core/mcp`
-          (сверено ревью при переносе, см. `packages/neurobox/ROADMAP.yaml`).
+          (сверено ревью при переносе, см. `web-core/neurobox/ROADMAP.yaml`).
           Сделано ровно по плану — все десять файлов из таблицы плюс одиннадцатое место, найденное
           `grep`'ом уже ПОСЛЕ правки (таблица его не называла): комментарий в
           `src/engine/presets.ts:64` тоже называл старый путь `@web-core/mcp/feedback` текстом, не
@@ -714,19 +714,19 @@ categories:
           `/pagination`), `report_feedback`+`list_feedback` (`/zone-feedback`), `browser_navigate`
           (`/mcp`'s `createBrowser`), `pnpm run push-to-prod` в режиме без реальной отправки или на
           пустой службе (`/mcp`'s `httpPeer`/`stdioPeer`) — тем же способом, каким проверялся сам
-          перенос в `packages/neurobox` на каждом шаге, не поверить на слово сборке.
+          перенос в `web-core/neurobox` на каждом шаге, не поверить на слово сборке.
 
           Сделано частично, остальное упёрлось в чужую зону — см. находку
           `assembly-tree-esm-named-import` в log ниже:
           - `typecheck` — 0 ошибок в файлах зоны (469 нерелевантных ошибок `--jsx` в
-            `packages/ui/*.tsx` — сверено диффом ДО/ПОСЛЕ миграции на исходном состоянии, число и
+            `web-core/ui/*.tsx` — сверено диффом ДО/ПОСЛЕ миграции на исходном состоянии, число и
             текст ошибок идентичны, значит миграция их не касается).
           - `list_components`/`report_feedback`/`list_feedback` (`/server`+`/pagination`+
             `/zone-feedback`) — попытка живого прогона через реальный `stdioPeer` уткнулась в
             падение самого сервера на старте (см. находку ниже) ДО того, как дошло до вызова тула —
             не откатывает вывод про сами подпути `/server`/`/pagination`/`/zone-feedback`:
             статический анализ (совпадение сигнатур экспортов, проверено чтением исходников
-            `packages/neurobox/src/{server,pagination,zone-feedback}/*`) их подтверждает, живой
+            `web-core/neurobox/src/{server,pagination,zone-feedback}/*`) их подтверждает, живой
             вызов через реальный процесс — не смог.
           - `browser_navigate`/`push-to-prod` (`/mcp`) — не дошёл вовсе, тот же блокер.
 
@@ -748,9 +748,9 @@ categories:
         status: Backlog
         priority: Low
         milestone: null
-        name: "packages/skin/tools — реальное пересечение с check_outfit/assemble_preview, НЕ зеркальная замена"
+        name: "web-core/skin/tools — реальное пересечение с check_outfit/assemble_preview, НЕ зеркальная замена"
         description: |
-          `packages/skin` (`skin-package-tool-exports`, уже сделано) экспортирует `checkOutfitTool`/
+          `web-core/skin` (`skin-package-tool-exports`, уже сделано) экспортирует `checkOutfitTool`/
           `assembleOutfitTool`/`generateSkinCssTool`/`skinGapsTool` — `toolDefinition()`-обёртки
           ровно над теми функциями движка, которые эта зона УЖЕ зовёт напрямую сегодня:
 
@@ -825,7 +825,7 @@ categories:
           (`{palette: [...], form: [...], ...}`), значит поле `kind` ВНУТРИ каждой записи было
           избыточно и там тоже — вывод предположения находки («актуально только в ветке без kind»)
           не подтвердился чтением кода, реальная избыточность шире. `id` выкинут без исключений —
-          `paginate()`'s курсор оффсетный (`packages/neurobox/src/pagination/index.ts`), не по id,
+          `paginate()`'s курсор оффсетный (`web-core/neurobox/src/pagination/index.ts`), не по id,
           от удаления поля не пострадал. Итоговый заголовок — `{label, name, savedAt}`, один
           `headersOf<T>` на обе ветки, как и было.
           Проверено живьём: `list_presets({kind:"palette", limit:2})` — заголовки без `id`/`kind`;
@@ -868,8 +868,8 @@ categories:
           на 25 тулах, которыми агент реально пользуется на каждом прогоне (`"test": "node --test"`
           в `package.json` была мёртвой строкой без единого файла — переведена на `vitest`).
 
-          Образец рецепта — уже дважды проверенный в этом же разговоре приём (`packages/mcp`'s
-          старые тесты, унаследован `packages/neurobox/test/*`): настоящий round-trip через
+          Образец рецепта — уже дважды проверенный в этом же разговоре приём (`web-core/mcp`'s
+          старые тесты, унаследован `web-core/neurobox/test/*`): настоящий round-trip через
           `@modelcontextprotocol/sdk` (`InMemoryTransport.createLinkedPair()` + реальный `Client`,
           не мок хендлера напрямую) — `client.listTools()` сверяет annotations/`access`,
           `client.callTool()` — реальный вызов, `structuredContent`/`isError` проверяются по факту
@@ -916,7 +916,7 @@ log:
       разработке… надо понимать что всё ок, чтобы чат юзать уже на протестированных мехах» — потом
       отдельно (не эта заявка) user+architect вместе прогонят живой флоу агента с пресетами.
       Пункт переведён из `decision`/наблюдения в `feature`, статус `Backlog`, priority `High`.
-      Образец — `packages/neurobox/test/*` (настоящий round-trip, не мок), точка входа —
+      Образец — `web-core/neurobox/test/*` (настоящий round-trip, не мок), точка входа —
       `kit`+`presets` первыми (разумная рекомендация, не жёсткая), порядок и объём за владельцем.
 
   - id: box-agent-measured-response-weight
@@ -932,7 +932,7 @@ log:
       отличие от всех сестринских `list_*`. Похвала (не находка): `assemble_preview` — CSS
       `resource_link`, не тело, честно называет пробелы покрытия. Плюс отдельное наблюдение без
       замера: у зоны нет тестов вообще (`src`/`docs`/`scripts`, ни одного `test/`), контраст с
-      `packages/neurobox` (76 тестов) — не решение, просто зафиксировано до подключения витрины.
+      `web-core/neurobox` (76 тестов) — не решение, просто зафиксировано до подключения витрины.
       Данные пресетов агент не трогал — только чтение и `assemble_preview` без сохранения.
       Architect сверил все три технические находки чтением реального кода (`tools/content.ts`,
       `tools/presets.ts`, `tools/kit.ts`) — точны. Записаны пунктами `list-content-header-body-split`
@@ -946,36 +946,36 @@ log:
       User сказал начинать план перехода на `@web-core/neurobox` — код-часть (пакет+десять файлов+
       комментарий) сделана и типчекнута чисто, но финальный шаг плана (`verify-after-switch`,
       реальный `pnpm start` + вызов тула через `stdioPeer`) уткнулся в падение сервера ДО регистрации
-      тулов: `packages/assembly/dist/integrity-*.js` (компилируется из `src/engine/tree.ts:3`)
+      тулов: `web-core/assembly/dist/integrity-*.js` (компилируется из `src/engine/tree.ts:3`)
       именованно импортирует `getValueByPointer` из `fast-json-patch` — под настоящим Node ESM
       (не Vite/Vitest) это `ERR_MODULE_NOT_FOUND`/`SyntaxError`, `cjs-module-lexer` не видит имя,
       которое `fast-json-patch` кладёт в `exports` динамикой (`Object.assign(exports, core)`).
       Пересборка `pnpm --filter @web-core/assembly run build` не помогла — баг в исходнике, не в
       протухшем `dist`.
       НЕ моя находка с нуля: `apps/skin/.mcp/FAQ.md` (строки 255-265) уже документирует РОВНО этот
-      паттерн и его починку — `packages/io/src/paths.ts` в своё время переведён на дефолтный импорт
-      по той же причине, а `packages/assembly/src/tree.ts` (тогдашнее имя файла) сознательно оставлен
+      паттерн и его починку — `web-core/io/src/paths.ts` в своё время переведён на дефолтный импорт
+      по той же причине, а `web-core/assembly/src/tree.ts` (тогдашнее имя файла) сознательно оставлен
       как есть с пометкой «эта зона в графе зависимостей skin-mcp не стоит». Та предпосылка сегодня
-      неверна — сверено `grep`'ом: `packages/skin/src/engine/passport/assembly/{expand,binding,
+      неверна — сверено `grep`'ом: `web-core/skin/src/engine/passport/assembly/{expand,binding,
       index}.ts` импортируют `@web-core/assembly`, а `skin-mcp`'s `package.json` зависит от
       `@web-core/skin` — цепочка `skin-mcp → @web-core/skin → @web-core/assembly → tree.ts` реальна,
       просто не была пройдена живьём раньше (предыдущие живые прогоны зоны, судя по этому файлу,
       не доходили до этого конкретного пути кода, либо `assembly` вошёл в граф позже).
-      Не моя зона чинить — `packages/assembly/src/engine/tree.ts` вне `canons/ui-skin/`/
+      Не моя зона чинить — `web-core/assembly/src/engine/tree.ts` вне `canons/ui-skin/`/
       `apps/skin/.mcp/`. Однострочная правка известна (дефолтный импорт `import jsonpatch from
       "fast-json-patch"` + `jsonpatch.getValueByPointer(...)`, тот же приём, что уже применили в
-      `packages/io/src/paths.ts`), но применять её здесь значило бы редактировать чужую зону —
+      `web-core/io/src/paths.ts`), но применять её здесь значило бы редактировать чужую зону —
       эскалирую находку user/architect, не обхожу молча.
       Из-за этого блокера `verify-after-switch` закрыт частично: typecheck зоны чист (0 ошибок в
-      своих файлах, 469 baseline-ошибок `--jsx` в `packages/ui` не изменились ДО/ПОСЛЕ — сверено
+      своих файлах, 469 baseline-ошибок `--jsx` в `web-core/ui` не изменились ДО/ПОСЛЕ — сверено
       прямым диффом), имена экспортов каждого перенесённого подпути (`/server`, `/pagination`,
-      `/mcp`, `/zone-feedback`) сверены чтением реального `packages/neurobox/src/*` (не по памяти) —
+      `/mcp`, `/zone-feedback`) сверены чтением реального `web-core/neurobox/src/*` (не по памяти) —
       но реальный вызов тула через живой процесс подтвердить не удалось, упёрлось раньше, чем дошло
       до регистрации тулов.
 
-      РЕШЕНО (architect, 2026-09-14, `packages/assembly` — зона прямой работы по движку): починено
-      той же однострочной правкой, что и предложил owner (`packages/io/src/engine/paths.ts` — образец),
-      других именованных импортов из `fast-json-patch` в `packages/assembly`/`packages/skin` нет
+      РЕШЕНО (architect, 2026-09-14, `web-core/assembly` — зона прямой работы по движку): починено
+      той же однострочной правкой, что и предложил owner (`web-core/io/src/engine/paths.ts` — образец),
+      других именованных импортов из `fast-json-patch` в `web-core/assembly`/`web-core/skin` нет
       (сверено `grep`'ом). Проверено живьём, не только сборкой: `pnpm --filter @web-core/assembly
       build` (пересобран `dist/`) → `pnpm start` в `apps/skin/.mcp` реально стартует без падения
       (раньше — `SyntaxError` на первом же импорте, до этой строки процесс не доживал вовсе). Полный
@@ -989,7 +989,7 @@ log:
     summary: >
       User попросил освежить `README.md` перед следующим ТЗ владельцу — architect перечитал реальный
       `tools/presets.ts`, нашёл настоящее (не гипотетическое) пересечение с новыми
-      `packages/skin/tools` (`checkOutfitTool`/`assembleOutfitTool`/`generateSkinCssTool`/
+      `web-core/skin/tools` (`checkOutfitTool`/`assembleOutfitTool`/`generateSkinCssTool`/
       `skinGapsTool`): `check_outfit`/`assemble_preview` уже зовут те же движковые функции, что эти
       тулдефы оборачивают. НЕ 1:1 замена — зона резолвит имена пресетов в объекты и группирует
       gaps для токенов, обе заботы зонные, не движковые. Записано как находка/решение владельца
@@ -1005,7 +1005,7 @@ log:
       `@web-core/mcp` удалён user (2026-09-13) — старая генерация тулинга переписывается на новую,
       `@web-core/neurobox`, которая закончила собственный перенос той же механики (`/server`,
       `/pagination`, `/mcp`, `/zone-feedback` — дословный перенос `register-tool`/`transport`/
-      `pagination`/`peer`+`browser`/`feedback`, ревью пройдено, см. `packages/neurobox/ROADMAP.yaml`).
+      `pagination`/`peer`+`browser`/`feedback`, ревью пройдено, см. `web-core/neurobox/ROADMAP.yaml`).
       Записан план перехода этой зоны: десять файлов, сверенных `grep`'ом (не по памяти) —
       `src/server/index.ts`, пять файлов `src/tools/*.ts`, `src/engine/browser.ts`,
       `scripts/push-to-prod.mjs` — везде только смена пути импорта, имена экспортов не меняются.
@@ -1017,7 +1017,7 @@ log:
     summary: >
       Живая заявка user: «диаграмма красит индикаторы графиков серым, не брендом, хотя у неё
       3 варианта — сделай покрасивее». Первая правка (`omnifield-diagram`'s `recipe` — `fill`/
-      `stroke`/`fillOpacity` → `color`, тем же приёмом, что эталонный `packages/ui/src/diagram/
+      `stroke`/`fillOpacity` → `color`, тем же приёмом, что эталонный `web-core/ui/src/diagram/
       playground/recipe.ts`, обоснование — компонент красит вложенные `circle`/`rect`/`path` через
       `fill="currentColor"`/`stroke="currentColor"`, а `fill`/`stroke`, поставленные CSS на
       обёртку `<g data-part="…">`, до потомка с СОБСТВЕННЫМ атрибутом не доезжают — доезжает только
@@ -1098,7 +1098,7 @@ log:
       (`apps/skin/src/widgets/component/tree`) и раскрывашки списка в редакторе данных
       (`apps/skin/src/widgets/component/input`'s `ListField`, аккордеон) — не закрываются/дёргаются/
       потеряли анимацию открытия на стенде `https://150.251.145.87:9787`. Подозрение user:
-      конфликт нашей анимации с анимацией Ark (тот же класс, что уже раз ломал `packages/style`).
+      конфликт нашей анимации с анимацией Ark (тот же класс, что уже раз ломал `web-core/style`).
       Гипотеза не подтвердилась — конфликта в каскаде нет (`[data-part="content"]` не несёт
       статичной `block-size`/`height`, что перебивала бы keyframe-анимацию, сверено прямым разбором
       всех совпадающих правил стиля через `document.styleSheets`).
@@ -1116,11 +1116,11 @@ log:
       реальный клик по аккордеону в `widgets/component/input` — рост от 0 до измеренной высоты
       на открытии, схлопывание до `hidden` на закрытии, оба подтверждены таймлайном вычисленного
       стиля по кадрам.
-      Код признан исправным (проверено чтением, не по памяти): `packages/skin/src/engine/look/
+      Код признан исправным (проверено чтением, не по памяти): `web-core/skin/src/engine/look/
       assemble.ts` мёрджит `form.keyframes` каждой формы наряда в `skin.keyframes`,
-      `packages/skin/src/engine/generate/print.ts`'s `keyframesText()` печатает `@keyframes` из
+      `web-core/skin/src/engine/generate/print.ts`'s `keyframesText()` печатает `@keyframes` из
       `skin.keyframes`, `generate/index.ts` включает их в текст CSS — путь от `form.keyframes` до
-      отданного `@keyframes`-правила цел на всех трёх шагах. `packages/ui/src/accordion/playground/
+      отданного `@keyframes`-правила цел на всех трёх шагах. `web-core/ui/src/accordion/playground/
       recipe.ts` экспортирует `keyframes: {...GROW_SHRINK_BLOCK, ...GROW_SHRINK_INLINE}` как
       положено. Значит дело не в движке/не в переезде на аксесоры (`unified-item-collection-engine`
       этот файл вообще не трогал) — дело в ДАННЫХ на стенде `9787`: сохранённая там запись формы
@@ -1142,7 +1142,7 @@ log:
       Живая проверка retire-engine-store/feedback-tools-migration нашла: корневой `.env`'s
       `PRESETS_URL` (`https://150.251.145.87:9787`) отвечает REST-совместимым `{"error":
       "not_found",...}` на `POST /graphql` — 404, служба на этом адресе ещё не несёт GraphQL,
-      хотя и `packages/skin/src/presets/client.ts`, и эта зона уже целиком на GraphQL. Не
+      хотя и `web-core/skin/src/presets/client.ts`, и эта зона уже целиком на GraphQL. Не
       находка про мой код: тот же адрес раньше так же обслуживал REST, просто раньше этой зоне
       GraphQL не был нужен. Затронуто шире одной зоны — сама витрина `apps/skin` тоже ходит через
       `createPresetsClient`, значит и ей на этом стенде должно быть так же плохо. Не моя зона
