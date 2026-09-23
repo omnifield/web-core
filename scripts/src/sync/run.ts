@@ -14,6 +14,8 @@ export interface SyncRequest {
   readonly message?: string;
   /** Собрать и показать, что уедет, но не пушить. */
   readonly dryRun: boolean;
+  /** Залить ветку цели заново: одна история, форс-пуш. Разбор — `scripts/FAQ.md`. */
+  readonly force: boolean;
 }
 
 export interface Synced {
@@ -61,9 +63,10 @@ export async function syncTarget(request: SyncRequest): Promise<Answer<Synced>> 
   const local = `sync/${target.name}`;
 
   try {
-    const prepared = exists
-      ? await fromRemote(repo, worktree, local, remote, target.branch)
-      : await fromScratch(repo, worktree, local, target.source);
+    const prepared =
+      exists && !request.force
+        ? await fromRemote(repo, worktree, local, remote, target.branch)
+        : await fromScratch(repo, worktree, local, target.source);
     if (prepared.outcome === "failed") return prepared;
 
     const laid = await layTree(repo, worktree, target);
@@ -86,19 +89,26 @@ export async function syncTarget(request: SyncRequest): Promise<Answer<Synced>> 
       pushed: false,
     };
 
+    const how = request.force ? " заново, поверх всего" : "";
+
     if (request.dryRun) {
-      return done(`готово к отправке: ${laid.data} файлов в ${target.branch} (не отправлено)`, report);
+      return done(`готово к отправке: ${laid.data} файлов в ${target.branch}${how} (не отправлено)`, report);
     }
 
-    const pushed = await git(worktree)("push", remote, `${local}:${target.branch}`);
+    const pushed = request.force
+      ? await git(worktree)("push", "--force", remote, `${local}:${target.branch}`)
+      : await git(worktree)("push", remote, `${local}:${target.branch}`);
+
     if (!pushed.ok) {
       return failed("отправка отказала", {
-        remedy: "если ветка цели ушла вперёд — подтяните её и повторите; силой не перезаписываем",
+        remedy: request.force
+          ? "ветка цели может быть защищена от перезаписи — снимите защиту и повторите"
+          : "если ветка цели ушла вперёд — подтяните её и повторите либо перезалейте с `--force`",
         details: { stderr: pushed.stderr },
       });
     }
 
-    return done(`отправлено: ${laid.data} файлов в ${target.branch}`, { ...report, pushed: true });
+    return done(`отправлено: ${laid.data} файлов в ${target.branch}${how}`, { ...report, pushed: true });
   } finally {
     await git(repo)("worktree", "remove", "--force", worktree);
     await git(repo)("branch", "-D", local);

@@ -35,6 +35,10 @@ const send = defineCommand({
     targets: targetsFile,
     message: { flags: "--message <text>", summary: "сообщение коммита в цели" },
     dryRun: { flags: "--dry-run", summary: "собрать и показать, что уедет, но не отправлять" },
+    force: {
+      flags: "--force",
+      summary: "залить ветку цели заново: одна история, всё прежнее содержимое стирается",
+    },
   },
   async run({ options, args }, context) {
     const targets = await readTargets(repoRoot(context.cwd), options.targets);
@@ -56,6 +60,7 @@ const send = defineCommand({
       repo: repoRoot(context.cwd),
       target,
       dryRun: options.dryRun === true,
+      force: options.force === true,
       ...(options.message ? { message: options.message } : {}),
     });
   },
