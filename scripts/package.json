@@ -1,0 +1,22 @@
+{
+  "name": "@web-core/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Тулзы репозитория на движке @web-core/cli. В поставку не едут.",
+  "type": "module",
+  "scripts": {
+    "sync": "web-core-node src/sync/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck"
+  },
+  "dependencies": {
+    "@web-core/cli": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "^10.8.1",
+    "typescript": "^7.0.2"
+  }
+}
