@@ -138,8 +138,11 @@ async function fromScratch(
   const orphan = await git(worktree)("checkout", "--orphan", local);
   if (!orphan.ok) return failed("не вышло начать ветку цели с нуля", { details: { stderr: orphan.stderr } });
 
-  const cleared = await git(worktree)("rm", "-r", "--cached", "--quiet", ".");
+  // Чистим и ДИСК, а не только индекс: рабочая копия развёрнута из нашей ветки, и всё, что
+  // осталось бы лежать файлами, вернул бы обратно `git add -A` при раскладке — в пустую цель
+  // уехало бы целиком наше дерево, а не выбранные пути.
+  const cleared = await git(worktree)("rm", "-rf", "--quiet", ".");
   return cleared.ok
     ? done("ветки на цели ещё нет — начинаем с нуля")
-    : failed("не вышло очистить индекс новой ветки", { details: { stderr: cleared.stderr } });
+    : failed("не вышло очистить рабочую копию новой ветки", { details: { stderr: cleared.stderr } });
 }
