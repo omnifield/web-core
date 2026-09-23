@@ -30,6 +30,7 @@ import {
   sketchOf,
   updateNode,
   type AssemblyTree,
+  type ModuleSource,
   type ReadableComponent,
   type ReadablePart,
   type Registry,
@@ -84,6 +85,15 @@ function readable(component: string, provider: ComponentRendererProvider): Reada
   };
 }
 
+/**
+ * Источники сверх кита — то, чего у поставщика компонентов нет и не может быть. `modules` отдаёт
+ * дерево модуля по имени; функция зовётся на каждый `moduleOf`, поэтому источник читает своё
+ * хранилище внутри себя, а не отдаёт снимок (см. `FAQ.md`).
+ */
+export interface ComponentRendererSources {
+  readonly modules?: ModuleSource;
+}
+
 /** Готовые `registry`/`instanceOf` для механики сборки — по умолчанию поверх СВОЕГО кита. */
 export interface ComponentRenderer {
   readonly registry: Registry;
@@ -104,11 +114,17 @@ export interface ComponentRenderer {
  * {@link ownKitRendererProvider} (свой кит). Второй поставщик — {@link mergeComponentProviders}
  * (`component-info.ts`), результатом сюда: форма (`kitOf` плюс три поля `ComponentProvider`) та
  * же, слияние ничего не знает про рендеринг и не обязано.
+ *
+ * {@link ComponentRendererSources} — отдельной осью, не полем поставщика (`FAQ.md`).
  */
-export function kitComponentRenderer(provider: ComponentRendererProvider = ownKitRendererProvider()): ComponentRenderer {
+export function kitComponentRenderer(
+  provider: ComponentRendererProvider = ownKitRendererProvider(),
+  sources: ComponentRendererSources = {},
+): ComponentRenderer {
   const registry = createRegistry({
     components: Object.fromEntries(provider.components.map((name) => [name, readable(name, provider)])),
     admits,
+    modules: sources.modules,
   });
 
   function instanceOf(
