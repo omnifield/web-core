@@ -119,6 +119,34 @@ export function DefineQueryDemo() {
 будет `true` первые 600мс, а в консоли фетч всё равно один раз (это уже не про прогрев, а про то,
 что `.use()` сам по себе работает).
 
+## 3.1. `.use()` с опциями — `enabled` держит запрос, `placeholderData` закрывает пустоту
+
+Второй аргумент `.use` — опции наблюдателя, и он ФУНКЦИЯ: сигналы внутри читаются на каждый такт.
+Проверка: пока поле пустое, в консоли нет ни одного фетча; ввёл `42` — запрос уходит, и вместо
+пустого места сразу видна подстановка:
+
+```tsx
+import { createSignal } from "solid-js";
+
+function UserSearch() {
+  const [id, setId] = createSignal("");
+  const query = userQuery.use(
+    () => id(),
+    () => ({ enabled: id().length > 0, placeholderData: { id: id(), name: "ищем…" } }),
+  );
+
+  return (
+    <>
+      <input value={id()} onInput={(event) => setId(event.currentTarget.value)} />
+      <p>{id() ? query.data?.name : "введите id"}</p>
+    </>
+  );
+}
+```
+
+Уберёшь `enabled` — фетч полетит сразу с пустым `id`; уберёшь `placeholderData` — вместо «ищем…»
+будет пустая строка, пока идёт запрос.
+
 ## 4. GraphQL — живой прогон против `backend/presets`
 
 Нужен локально поднятый бэк (`cd backend/presets && go run ./cmd/presets`, слушает `127.0.0.1:8787`

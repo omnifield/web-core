@@ -231,6 +231,23 @@ query.data / query.isPending / query.isError
 Оба пути читают из ОДНОГО `queryClient`, переданного при определении — если `loader` уже прогрел
 кэш (`staleTime: Infinity`), `.use()` в компоненте не бьёт в сеть повторно.
 
+🎛️ **Опции вендора пробрасываются целиком, но двумя разными наборами — по числу путей.**
+Четвёртым параметром (`config`) идёт то, что понимают ОБА пути — всё, что принимает
+`queryClient.query(...)`: `staleTime`, `gcTime`, `retry`, `networkMode`, `meta`. Вторым аргументом
+у `.use` идут опции наблюдателя, которых императивный путь не знает в принципе (`enabled`,
+`placeholderData`, `select`, `refetchOnWindowFocus`, …) — и идут они **функцией**, не объектом,
+потому что `createQuery` читает опции на каждый такт:
+
+```tsx
+const query = contentQuery.use(
+  () => componentName(),
+  () => ({ enabled: Boolean(componentName()), placeholderData: previous }),
+);
+```
+
+⚠️ `initialData` не пробрасывается ни тем, ни другим набором — [FAQ.md](./FAQ.md) объясняет, чем
+это вызвано и чем её заменить.
+
 Ловушка при тестировании (найдена при написании `test/define.test.tsx`): `vi.fn().mockResolvedValue(x)`
 не даёт `defineQuery` вывести тип данных, если аргумент запроса не `void` — возвращаемый тип
 схлопывается в `{}`. Мок нужно типизировать через реализацию: `vi.fn(async (arg) => x)`, не через
@@ -294,7 +311,8 @@ query.data / query.isPending / query.isError
 | `graphqlRequest(url, document, variables?, headers?)` ⚠️ внутренности | `url: string`, `document: RequestDocument \| TypedDocumentNode`, `variables?: Variables`, `headers?: HeadersInit` — url/headers на КАЖДЫЙ вызов, без клиента; см. "Анатомия" |
 | `restRequest(input, init?)` ⚠️ внутренности | `input: string \| URL`, `init?: RequestInit & { json?: unknown }` — url на КАЖДЫЙ вызов, без клиента; см. "Анатомия" |
 | `rawRestRequest(input, init?)` ⚠️ внутренности | тот же вход, что и `restRequest` — url/`init` на КАЖДЫЙ вызов, без клиента; см. "Анатомия" |
-| `defineQuery(queryClient, queryKey, queryFn, config?)` ⚠️ эксперимент | `queryClient: QueryClient`, `queryKey: (arg: TArg) => QueryKey`, `queryFn: (arg: TArg) => Promise<TData>`, `config?: { staleTime? }` |
+| `defineQuery(queryClient, queryKey, queryFn, config?)` ⚠️ эксперимент | `queryClient: QueryClient`, `queryKey: (arg: TArg) => QueryKey`, `queryFn: (arg: TArg) => Promise<TData>`, `config?` — опции, общие обоим путям: `QueryExecuteOptions` вендора без `queryKey`/`queryFn`/`initialData` |
+| `<defined>.use(arg?, use?)` ⚠️ эксперимент | `arg?: Accessor<TArg>`, `use?: Accessor<…>` — опции наблюдателя ФУНКЦИЕЙ: `QueryOptions` вендора без `queryKey`/`queryFn`/`initialData` (`enabled`, `placeholderData`, `select`, …), перекрывают одноимённые из `config` |
 
 ### 📤 Выход
 
@@ -309,7 +327,7 @@ query.data / query.isPending / query.isError
 | `graphqlRequest(...)` ⚠️ внутренности | `Promise<TResult>` — данные из `data` ответа; на GraphQL-ошибках/не-2xx кидает `ClientError`      |
 | `restRequest(...)` ⚠️ внутренности  | `Promise<TResult>` — JSON или текст тела по `content-type`, `undefined` на `204`/пустом теле; на не-2xx кидает `HTTPError` (несёт `response`+разобранное `data`) |
 | `rawRestRequest(...)` ⚠️ внутренности | `Promise<RestResult<TResult>>` — `{ response, data }`, ТА ЖЕ форма на успехе, что несёт `HTTPError` на ошибке (`response`+`data`); тело разобрано так же, как у `restRequest` |
-| `defineQuery(...)` ⚠️ эксперимент | функция `(arg?) => Promise<TData>` (вызов по имени — для `loader`) с довешенным `.use(arg?: Accessor<TArg>)` (для компонента, реактивно) |
+| `defineQuery(...)` ⚠️ эксперимент | функция `(arg?) => Promise<TData>` (вызов по имени — для `loader`) с довешенным `.use(arg?: Accessor<TArg>, use?: Accessor<опции>)` (для компонента, реактивно) |
 
 <h2 id="сборки">🏗️ Сборки</h2>
 
@@ -327,6 +345,9 @@ query.data / query.isPending / query.isError
 | `defineQuery(...)` — вызов по имени | обычный `Promise`, без Solid-owner — годится в `loader` | `test/define.test.tsx` |
 | `defineQuery(...)` + `.use()` | реальный рендер компонента, `loading` → данные, `queryFn` вызван 1 раз | `test/define.test.tsx` |
 | `defineQuery(...)` — вызов по имени прогревает кэш, `.use()` не рефетчит | один `queryClient` на оба пути; после ручного вызова `.use()` в компоненте видит готовые данные без повторного запроса | `test/define.test.tsx` |
+| `defineQuery(...)` + `.use()` с `enabled: false` | `queryFn` не вызван ни разу, компонент висит в `isPending` | `test/define.test.tsx` |
+| `defineQuery(...)` + `.use()` с реактивным `enabled` | опции читаются на каждый такт: сигнал `false → true` отпускает запрос, данные доезжают | `test/define.test.tsx` |
+| `defineQuery(...)` + `.use()` с `placeholderData` | подстановка видна в `query.data` до резолва `queryFn` и сменяется настоящими данными | `test/define.test.tsx` |
 
 <h2 id="рецепт">🎨 Рецепт</h2>
 

@@ -1,3 +1,4 @@
+import { createSignal } from "solid-js";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -68,5 +69,74 @@ describe("defineQuery", () => {
 
     expect(host.textContent).toBe("button,b");
     expect(fetchVariants).toHaveBeenCalledTimes(1);
+  });
+
+  it(".use() с enabled: false не зовёт queryFn", async () => {
+    const client = new QueryClient();
+    const fetchContent = vi.fn(async (id: string) => ({ title: `hi ${id}` }));
+    const contentQuery = defineQuery(client, (id: string) => ["content", id], fetchContent);
+
+    function Content() {
+      const query = contentQuery.use(
+        () => "a",
+        () => ({ enabled: false }),
+      );
+      return <p>{query.isPending ? "idle" : query.data?.title}</p>;
+    }
+
+    const host = mountWithClient(client, () => <Content />);
+
+    await vi.waitFor(() => expect(host.textContent).toBe("idle"));
+    expect(fetchContent).not.toHaveBeenCalled();
+  });
+
+  it("enabled реактивен — опции читаются на каждый такт, не замерзают при определении", async () => {
+    const client = new QueryClient();
+    const fetchContent = vi.fn(async (id: string) => ({ title: `hi ${id}` }));
+    const contentQuery = defineQuery(client, (id: string) => ["content", id], fetchContent);
+    const [chosen, setChosen] = createSignal(false);
+
+    function Content() {
+      const query = contentQuery.use(
+        () => "a",
+        () => ({ enabled: chosen() }),
+      );
+      return <p>{query.isPending ? "idle" : query.data?.title}</p>;
+    }
+
+    const host = mountWithClient(client, () => <Content />);
+    expect(fetchContent).not.toHaveBeenCalled();
+
+    setChosen(true);
+
+    await vi.waitFor(() => expect(host.textContent).toBe("hi a"));
+    expect(fetchContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("placeholderData виден в query.data до резолва queryFn", async () => {
+    const client = new QueryClient();
+    let resolveContent: ((value: { title: string }) => void) | undefined;
+    const fetchContent = vi.fn(
+      () =>
+        new Promise<{ title: string }>((resolve) => {
+          resolveContent = resolve;
+        }),
+    );
+    const contentQuery = defineQuery(client, (id: string) => ["content", id], fetchContent);
+
+    function Content() {
+      const query = contentQuery.use(
+        () => "a",
+        () => ({ placeholderData: { title: "пока пусто" } }),
+      );
+      return <p>{query.data?.title}</p>;
+    }
+
+    const host = mountWithClient(client, () => <Content />);
+    expect(host.textContent).toBe("пока пусто");
+
+    resolveContent?.({ title: "hi a" });
+
+    await vi.waitFor(() => expect(host.textContent).toBe("hi a"));
   });
 });
