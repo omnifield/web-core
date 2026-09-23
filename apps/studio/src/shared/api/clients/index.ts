@@ -2,6 +2,7 @@ import { fromEnv } from "@web-core/build/env";
 import { createNeuroboxConnection } from "@web-core/neurobox";
 import { QueryClient } from "@web-core/query";
 import { createPresetsClient } from "@web-core/skin/presets";
+import { cachedPresets } from "./cached";
 import { connectPresets } from "@web-core/feeder";
 export const queryClient = new QueryClient();
 import { createGraphQLClient } from "@web-core/query/graphql";
@@ -15,7 +16,10 @@ export const PRESETS_URL = (() => {
   return base.endsWith(GRAPHQL_PATH) ? base : base + GRAPHQL_PATH;
 })();
 
-export const presetsClient = createPresetsClient({ url: PRESETS_URL });
+export const presetsClient = cachedPresets(
+  createPresetsClient({ url: PRESETS_URL }),
+  queryClient,
+);
 
 // `X-User-Login` едет буквально из env, а не выдумывается на клиенте — NEUROBOX_CLIENT.md
 // требует подставлять его на сервере, но у lab-стенда сервера нет: логин здесь тот же

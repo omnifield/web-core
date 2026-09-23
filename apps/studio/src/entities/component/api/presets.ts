@@ -31,11 +31,21 @@ export const outfitsOf = defineQuery(
   { staleTime: Infinity },
 );
 
+/** Только заголовки: списку записей нужны имя и ярлык, а тела у данных показа бывают тяжёлыми и
+ *  их может быть много — человек выберет одну, а то и ни одной. */
 export const contentOf = defineQuery(
   queryClient,
   (componentName: string) => ["content", componentName],
   (componentName: string) =>
-    presetsClient.list("content", { component: [componentName] }),
+    presetsClient.listHeaders("content", { component: [componentName] }),
+  { staleTime: Infinity },
+);
+
+/** Тело одной записи — по её имени, отдельным ключом: приезжает, когда её выбрали. */
+export const contentRecordOf = defineQuery(
+  queryClient,
+  (name: string) => ["content", "record", name],
+  (name: string) => presetsClient.get("content", name),
   { staleTime: Infinity },
 );
 

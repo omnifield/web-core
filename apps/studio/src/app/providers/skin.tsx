@@ -2,12 +2,14 @@ import { createSignal, type JSX, Show } from "solid-js";
 import { createPresetsSkinSource } from "@web-core/skin/presets";
 import { SkinProvider as SkinProviderBase } from "@web-core/skin/solid";
 import { passportOf } from "@web-core/ui/passport";
-import { PRESETS_URL } from "#/shared/api/clients";
+import { presetsClient } from "#/shared/api/clients";
 
 const DEFAULT_SKIN = "omnifield";
 
+// Клиент тот же, что у остального приложения: иначе скин заводит свою сеть и качает формы
+// компонентов вторым путём, мимо кэша (см. FAQ.md).
 const SKIN_SOURCE = createPresetsSkinSource({
-  url: PRESETS_URL,
+  client: presetsClient,
   lookup: passportOf,
 });
 

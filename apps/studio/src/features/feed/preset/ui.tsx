@@ -1,4 +1,4 @@
-import { createEffect, For, untrack } from "solid-js";
+import { createEffect, createSignal, For, untrack } from "solid-js";
 import {
   Select,
   SelectContent,
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
-import { useInfo } from "#/entities/component";
+import { useContentRecord, useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";
 import { presetPickStoreOf } from "./model";
 
@@ -36,6 +36,8 @@ export function FeedPreset() {
     }));
 
   const picked = () => store.selectors.name();
+  // Выбор руками: просьба заменить чужую еду, когда тело записи приедет.
+  const [asked, setAsked] = createSignal(false);
   const selected = () => {
     const name = picked();
     return name === undefined ? [] : [name];
@@ -52,27 +54,27 @@ export function FeedPreset() {
     store.actions.pick(list[0].value);
   });
 
-  function serveByName(name: string | undefined) {
-    const record = component.content.data().find((preset) => preset.name === name);
-    if (record === undefined) return;
-
-    feed.serve("preset", record.state.data);
-  }
+  // Тело выбранной записи едет отдельным запросом — в списке лежат только имя и ярлык.
+  const record = useContentRecord(picked);
 
   createEffect(() => {
-    const name = picked();
+    const data = record.data()?.state.data;
+    if (data === undefined) return;
 
     // Чужую подачу сама собой не перебиваем: человек мог поправить еду руками или взять её из
     // ручки, и возврат на компонент не должен молча откатывать это к записи. Имён соседей
     // поставщик при этом не знает — только «положил не я». Метка читается вне слежения: иначе
-    // собственная подача разбудила бы этот же эффект.
-    const servedByOther = untrack(() => {
+    // собственная подача разбудила бы этот же эффект. Выбор руками — просьба заменить, он бьёт
+    // это правило и кормит, как только тело приедет.
+    const replacing = untrack(() => {
+      if (asked()) return true;
       const by = feed.servedBy();
-      return by !== undefined && by !== "preset";
+      return by === undefined || by === "preset";
     });
-    if (servedByOther) return;
+    if (!replacing) return;
 
-    serveByName(name);
+    setAsked(false);
+    feed.serve("preset", data);
   });
 
   return (
@@ -83,10 +85,8 @@ export function FeedPreset() {
         const item = details.items[0];
         if (item === undefined) return;
 
-        // Выбор руками кормит сразу, не дожидаясь эффекта: тот чужую подачу не перебивает, а
-        // здесь человек как раз и просит её заменить.
         store.actions.pick(item.value);
-        serveByName(item.value);
+        setAsked(true);
       }}
     >
       <SelectLabel>Пресет</SelectLabel>

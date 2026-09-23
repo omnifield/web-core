@@ -1,1 +1,2 @@
-export { type ComponentFacts, useInfo } from "./info";
+export { useContentRecord } from "./content";
+export { type ComponentFacts, type Delivery, useInfo } from "./info";
