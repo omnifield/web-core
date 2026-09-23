@@ -70,7 +70,7 @@
   },
   "scripts": {
     "build": "vite build",
-    "generate": "node ../../web-core/generators/dist/cli.js generators/generate.config.ts",
+    "generate": "node ../generators/dist/cli.js generators/generate.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . && pnpm run typecheck",
     "test": "vitest run"
