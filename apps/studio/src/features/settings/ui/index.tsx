@@ -1,5 +1,6 @@
 import { For } from "solid-js";
 import { Flow } from "@web-core/ui";
+import { useInfo } from "#/entities/component";
 import { useSettings } from "#/entities/settings";
 import { Setting } from "./setting";
 
@@ -11,7 +12,12 @@ import { Setting } from "./setting";
  * ответ «нечего настраивать», а не потерянный экран.
  */
 export function ComponentSettings() {
-  const { settings, choose } = useSettings();
+  const component = useInfo();
+  const { settings, choose } = useSettings(
+    component.name,
+    () => component.passport()?.settings ?? {},
+    () => component.editorInfo()?.settings,
+  );
 
   return (
     <Flow data-variant="column">

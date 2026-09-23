@@ -14,7 +14,11 @@ export function Form(props: {
 }) {
   const { component } = usePreview();
   const feed = useFeed(component.name);
-  const settings = useSettings();
+  const settings = useSettings(
+    component.name,
+    () => component.passport()?.settings ?? {},
+    () => component.editorInfo()?.settings,
+  );
 
   function dispatch(event: DispatchedEvent) {
     console.log(event);
