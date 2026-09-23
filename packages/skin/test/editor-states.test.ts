@@ -218,8 +218,8 @@ describe("StatesOf/ValuesOf подключены к срезу редактор�
       dataPresets: [],
     });
 
-    // Same registry shape `editorInfoOf` uses across the kit (`packages/ui/src/passport.ts`,
-    // `apps/skin`, `products/diagrams`) — a real, fully-typed value must fit in it.
+    // Same registry shape `editorInfoOf` uses across the kit (`packages/ui/src/passport.ts`) and
+    // in consuming applications — a real, fully-typed value must fit in it.
     function editorInfoOf(): import("../src/editor/index.js").PassportEditorInfo | undefined {
       return editorInfo;
     }

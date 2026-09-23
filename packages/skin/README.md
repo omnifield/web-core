@@ -223,7 +223,7 @@ import { layoutGroup, layoutSelf, railVar } from "@web-core/skin";
 |---|---|
 | `test/*.test.ts` пакета | паспорт/сборка/сборка правил/порождение/адресация — каждый узел решения отдельно |
 | `recipe.test.tsx` каждого компонента кита | `skinGaps`+`passportLookup` реально используются снаружи для проверки покрытия одного паспорта |
-| `apps/skin/.mcp` | `checkAssembly`/`checkAssemblyData`/`skinGaps` вызываются агентом на реальных данных |
+| MCP-сервер зоны скина | `checkAssembly`/`checkAssemblyData`/`skinGaps` вызываются агентом на реальных данных |
 | Живой прогон против службы раздачи | `createPresetsSkinSource`/`createPresetsClient` — CRUD по всем четырём видам, различение «легла»/«отказала» |
 | `lazy-component-skin.test.ts`/`skin-switch-component.test.tsx`/`use-component-skin.test.tsx` | `ensureComponentSkin` от сети до листа: узкий фетч, накопление, гонка с чужим `wear()`, реактивный вызов из `useComponentSkin` |
 

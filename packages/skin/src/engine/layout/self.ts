@@ -12,9 +12,8 @@ export interface LayoutSelfProps {
 }
 
 // Место ОДНОГО элемента в чужом потоке — противоположность `layoutGroup`, которое размещает своих
-// детей. Ключи выходят kebab-case: так реально пишут `style={{...}}` в этом репо (см.
-// apps/skin/src/shared/ui/theme-switch), а не camelCase, как в рецептах скина — тот формат идёт
-// через порождение CSS и здесь ни при чём.
+// детей. Ключи выходят kebab-case: так их реально пишут в `style={{...}}`, а не camelCase, как в
+// рецептах скина — тот формат идёт через порождение CSS и здесь ни при чём.
 export function layoutSelf(input: LayoutSelfProps): NativeStyle {
   const style: Record<string, string> = {};
 
