@@ -9,6 +9,8 @@ export interface Target {
   readonly ignore: readonly string[];
   /** Маски файлов, которые не уезжают даже из включённых путей. */
   readonly exclude: readonly string[];
+  /** Путь, чей префикс снимается при раскладке: его содержимое ложится в КОРЕНЬ цели. */
+  readonly strip: string;
 }
 
 export interface Targets {
@@ -31,6 +33,7 @@ export async function readTargets(cwd: string, file: string): Promise<Targets> {
       include: strings(valueAt(raw, "include")),
       ignore: strings(valueAt(raw, "ignore")),
       exclude: strings(valueAt(raw, "exclude")),
+      strip: text(valueAt(raw, "strip")),
     });
   }
 

@@ -11,14 +11,14 @@ import type { Target } from "./targets";
 
 const exec = promisify(execFile);
 
-/**
- * Содержимое цели собирается ЗАМЕНОЙ своих путей, а не мержем всего дерева: то, что цель держит
- * у себя (свой корень, свои конфиги), синк не трогает — разбор в `scripts/README.md`.
- */
+/** Содержимое цели собирается ЗАМЕНОЙ своих путей, а не мержем: чужое в цели синк не трогает. */
 export async function layTree(repo: string, worktree: string, target: Target): Promise<Answer<number>> {
   const run = git(worktree);
 
-  for (const path of target.include) {
+  const carried = target.strip ? await topLevelOf(repo, target) : target.include;
+  if (!carried) return failed(`не вышло прочитать содержимое «${target.strip}» в исходной ветке`);
+
+  for (const path of carried) {
     const cleared = await run("rm", "-r", "--ignore-unmatch", "--quiet", "--", path);
     if (!cleared.ok) {
       return failed(`не вышло очистить «${path}» в цели`, { details: { stderr: cleared.stderr } });
@@ -47,7 +47,7 @@ export async function layTree(repo: string, worktree: string, target: Target): P
     });
   }
 
-  const spread = await untar(bundle, worktree);
+  const spread = await untar(bundle, worktree, depthOf(target.strip));
   await rm(folder, { recursive: true, force: true });
   if (!spread.ok) return failed("не вышло разложить файлы в цели", { details: { stderr: spread.stderr } });
 
@@ -64,11 +64,31 @@ export async function layTree(repo: string, worktree: string, target: Target): P
   return done(`файлов к отправке: ${changed}`, changed);
 }
 
-async function untar(bundle: string, into: string): Promise<{ ok: boolean; stderr: string }> {
+async function untar(bundle: string, into: string, strip: number): Promise<{ ok: boolean; stderr: string }> {
+  const level = strip > 0 ? [`--strip-components=${strip}`] : [];
+
   try {
-    await exec("tar", ["-xf", bundle, "-C", into]);
+    await exec("tar", ["-xf", bundle, "-C", into, ...level]);
     return { ok: true, stderr: "" };
   } catch (error) {
     return { ok: false, stderr: (error as { message?: string }).message ?? "" };
   }
+}
+
+function depthOf(strip: string): number {
+  return strip ? strip.split("/").filter(Boolean).length : 0;
+}
+
+/** Что окажется в КОРНЕ цели после снятия префикса — по нему и чистим её перед раскладкой. */
+async function topLevelOf(repo: string, target: Target): Promise<readonly string[] | null> {
+  const listed = await git(repo)("ls-tree", "--name-only", target.source, `${target.strip}/`);
+  if (!listed.ok) return null;
+
+  const depth = depthOf(target.strip);
+
+  return listed.stdout
+    .split("\n")
+    .filter(Boolean)
+    .map((path) => path.split("/").slice(depth).join("/"))
+    .filter(Boolean);
 }
