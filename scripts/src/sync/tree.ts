@@ -28,6 +28,7 @@ export async function layTree(repo: string, worktree: string, target: Target): P
   const folder = await mkdtemp(join(tmpdir(), "sync-tree-"));
   const bundle = join(folder, "include.tar");
 
+  // Исключения — pathspec'ом самого git: файл не попадает в архив вовсе, а не удаляется потом.
   const packed = await git(repo)(
     "archive",
     "--format=tar",
@@ -35,6 +36,7 @@ export async function layTree(repo: string, worktree: string, target: Target): P
     target.source,
     "--",
     ...target.include,
+    ...target.exclude.map((mask) => `:(exclude)${mask}`),
   );
 
   if (!packed.ok) {

@@ -7,6 +7,8 @@ export interface Target {
   readonly source: string;
   readonly include: readonly string[];
   readonly ignore: readonly string[];
+  /** Маски файлов, которые не уезжают даже из включённых путей. */
+  readonly exclude: readonly string[];
 }
 
 export interface Targets {
@@ -28,6 +30,7 @@ export async function readTargets(cwd: string, file: string): Promise<Targets> {
       source: text(valueAt(raw, "source")),
       include: strings(valueAt(raw, "include")),
       ignore: strings(valueAt(raw, "ignore")),
+      exclude: strings(valueAt(raw, "exclude")),
     });
   }
 
