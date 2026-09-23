@@ -36,6 +36,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "prepare": "pnpm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . && pnpm run typecheck",
     "test": "vitest run"
