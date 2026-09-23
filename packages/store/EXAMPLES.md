@@ -102,7 +102,7 @@ selectorsFactory, options)`.
 Тот же `selectorsFactory`, но вычисляемое зависит ещё и от внешнего параметра (id ячейки, тег и
 т.п.), а не только от state, — аргументы объявляются ПОСЛЕ `state`, и вызов идёт сразу с ними:
 `store.selectors.x(arg)` отдаёт значение напрямую, реактивно, без промежуточного `()`. Кейс —
-DemoStand-грид: variant ячейки зависит от `axis` в state и от `cell.index` снаружи:
+грид-стенд: variant ячейки зависит от `axis` в state и от индекса ячейки снаружи:
 
 ```tsx
 import { createActionStore } from "@web-core/store";
@@ -224,11 +224,11 @@ function Tab(props: { id: string }) {
 сама, а поддерево остаётся на месте:
 
 ```tsx
-import { componentManagerStoreOf } from "../../model";
+import { feedStoreOf } from "./feed.store";
 
 function FeedManual() {
   const component = useParams({ strict: false, select: (p) => p.component });
-  const store = componentManagerStoreOf(component); // аксессор, не component()
+  const store = feedStoreOf(component); // аксессор, не component()
   const value = store.use((state) => state.feedData); // без createMemo, как в примере №5
 
   return (
@@ -270,7 +270,7 @@ function FeedManual() {
 }
 
 function FeedFor(props: { component: string }) {
-  const store = componentManagerStoreOf(props.component); // ключ фиксирован на жизнь FeedFor
+  const store = feedStoreOf(props.component); // ключ фиксирован на жизнь FeedFor
   return <p>{JSON.stringify(store.use((state) => state.feedData)())}</p>;
 }
 ```

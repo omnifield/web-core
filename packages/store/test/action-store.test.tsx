@@ -173,7 +173,7 @@ describe("createActionStore — третий аргумент selectorsFactory (
     expect(store.selectors.greeting()).toBe("привет, B");
   });
 
-  it("селектор реактивен в реальном компоненте — DemoStand-кейс componentStore.selectors.variantsByTag()", async () => {
+  it("селектор реактивен в реальном компоненте — грид-кейс store.selectors.variantsByTag()", async () => {
     const store = createTaggedStore(() => Promise.resolve({ id: "3", name: "C" }));
 
     function Greeting() {
@@ -190,7 +190,7 @@ describe("createActionStore — третий аргумент selectorsFactory (
   });
 });
 
-describe("createActionStoreFamily (кейс componentManagerStore — feedData по компоненту)", () => {
+describe("createActionStoreFamily (кейс грид-стенда — feedData по компоненту)", () => {
   interface FeedState {
     readonly feedData?: unknown;
   }
@@ -798,7 +798,7 @@ describe("createActionStoreFamily — у фасада одни часы (кей�
   });
 });
 
-describe("createActionStore — параметризованный селектор (кейс component-manager: значение по cell)", () => {
+describe("createActionStore — параметризованный селектор (кейс грида: значение по ячейке)", () => {
   interface GridState {
     readonly axis: "variant" | "assembly";
     readonly variants: readonly string[];

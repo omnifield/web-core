@@ -77,13 +77,13 @@ categories:
           инстанс в моменте, ключей может быть много → createResourceAtom; несколько сущностей
           одновременно не должны видеть данные друг друга → createActionStoreFamily. Закрывает
           дыру, найденную на конкретном баге: грид-стенд приложения-потребителя держал feedData
-          (FeedPreset/FeedManual/DemoStand) в одном глобальном createActionStore без ключа —
+          (несколько панелей стенда разом) в одном глобальном createActionStore без ключа —
           при переключении между компонентами (кнопка ↔ чекбокс) данные путались, баг
           проявлялся только на повторном заходе (contentQuery с staleTime: Infinity отдаёт
           данные без промежуточного pending, async-гэп первого захода сам смывал старое
           значение и маскировал архитектурную причину). Ключи-заплатки ("если component !==
           current — сбросить") лечили бы симптом, не причину — сама возможность коллизии
-          оставалась бы. Применение (componentManagerStore → componentManagerStoreOf) — не эта
+          оставалась бы. Применение (общий стор стенда → семья по ключу) — не эта
           зона, код приложения вне paths owner-store. 4 теста в test/action-store.test.tsx,
           включая реальный рендер с переключением ключа между двумя render-проходами.
 
@@ -577,14 +577,14 @@ log:
       как createActionStoreFamily тем же приёмом, что уже есть в пакете для различения
       keyed/unkeyed по typeof (createResourceAtom, createActionStore + selectorsFactory) —
       не новая идея с нуля, комбинация двух существующих. Скоуп ограничен пакетом: применение
-      в коде приложения (componentManagerStore → componentManagerStoreOf) — вне paths
+      в коде приложения (общий стор стенда → семья по ключу) — вне paths
       owner-store, отдано architect и владельцу той зоны.
 
   - id: action-store-selectors-scope
     type: plan
     date: 2026-09-14
     summary: >
-      user, разбирая codestyle showcase/index.tsx, указал на конкретную несостыковку:
+      user, разбирая codestyle страницы-витрины у потребителя, указал на конкретную несостыковку:
       componentStore живёт цельным флоу (state+actions внутри createActionStore), а
       variantsByTag — отдельно экспортированная функция, склеиваемая с componentStore.use(...)
       прямо в компоненте. Дословно: "выглядит как собрать стор в компоненте... в зустанд флоу
@@ -632,8 +632,8 @@ log:
     type: plan
     date: 2026-09-13
     summary: >
-      user увидел createActionStore в деле (router.tsx → componentStore.actions.setComponent,
-      showcase → useAtom(componentStore, selector)) и попросил "пушку" — стор сам как функция-
+      user увидел createActionStore в деле (маршрут зовёт store.actions.setComponent, страница
+      читает useAtom(store, selector)) и попросил "пушку" — стор сам как функция-
       селектор, зустанд-хук-стиль (const x = store(selector) вместо useAtom(store, selector)).
       Первая попытка (Object.assign(fn, {get, subscribe, actions})) сразу упала тестом:
       @xstate/store-solid's useAtom различает атом и AtomConfig проверкой isAtom = typeof value

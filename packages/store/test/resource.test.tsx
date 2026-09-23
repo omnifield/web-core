@@ -21,7 +21,7 @@ describe("createResourceAtom — без ключа (кейс componentsAtom)", (
   });
 });
 
-describe("createResourceAtom — по ключу (кейс componentInfo)", () => {
+describe("createResourceAtom — по ключу (кейс справки по выбранной сущности)", () => {
   it("реагирует на смену ключа ПОСЛЕ того, как первый запрос уже резолвнулся", async () => {
     const [id, setId] = createSignal(1);
     let calls = 0;
