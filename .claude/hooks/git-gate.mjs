@@ -633,12 +633,101 @@ function buildMessage(cmd, label, access) {
   ].join("\n");
 }
 
+// --- ЧТО ИМЕННО СЛУЧИТСЯ С ДЕРЕВОМ -----------------------------------------
+// Вопрос, называющий только ГЛАГОЛ («git checkout <branch>, разрешить?»), человек подтверждает
+// не глядя: по нему не видно, что целевая ветка отстаёт и половина работы сейчас исчезнет из
+// дерева. Поэтому вопрос несёт ЦИФРЫ расхождения — считает их git, не агент.
+
+/** Глаголы, двигающие рабочее дерево: у них есть ветка-цель и измеримая цена. */
+const TREE_MOVING_VERBS = new Set(["checkout", "switch", "merge", "rebase"]);
+
+/** Вывод git одной строкой; недоступен/упал → null. */
+function gitOut(repoRoot, args) {
+  try {
+    return execFileSync("git", args, {
+      cwd: repoRoot,
+      encoding: "utf8",
+      timeout: 5000,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+/** Кандидаты в ветку-цель: не-флаговые токены до `--` (значение `-m msg` отсеется проверкой). */
+function targetCandidates(args) {
+  const out = [];
+  for (const arg of args) {
+    if (arg === "--") break;
+    if (!arg.startsWith("-")) out.push(arg);
+  }
+  return out;
+}
+
+/**
+ * Цена операции для рабочего дерева, либо null (глагол не двигает дерево / git не ответил).
+ * `leaving` (checkout/switch) — сколько коммитов ТЕКУЩЕЙ ветки исчезнет из дерева; иначе —
+ * сколько приедет.
+ */
+export function headChangeFacts(cmd, repoRoot) {
+  for (const { tool, verb, args } of gitInvocations(cmd)) {
+    if (tool !== "git" || !TREE_MOVING_VERBS.has(verb)) continue;
+    if (verb === "checkout" && (args.includes("--") || args.includes("-b"))) continue;
+
+    const target = targetCandidates(args).find(
+      (c) => gitOut(repoRoot, ["rev-parse", "--verify", "--quiet", `${c}^{commit}`]) !== null,
+    );
+    if (!target) continue;
+
+    const leaving = verb === "checkout" || verb === "switch";
+    const commits = gitOut(repoRoot, [
+      "rev-list",
+      "--count",
+      leaving ? `${target}..HEAD` : `HEAD..${target}`,
+    ]);
+    const files = gitOut(repoRoot, ["diff", "--name-only", "HEAD", target]);
+    const dirty = gitOut(repoRoot, ["status", "--porcelain", "-uall"]);
+    const count = (out) => (out === null ? null : out.split("\n").filter(Boolean).length);
+
+    return {
+      current: gitOut(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]) ?? "HEAD",
+      target,
+      leaving,
+      commits: commits === null ? null : Number(commits),
+      files: count(files),
+      dirty: count(dirty),
+    };
+  }
+  return null;
+}
+
 /** Вопрос человеку (не агенту) — architect на записи в shared `.git`, постановка user 2026-08-31. */
-function buildAskMessage(cmd, label) {
-  return [
-    `Команда \`${cmd}\` — запись в shared \`.git\` (\`${label}\`).`,
-    "Разрешить именно эту операцию?",
-  ].join("\n");
+function buildAskMessage(cmd, label, facts) {
+  const lines = [`Команда \`${cmd}\` — запись в shared \`.git\` (\`${label}\`).`];
+
+  if (facts) {
+    lines.push(
+      "",
+      `  текущая: ${facts.current}`,
+      `  целевая: ${facts.target}`,
+      facts.leaving
+        ? `  в текущей есть, в целевой НЕТ: ${facts.commits ?? "?"} коммитов`
+        : `  приедет в дерево коммитов: ${facts.commits ?? "?"}`,
+      `  файлов изменится в дереве: ${facts.files ?? "?"}`,
+      `  незакоммиченных правок в дереве: ${facts.dirty ?? "?"}`,
+    );
+    if (facts.leaving && facts.commits) {
+      lines.push(
+        "",
+        `⚠️ Работа из ${facts.commits} коммитов пропадёт из рабочего дерева`,
+        `   (останется в ${facts.current}).`,
+      );
+    }
+  }
+
+  lines.push("", "Разрешить именно эту операцию?");
+  return lines.join("\n");
 }
 
 function isMainSession(input) {
@@ -683,7 +772,7 @@ function main() {
   const access = currentAccess(input, config);
   const reason = blockReason(cmd, access);
   if (reason) {
-    if (access === "full") return ask(buildAskMessage(cmd, reason));
+    if (access === "full") return ask(buildAskMessage(cmd, reason, headChangeFacts(cmd, repoRoot)));
     return deny(buildMessage(cmd, reason, access));
   }
 
