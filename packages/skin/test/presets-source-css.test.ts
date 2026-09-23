@@ -5,8 +5,12 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createAnatomy } from "@zag-js/anatomy";
+
 import { passportLookup } from "../src/engine/address/index.js";
-import type { Outfit, Palette } from "../src/engine/look/index.js";
+import type { Form, Outfit, Palette } from "../src/engine/look/index.js";
+import { definePassport } from "../src/engine/passport/form/index.js";
+import type { PresetKind, PresetRecord, PresetsClient } from "../src/presets/client/index.js";
 import { createPresetsSkinSource } from "../src/presets/source.js";
 
 const URL = "http://presets.test/graphql";
@@ -78,6 +82,24 @@ const OUTFIT: Outfit = {
   forms: Array.from({ length: 30 }, (_, i) => `form-${i}`),
 };
 
+const BUTTON_ANATOMY = createAnatomy("button").parts("root");
+const BUTTON_PASSPORT = definePassport({
+  anatomy: BUTTON_ANATOMY,
+  root: "root",
+  parts: [{ name: "root", states: [] }],
+  variantAxis: { mark: { kind: "attribute", name: "data-variant" } },
+  settings: {},
+});
+
+const BUTTON_FORM: Form = {
+  name: "form-0",
+  component: "button",
+  recipe: {
+    defaultVariant: "primary",
+    variants: { primary: { root: { props: { color: "#111" } } } },
+  },
+};
+
 function fetchMockFor() {
   return vi.fn(async (_url: unknown, init: RequestInit) => {
     const body = JSON.parse(String(init.body)) as { variables: { kind: string } };
@@ -118,6 +140,70 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("createPresetsSkinSource — клиент снаружи вместо своего по url", () => {
+  function fakeClient(): PresetsClient & { readonly calls: string[] } {
+    const calls: string[] = [];
+    const record = <T>(kind: PresetKind, name: string, state: T): PresetRecord<T> => ({
+      id: name,
+      label: name,
+      name,
+      kind,
+      savedAt: "2026-09-23T07:00:00Z",
+      state,
+    });
+
+    return {
+      calls,
+      list: (async (kind: PresetKind) => {
+        calls.push(`list:${kind}`);
+        if (kind === "palette") return [record("palette", PALETTE.name, PALETTE)];
+        if (kind === "outfit") return [record("outfit", OUTFIT.name, OUTFIT)];
+        if (kind === "form") return [record("form", OUTFIT.forms[0]!, BUTTON_FORM)];
+        return [];
+      }) as PresetsClient["list"],
+      get: (async (kind: PresetKind, name: string) => {
+        calls.push(`get:${kind}`);
+        return kind === "outfit" ? record("outfit", name, OUTFIT) : undefined;
+      }) as PresetsClient["get"],
+      save: vi.fn(),
+      replace: vi.fn(),
+      remove: vi.fn(),
+    } as PresetsClient & { readonly calls: string[] };
+  }
+
+  it("css() идёт через переданный клиент и не открывает своей сети", async () => {
+    const client = fakeClient();
+    const source = createPresetsSkinSource({ client, lookup: passportLookup([]) });
+    const css = await source.css(OUTFIT.name);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(client.calls).toEqual(["get:outfit", "list:palette"]);
+    expect(css).toContain("--accent-9");
+  });
+
+  it("names() спрашивает наряды у того же клиента, а не у своего по url", async () => {
+    const client = fakeClient();
+    const source = createPresetsSkinSource({ client, lookup: passportLookup([]) });
+
+    await expect(source.names()).resolves.toEqual([OUTFIT.name]);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("ленивая печать компонента тоже стоит на переданном клиенте", async () => {
+    const client = fakeClient();
+    const source = createPresetsSkinSource({ client, lookup: passportLookup([BUTTON_PASSPORT]) });
+
+    const ensured = await source.components?.ensure(OUTFIT.name, "button", {
+      kind: "variant",
+      value: "primary",
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(client.calls).toContain("list:form");
+    expect(ensured?.css).toContain("data-variant");
+  });
 });
 
 describe("createPresetsSkinSource — css() больше не тянет формы", () => {

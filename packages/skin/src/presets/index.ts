@@ -1,4 +1,9 @@
-export { createPresetsSkinSource, type PresetsSkinSourceOptions } from "./source.js";
+export {
+  createPresetsSkinSource,
+  type PresetsSkinSourceByClient,
+  type PresetsSkinSourceByUrl,
+  type PresetsSkinSourceOptions,
+} from "./source.js";
 export {
   createPresetsClient,
   PRESET_KIND,

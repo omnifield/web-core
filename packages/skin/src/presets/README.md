@@ -60,6 +60,18 @@ import { passportOf } from "@web-core/ui/passport";
 const source = createPresetsSkinSource({ url, lookup: passportOf });
 ```
 
+🔌 Вместо адреса источнику дают **готовый клиент** — свой, обёрнутый кэшем приложения, какой
+угодно: тогда наряд и формы, которые скин берёт для одевания, приходят по тому же пути, что и
+остальные чтения приложения, а не второй, невидимой ему сетью.
+
+```ts
+const source = createPresetsSkinSource({ client: cachedPresetsClient, lookup: passportOf });
+```
+
+Одно из двух, не оба: `url` — «заведи себе клиент сам», `client` — «вот мой». Кэш, протухание и
+инвалидация остаются заботой того, кто дал клиент, — источник про них ничего не знает и своего
+механизма не заводит.
+
 **Сборки компонента, до его рендера, без обращения к `SkinConnection`.** `list`/`get` — обычные
 чтения каталога, не завязанные ни на надетый наряд, ни на то, отрисован ли компонент вообще:
 
@@ -103,6 +115,7 @@ const variants = await variantsOf(client, "button");
 |---|---|
 | `createPresetsClient({ url })` | адрес службы раздачи (`/graphql` целиком) |
 | `createPresetsSkinSource({ url, lookup })` | тот же адрес + `PassportLookup` кита |
+| `createPresetsSkinSource({ client, lookup })` | готовый `PresetsClient` вместо адреса — своей сети источник не заводит |
 | `client.list(kind, { component? })` | вид записи; `component` сужает выдачу до ЛЮБОГО из перечисленных (OR) |
 | `client.listHeaders(kind, { component? })` | то же самое, но в ответ едут заголовки — без содержимого записей |
 | `client.get(kind, name)` | вид + имя записи |

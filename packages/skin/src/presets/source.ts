@@ -2,18 +2,25 @@ import type { PassportLookup } from "../engine/address/index.js";
 import { withPassports } from "../engine/generate/index.js";
 import type { SkinSource } from "../wear/switch.js";
 
-import { createPresetsClient, PRESET_KIND } from "./client/index.js";
+import { createPresetsClient, PRESET_KIND, type PresetsClient } from "./client/index.js";
 import { createLazyComponentSkin } from "./lazy.js";
 import { PresetsRefused } from "./wire.js";
 
-export interface PresetsSkinSourceOptions {
+export interface PresetsSkinSourceByUrl {
   readonly url: string;
   readonly lookup: PassportLookup;
 }
 
+export interface PresetsSkinSourceByClient {
+  readonly client: PresetsClient;
+  readonly lookup: PassportLookup;
+}
+
+export type PresetsSkinSourceOptions = PresetsSkinSourceByUrl | PresetsSkinSourceByClient;
+
 export function createPresetsSkinSource(options: PresetsSkinSourceOptions): SkinSource {
-  const { url, lookup } = options;
-  const client = createPresetsClient({ url });
+  const { lookup } = options;
+  const client = "client" in options ? options.client : createPresetsClient({ url: options.url });
   const { assemble, generateSkinCss } = withPassports(lookup);
 
   return {
