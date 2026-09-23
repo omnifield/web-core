@@ -87,9 +87,9 @@
   },
   "dependencies": {
     "@web-core/solid": "workspace:*",
-    "@xstate/store": "^4.2.3",
-    "@xstate/store-solid": "^2.0.0",
-    "immer": "^11.1.18"
+    "@xstate/store": "4.2.3",
+    "@xstate/store-solid": "2.0.0",
+    "immer": "11.1.18"
   },
   "peerDependencies": {
     "@xstate/solid": "^2.0.0",
@@ -105,17 +105,17 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "24.13.3",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@xstate/solid": "^2.0.0",
-    "eslint": "^10.8.1",
-    "jsdom": "^30.0.1",
-    "solid-js": "^1.9.14",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.1",
-    "vite-plugin-solid": "^2.11.14",
-    "vitest": "^4.1.10",
-    "xstate": "^5.32.6"
+    "@xstate/solid": "2.0.0",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10",
+    "xstate": "5.32.6"
   }
 }

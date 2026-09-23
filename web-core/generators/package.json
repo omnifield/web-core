@@ -83,14 +83,14 @@
   },
   "dependencies": {
     "@web-core/io": "workspace:*",
-    "handlebars": "^4.7.9",
-    "vite": "^8.2.1"
+    "handlebars": "4.7.9",
+    "vite": "8.2.1"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "24.13.3",
     "@web-core/skin": "workspace:*",
-    "@zag-js/accordion": "^1.43.1",
-    "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "@zag-js/accordion": "1.43.1",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
   }
 }

@@ -88,11 +88,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "@tanstack/ai": "^0.54.0",
-    "@tanstack/ai-client": "^0.31.1",
-    "@tanstack/ai-mcp": "^0.3.10",
-    "@tanstack/ai-solid": "^0.21.1",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@tanstack/ai": "0.54.0",
+    "@tanstack/ai-client": "0.31.1",
+    "@tanstack/ai-mcp": "0.3.10",
+    "@tanstack/ai-solid": "0.21.1",
     "@web-core/io": "workspace:*",
     "@web-core/query": "workspace:*"
   },
@@ -100,15 +100,15 @@
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "24.13.3",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "eslint": "^10.8.1",
-    "jsdom": "^30.0.1",
-    "solid-js": "^1.9.14",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.1",
-    "vite-plugin-solid": "^2.11.14",
-    "vitest": "^4.1.10"
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
   }
 }
