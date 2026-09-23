@@ -1,6 +1,6 @@
 {
   "name": "@web-core/mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Тулинг для MCP-серверов зон web-core: обязательные annotations и конверт ответа при регистрации тула (input/output — настоящие Zod-схемы), бутстрап транспорта (stdio/Streamable HTTP) с точкой расширения под auth, курсорная пагинация листингов.",
   "license": "UNLICENSED",
   "type": "module",

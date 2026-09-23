@@ -1,6 +1,6 @@
 {
   "name": "@web-core/form",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Проекция дерево×io-схема→валидность (@web-core/assembly + @web-core/io) — не рендерит и не владеет состоянием формы, отдаёт issues по пути и производное UI-состояние узла (JsonLogic-правило) потребителю.",
   "license": "UNLICENSED",
   "type": "module",

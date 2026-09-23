@@ -4,6 +4,7 @@ import { defineCommand, runProgram } from "@web-core/cli";
 import { applyPlan } from "./apply";
 import { readPlan } from "./plan";
 import { publishGroup } from "./publish";
+import { workspaceRoot } from "./root";
 import { verifyDelivery } from "./verify";
 
 const registry = {
@@ -17,7 +18,7 @@ const plan = defineCommand({
   summary: "что выпустится и какой версией — ничего не меняет на диске",
   options: {},
   args: [],
-  run: (_input, context) => readPlan(context.cwd),
+  run: (_input, context) => readPlan(workspaceRoot(context.cwd)),
 });
 
 const version = defineCommand({
@@ -25,7 +26,7 @@ const version = defineCommand({
   summary: "применить план: версии, CHANGELOG, журнал интентов. Коммита и тега не делает",
   options: {},
   args: [],
-  run: (_input, context) => applyPlan(context.cwd),
+  run: (_input, context) => applyPlan(workspaceRoot(context.cwd)),
 });
 
 const publish = defineCommand({
@@ -33,7 +34,7 @@ const publish = defineCommand({
   summary: "опубликовать группу в реестр из окружения и отчитаться, что уехало",
   options: { registry },
   args: [],
-  run: ({ options }, context) => publishGroup(context.cwd, options.registry),
+  run: ({ options }, context) => publishGroup(workspaceRoot(context.cwd), options.registry),
 });
 
 const verify = defineCommand({
@@ -47,7 +48,7 @@ const verify = defineCommand({
   args: [],
   run: ({ options }, context) =>
     verifyDelivery({
-      cwd: context.cwd,
+      cwd: workspaceRoot(context.cwd),
       types: options.types !== false,
       ...(options.registry ? { registry: options.registry } : {}),
       ...(options.only ? { only: options.only } : {}),
