@@ -26,16 +26,10 @@ export interface SkinConnection {
    *  дёргать незачем, но наружу не скрыт. Побочный эффект каждого вызова — запись в
    *  {@link componentData} по имени компонента и в {@link outfitData}, см. там же. */
   ensureComponentSkin(component: string, axis: ComponentSkinAxis): Promise<EnsuredSkinData>;
-  /** `data`, отданный источником на последний `ensureComponentSkin` каждого компонента (по имени) —
-   *  то, что источник нашёл, пока печатал его CSS (например, запись формы), без второго запроса за
-   *  тем же. Чистится целиком при смене ИМЕНИ наряда (не при смене режима — `setMode()` не ходит
-   *  к источнику вовсе, и данные формы от режима не зависят). Разбор —
-   *  FAQ.md (`component-skin-data-passthrough`). */
+  /** `data` последнего `ensureComponentSkin` каждого компонента, по имени. Чистится при смене
+   *  ИМЕНИ наряда. Разбор — FAQ.md (`component-skin-data-passthrough`). */
   componentData: Accessor<ReadonlyMap<string, unknown>>;
-  /** То же самое, но про НАРЯД целиком (например, записи `Outfit`+`Palette`) — ОДНО значение на
-   *  соединение, не карта: наряд один, не по компоненту. Приходит тем же вызовом, что и
-   *  `componentData` (тот же `ensureComponentSkin`, `outfit`-поле его ответа) — второй сетевой поход
-   *  не заводится. Чистится по тому же правилу, что и `componentData`. Разбор — FAQ.md
+  /** То же, но про наряд целиком — ОДНО значение на соединение, не карта. Разбор — FAQ.md
    *  (`outfit-data-passthrough`). */
   outfitData: Accessor<unknown>;
 }
@@ -55,10 +49,7 @@ export function createSkinConnection(
 
   onCleanup(() => skin.dispose());
 
-  /** Единственная точка, где `worn`-сигнал реально обновляется — так чистка `componentData`/
-   *  `outfitData` по смене ИМЕНИ наряда видит все три пути (`wear`/`takeOff`/`restore`) одинаково, а
-   *  не только локальную обёртку `wear` ниже (которую `restore` сознательно не зовёт — он идёт через
-   *  `skin.restore()` напрямую). */
+  /** Единственная точка обновления `worn`-сигнала — чистку видят все пути одинаково (FAQ.md). */
   function applyWorn(result: SkinWorn | null): SkinWorn | null {
     if (result?.name !== worn()?.name) {
       setComponentData(new Map());
@@ -88,11 +79,7 @@ export function createSkinConnection(
     applyWorn(skin.worn());
   }
 
-  /** Гейт по имени наряда — свой, не унаследованный от `skin.ensureComponentSkin`: тот гасит гонку
-   *  ТОЛЬКО для CSS-листа (не трогает его при устаревшем ответе), а `data`/`outfit` отдаёт с тем же
-   *  безусловным `return`, не различая «легитимный `undefined`» и «устарело». Без своей проверки
-   *  здесь устаревший вызов старого наряда мог бы затереть в картах уже пришедшие свежие данные
-   *  нового наряда своим `undefined`. */
+  /** Гейт по имени наряда — СВОЙ, не унаследованный от нижнего слоя (разбор — FAQ.md). */
   async function ensureComponentSkin(component: string, axis: ComponentSkinAxis): Promise<EnsuredSkinData> {
     const startedFor = worn()?.name;
     const ensured = await skin.ensureComponentSkin(component, axis);

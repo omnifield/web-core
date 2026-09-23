@@ -1,7 +1,5 @@
-// `createPresetsSkinSource`'s `css()` — база наряда (переменные палитры/шрифт/mode), БЕЗ форм.
-// Формы приносит лениво сам компонент (`useComponentSkin`/`ensureComponentSkin`) — эта заявка
-// закрывает найденный на витрине компонентов пробел: старый `css()` тянул ВСЕ формы, обесценивая
-// экономию нового механизма (см. FAQ.md, `component-skin-on-demand`).
+// `css()` источника — база наряда (переменные палитры, шрифт, режим), БЕЗ форм: их приносит лениво
+// сам компонент. Разбор — FAQ.md, `component-skin-on-demand`.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -74,8 +72,7 @@ const PALETTE: Palette = {
   },
 };
 
-// Наряд объявляет 30+ форм — ровно случай витрины компонентов: css() не обязан их знать, чтобы
-// напечатать базу.
+// Наряд объявляет 30+ форм: `css()` не обязан их знать, чтобы напечатать базу.
 const OUTFIT: Outfit = {
   name: "omnifield",
   palette: PALETTE.name,

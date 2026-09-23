@@ -1,8 +1,4 @@
-// `StatesOf`/`ValuesOf`/`PartOf` resolve to the REAL literal unions a passport declared, not
-// `string` — only because `definePassport`/`defineSettings` stopped widening through a fixed
-// interface on the way out (`const` type parameters, see
-// `../src/engine/passport/form/{passport,settings}.ts`). `expectTypeOf` assertions are checked by
-// `tsc` (`pnpm typecheck`); this test's runtime body is a no-op.
+// Утверждения о типах проверяет `pnpm typecheck`, рантайм-тело пустое — разбор в FAQ.md, «Тесты».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expectTypeOf, it } from "vitest";

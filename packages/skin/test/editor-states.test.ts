@@ -1,11 +1,5 @@
-// `StatesOf`/`ValuesOf` (passport/form/derive.ts) подключены к PassportPartEditorInfo/
-// PassportSettingEditorInfo через параметр `Passport` на PassportEditorSpec/Info/defineEditorInfo.
-//
-// Реальный стресс-случай accordion: `root` без состояний, `itemTrigger` — с шестью,
-// `itemContent` has a DIFFERENT four — the point of StatesOf being keyed by PART, not by the whole
-// passport at once. `expectTypeOf`/`@ts-expect-error` are checked by `tsc` (`pnpm typecheck`); this
-// test's runtime body also genuinely calls `defineEditorInfo` (same discipline as
-// `editor-data.test.ts`) — the runtime contract (state/setting name matching) must keep holding too.
+// Состояния выводятся по ЧАСТИ, а не по паспорту целиком; тело теста реально зовёт объявление
+// среза — разбор в FAQ.md, «Тесты».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expect, expectTypeOf, it } from "vitest";

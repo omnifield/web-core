@@ -33,11 +33,8 @@ function scopedSettings(
   return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
-/**
- * `base` остаётся всегда. `variants`/`settings`/`compoundVariants` режутся до того, что назвал
- * `scope` — компаунд печатается только когда ВСЕ его значения уже в `scope.variants` (частичный
- * компаунд — это компаунд с недостающей веткой, а не то же правило раньше срока).
- */
+/** `base` остаётся всегда; остальное режется до названного в `scope`, компаунд — только когда ВСЕ
+ *  его значения накоплены. */
 export function scopeRecipe(recipe: SlotRecipe, scope: RecipeScope): SlotRecipe {
   const variants =
     recipe.variants &&

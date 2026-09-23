@@ -34,7 +34,7 @@ const passport = definePassport({
   settings: {},
 });
 
-// Stand-in for ONE file under `playground/assemblies/` — typed against the real schema, no cast.
+// Замена ОДНОЙ объявленной сборки компонента — типизирована реальной схемой, без приведения.
 const rows: PassportAssembly<"root" | "item", string, ListInput> = {
   name: "rows",
   means: "proof",
@@ -44,13 +44,12 @@ const rows: PassportAssembly<"root" | "item", string, ListInput> = {
   },
 };
 
-// Stand-in for `playground/assemblies/index.ts`'s collected array — no cast.
+// Замена собранного компонентом списка сборок — без приведения.
 const assemblies = [rows];
 
 describe("defineEditorInfo протягивает реальный Data без расширения", () => {
   it("accepts a real-Data PassportAssembly in spec.assemblies with zero explicit type arguments", () => {
-    // Stand-in for `playground/index.ts`'s call — same shape every component in the kit already
-    // uses (nothing explicit): Part/Registry/Data all inferred.
+    // Вызов той же формы, какой уже пишет каждый компонент кита: ни одного явного параметра типа.
     const editorInfo = defineEditorInfo(passport, {
       package: "@web-core/ui",
       genus: "component",
@@ -64,12 +63,8 @@ describe("defineEditorInfo протягивает реальный Data без �
       dataPresets: [],
     });
 
-    // Stand-in for `test/accordion.test.tsx`'s use of `editorInfo.assemblies` — still carries the
-    // real Data, not widened to `unknown`: a typo here would be caught, same as at the source.
-    // Fourth type argument (`typeof passport`, not the default widened `ComponentPassport<...>`) —
-    // `defineEditorInfo` now infers `Passport` from the real argument (states/values wiring
-    // follow-up); `toEqualTypeOf` needs the exact match, `toMatchTypeOf` alone would not have caught
-    // a regression here.
+    // Срез несёт НАСТОЯЩИЕ данные, не расширенные до `unknown`, и настоящий паспорт четвёртым
+    // параметром — отсюда точное сравнение типов, а не совпадение по форме.
     expectTypeOf(editorInfo).toEqualTypeOf<PassportEditorInfo<"root" | "item", string, ListInput, typeof passport>>();
     expect(editorInfo.assemblies).toHaveLength(1);
     expect(editorInfo.assemblies[0]!.tree.node).toBe("root");

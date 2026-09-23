@@ -12,13 +12,7 @@ import {
 import type { ComponentPassport } from "../engine/passport/form/index.js";
 import type { PassportPartEditorInfo } from "./types.js";
 
-// `Data` — accepted here purely so the CALL BOUNDARY from `../editor/define.ts`'s `defineEditorInfo`
-// never needs to widen a real-schema `PassportAssembly` into this function's own parameter (the
-// widening `../assembly/README.md#paths` documents as broken for exactly this class of type).
-// Nothing BELOW that boundary reads `Data` at all: this traversal only ever asks about `node`/
-// `children`/`recur`/`repeat`/`genus` — never `bind`/`props`/`on`, the only fields `Data`
-// touches — so `tree` is re-typed to the permissive default ONCE, right after entry, and every
-// helper below works with that shape for the rest of the function.
+// `Data` объявлен ради границы вызова и ниже неё не читается — разбор в FAQ.md.
 export function checkAssembly<Part extends string, Registry extends string = string, Data = unknown>(
   component: string,
   passport: ComponentPassport<Part>,
@@ -38,10 +32,7 @@ export function checkAssembly<Part extends string, Registry extends string = str
     );
   }
 
-  // A plain `as` (not `as unknown as`) — the two shapes genuinely overlap structurally (a real
-  // `Data`'s `bind` values are a literal string subset of the default's plain `string`), it is only
-  // TypeScript's assignability fast path for this class of type that can't see it; the assertion
-  // check (`isTypeComparableTo`) falls back to a structural comparison where assignability gives up.
+  // Обычный `as`, не `as unknown as` — формы пересекаются структурно, разбор в FAQ.md.
   const tree = assembly.tree as PassportAssemblyElement<Part, Registry>;
 
   const declaredNames: readonly string[] = declared;
@@ -78,9 +69,8 @@ export function checkAssembly<Part extends string, Registry extends string = str
       if (!isAssemblyContent(child) && isOwnPart(child)) walk(child);
     }
 
-    // `recur` attaches this SAME node's own kind into one of its declared children, without
-    // naming that child as an ordinary declared node — the nesting rule still applies, just
-    // against the part named `into` rather than against something written out in `children`.
+    // `recur` вкладывает род ТОГО ЖЕ узла в один из объявленных детей — правило допуска
+    // проверяется против части, названной в `into`.
     if (node.recur) {
       const target = (node.children ?? [])
         .map((declaredChild) => templateOf(declaredChild))

@@ -1,11 +1,5 @@
-// Схемы в `../src/tools/schemas.ts` зеркалят TS-типы движка — компилятор это уже проверил
-// (`z.ZodType<T>` на каждой). Здесь — рантайм-довод: реальный вход/выход `checkOutfit`/
-// `generateSkinCss`/`skinGaps` (те же фикстуры, что `keyframe-collision.test.ts`/
-// `generate-component-skin-css.test.ts`) парсится схемами `toolDefinition()` без правки на месте.
-// `assemble` — единственное исключение: флаг `palette-incomplete` бросает `OutfitRefused`, пока
-// палитра не закрывает ВЕСЬ словарь (`VOCABULARY`, комбинаторно большой) — вместо того чтобы
-// городить фикстуру-палитру на сотню ролей, выход схемы проверен на типизированном литерале
-// (`Assembled` из движка — та же гарантия компилятора, что и у самой схемы).
+// Рантайм-довод к схемам тулов; `assemble` — единственное исключение, проверяется типизированным
+// литералом. Разбор — FAQ.md, «Тулы для агента».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expect, it } from "vitest";

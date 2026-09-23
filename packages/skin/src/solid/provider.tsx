@@ -27,11 +27,8 @@ const SkinContext = createContext<SkinContextValue>();
 export interface SkinProviderProps extends ParentProps {
   readonly source: SkinSource;
   readonly options?: SkinSwitchOptions;
-  /** Зовётся один раз на монтировании с промисом восстановления исходного наряда — для кода ВНЕ
-   *  дерева Solid (например, роутер-лоадеров), которому `worn()`-сигнал недоступен, а дождаться
-   *  «наряд определён» перед своим запросом надо. Отказ `restore()` промис гасит сам (в `null`),
-   *  наружу всегда уходит успешно разрешённый промис. Solid-потребителям он не нужен — им хватает
-   *  реактивного `worn()`. */
+  /** Зовётся один раз на монтировании с промисом восстановления наряда — для кода ВНЕ дерева
+   *  Solid. Отказ гасится в `null`; наружу всегда уходит разрешённый промис. */
   readonly onReady?: (ready: Promise<SkinWorn | null>) => void;
 }
 
@@ -65,15 +62,9 @@ export function useSkin(): SkinContextValue {
 }
 
 /**
- * Читает `data`, который источник отдал на последний `ensureComponentSkin` компонента с этим
- * именем — тот же фетч, что уже сделал сам компонент через `useComponentSkin`, без второго запроса
- * за тем же. Реактивно: обновляется и когда компонент допечатывает новое значение оси, и когда
- * наряд сменился (карта чистится целиком, `component-skin-data-passthrough`).
- *
- * `T` — на совести вызывающего: контракт этого слоя — `unknown` (источники разные, форма не
- * гарантирована никем ниже), а не `Form` конкретно. Компонента с этим именем ещё не было под
- * `<SkinProvider>`, либо источник не дал `data`, либо ничего не надето — везде `undefined`,
- * различать эти случаи не входит в контракт (см. {@link SkinConnection.componentData}).
+ * Читает `data` последнего `ensureComponentSkin` компонента с этим именем — без второго запроса за
+ * тем же. `T` — на совести вызывающего: контракт этого слоя `unknown`. Причины `undefined` контракт
+ * не различает (см. {@link SkinConnection.componentData}). Разбор — FAQ.md.
  */
 export function useComponentSkinData<T = unknown>(component: string): Accessor<T | undefined> {
   const value = useSkin();
@@ -82,13 +73,8 @@ export function useComponentSkinData<T = unknown>(component: string): Accessor<T
 }
 
 /**
- * Читает `outfit`, который источник отдал вместе с `data` на последний `ensureComponentSkin` ЛЮБОГО
- * компонента дерева — тот же вызов, тот же ответ, просто вторая его половина (про наряд целиком, не
- * про конкретный компонент). Реактивно, тем же приёмом, что {@link useComponentSkinData}: обновляется
- * на каждый допечатанный компонент и чистится при смене имени наряда (`outfit-data-passthrough`).
- *
- * Требует, чтобы ХОТЯ БЫ ОДИН компонент в дереве уже позвал `useComponentSkin` — сам по себе этот
- * хук сеть не заводит и ничего не запрашивает, читает то, что уже нашлось попутно.
+ * То же, но вторая половина того же ответа — про наряд целиком. Своей сети не заводит: требует,
+ * чтобы ХОТЯ БЫ ОДИН компонент дерева уже позвал `useComponentSkin`. Разбор — FAQ.md.
  */
 export function useOutfitData<T = unknown>(): Accessor<T | undefined> {
   const value = useSkin();
@@ -98,12 +84,8 @@ export function useOutfitData<T = unknown>(): Accessor<T | undefined> {
 
 /**
  * Компонент кита сам просит свой CSS — по значению `variant`/каждой `setting` c атрибутной меткой,
- * реактивно. Без `SkinProvider` в дереве — тихий no-op. `props` принимается как `object`, не
- * `Record<string, unknown>`: реальные пропсы кита (`AccordionRootProps`, `DialogRootProps`, …) —
- * обычные интерфейсы от Kobalte/Ark без индексной сигнатуры, и `Record<string, unknown>` их
- * структурно не принял бы без `as` на стороне КАЖДОГО вызывающего. Чтение по неизвестному заранее
- * ключу — задача этой функции, а не 30+ мест, которые её зовут: один `as` внутри, а не тридцать
- * снаружи. Разбор — FAQ.md (`component-skin-on-demand`).
+ * реактивно. Без `SkinProvider` в дереве — тихий no-op. `props` принимается как `object`, а не
+ * `Record<string, unknown>` — разбор в FAQ.md (`component-skin-on-demand`).
  */
 export function useComponentSkin(passport: ComponentPassport, props: object): void {
   const value = useContext(SkinContext);
@@ -132,13 +114,8 @@ export function useComponentSkin(passport: ComponentPassport, props: object): vo
       const outfitName = value.worn()?.name;
       if (outfitName === undefined) return;
 
-      // Пропс называется по имени НАСТРОЙКИ (`name` — ключ в `passport.settings`, тип у него из
-      // `defineSettings<Props>()`), а не по имени атрибута (`setting.mark.name`) — тот компонент
-      // проставляет на разметку сам, своей формулой (`outlined ? "true" : undefined`, у другой
-      // настройки — своя, необязательно симметричная). Прочитать, что реально ляжет в атрибут, без
-      // повторения формулы каждого компонента нельзя — но эффективное значение (пропс или, если не
-      // назван, `byDefault`) совпадает с ней в единственном месте, которое имеет значение: там, где
-      // компонент отрисован БЕЗ явного пропса. Разбор — FAQ.md.
+      // Пропс называется по имени НАСТРОЙКИ, не по имени атрибута; не названный пропс замещается
+      // `byDefault`. Разбор — FAQ.md.
       const raw = record[name] as string | boolean | undefined;
       const effective = raw ?? setting.byDefault;
       const attrValue = typeof effective === "boolean" ? String(effective) : effective;

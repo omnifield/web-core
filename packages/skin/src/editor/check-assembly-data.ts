@@ -3,10 +3,7 @@
 import { isAssemblyContent, isAssemblyRepeat, isDataBinding, resolveDataBinding, scopedPath } from "../engine/passport/assembly/index.js";
 import type { PassportAssembly, PassportAssemblyElement, PassportAssemblyNode } from "../engine/passport/assembly/index.js";
 
-/** Same backstop as `expand.ts`'s own `MAX_ASSEMBLY_DEPTH` (see its own comment for why 300, not
- * a rounder, larger number) — this walk recurses through `recur`/`repeat` exactly the same way
- * `growAll` does, so it needs the exact same guard against a self-recursing node with no
- * data-side exit, or data that cycles back on itself. */
+/** Тот же предел, что у разворота дерева — разбор в FAQ.md. */
 const MAX_WALK_DEPTH = 300;
 
 export interface AssemblyDataFlaw {
@@ -19,12 +16,7 @@ export interface AssemblyDataFlaw {
 
 /**
  * Проверяет КАЖДЫЙ `bind`/`repeat.path`/`value.path` дерева сборки против настоящего значения
- * данных — то, чего `checkAssembly` не делает (см. заголовок файла). Путь, не нашедший ничего в
- * `data`, — флав; `repeat.path`, нашедший что-то, но не массив, — тоже, отдельным именем: чинят их
- * по-разному (опечатка в имени поля — против «поле есть, но это не список»).
- *
- * `""` — легальный путь всегда («весь текущий узел данных», `binding.ts`), проверке не подлежит:
- * спросить нечего, узел просто есть.
+ * данных. Пустой путь легален всегда и проверке не подлежит. Разбор — FAQ.md.
  *
  * @param component имя компонента — только для адреса в сообщении
  * @param assembly дерево сборки целиком
@@ -37,11 +29,7 @@ export function checkAssemblyData<Part extends string, Registry extends string =
 ): readonly AssemblyDataFlaw[] {
   const flaws: AssemblyDataFlaw[] = [];
 
-  // Same call-boundary reasoning as `check-assembly.ts`'s single `as` (not `as unknown as`, see
-  // that file's README section): this traversal never reads anything `Data` narrows — only
-  // `node`/`children`/`recur`/`repeat`/`genus`/`bind`/`value`, all present on the permissive
-  // default shape too — so the real-`Data` tree is re-typed to that shape ONCE, right here, and
-  // every helper below works with one shape for the rest of the function.
+  // Перетипирование в разрешающую форму один раз на входе — FAQ.md.
   const tree = assembly.tree as PassportAssemblyElement<Part, Registry>;
 
   const checkOne = (where: string, path: string, base: string, mustBeArray: boolean): { absolute: string; ok: boolean } => {
@@ -63,10 +51,6 @@ export function checkAssemblyData<Part extends string, Registry extends string =
     return { absolute, ok: true };
   };
 
-  // `Node` widened to the permissive default right after entry — same call-boundary reasoning as
-  // `check-assembly.ts`: this traversal only ever reads `bind`/`children`/`recur`/`repeat`/
-  // `genus`/`value`, never anything `Data`-typed narrows, so re-typing once here lets every helper
-  // below work with one shape for the rest of the function.
   const walk = (node: PassportAssemblyNode, base: string, where: string, depth: number): void => {
     if (depth > MAX_WALK_DEPTH) {
       flaws.push({
@@ -79,9 +63,7 @@ export function checkAssemblyData<Part extends string, Registry extends string =
 
     if (isAssemblyRepeat(node)) {
       const { absolute, ok } = checkOne(where, node.repeat.path, base, true);
-      // Descending on a repeat.path that didn't resolve would check the template against a scope
-      // built on top of a path that is already wrong — every bind inside it would flag too,
-      // burying the one real cause under copies of itself.
+      // Не разрешившийся путь повтора дальше не раскрывается — FAQ.md.
       if (ok) walk(node.template, `${absolute}/0`, `${where}[]`, depth + 1);
       return;
     }
@@ -103,9 +85,8 @@ export function checkAssemblyData<Part extends string, Registry extends string =
     for (const [prop, path] of Object.entries(node.bind ?? {})) checkOne(`${where}.bind.${prop}`, path, base, false);
     for (const child of node.children ?? []) walk(child, base, `${where} > ${label}`, depth + 1);
 
-    // `recur` re-walks this SAME node one level into its own data — never rescoped/mutated here
-    // (unlike `expand.ts`, this file never rewrites paths onto the node itself, only resolves them
-    // against a threaded `base` string), so reusing `node` as-is is safe.
+    // `recur` обходит ТОТ ЖЕ узел уровнем глубже по данным — узел здесь не переписывается, путь
+    // разрешается против протянутой базы.
     if ("recur" in node && node.recur) {
       const { absolute, ok } = checkOne(`${where}.recur`, node.recur.path, base, true);
       if (ok) walk(node, `${absolute}/0`, `${where}[]`, depth + 1);

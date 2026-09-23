@@ -1,34 +1,13 @@
-// A `Data` type argument on `PassportAssembly` catches a typo in `bind`/`repeat.path`/content
-// `value`, at EVERY nesting level, on the SAME two-level shape (`sections`, and inside each
-// section, `items`) as `test/paths.test.ts`, now wired into the real assembly node types instead
-// of the bare utilities. Mirrors accordion's actual `playground/assemblies/action-list.ts` tree
-// shape (two repeats, one nested inside the other's `itemContent`).
-//
-// Negative cases are checked on a NAMED, explicitly-typed node at the level they belong to, not
-// buried three levels deep inside one giant literal for the whole tree: a mismatch nested that
-// deep inside a single object literal gets misattributed by `tsc` to an unrelated line near the
-// top of the SAME literal (the `repeat` on the outer node, in one run) — a real DX cost of the
-// mapped-type-per-`repeat.path` device, confirmed to also affect ERROR LOCATION, not only hover
-// text. Authoring a real assembly as one unbroken literal will hit the same thing; `./README.md#nodes`
-// carries the guidance forward (name a sub-tree, don't nest the whole thing).
-//
-// `expectTypeOf`/`@ts-expect-error` are checked by `tsc` (`pnpm typecheck`); this test's runtime
-// body is a no-op.
-//
-// `path: ""` (`BoundPath`'s self-reference sentinel — "the whole current node/Data", the same
-// marker `binding.ts`'s `resolveDataBinding` special-cases) was MISSING from the first cut of this
-// mechanism — found by piloting a real, shipping `Data` type argument against accordion's ACTUAL
-// `playground/assemblies/base.ts`, not a synthetic case: that file's button reference genuinely
-// writes `bind: {..., payload: ""}` and `context: {payload: {path: ""}}` (mirroring `button`'s own
-// `selfAssembly`), and neither typechecked before this fix. The "valid tree" case below carries
-// both, verbatim, so this exact regression can't come back unnoticed.
+// Отрицательные случаи проверяются на ИМЕНОВАННЫХ узлах своего уровня, пустой путь несут оба
+// случая «верного дерева» дословно — разбор в FAQ.md, «Тесты». Утверждения о типах проверяет
+// `pnpm typecheck`, рантайм-тело пустое.
 
 import { describe, expectTypeOf, it } from "vitest";
 
 import type { PassportAssembly, PassportAssemblyNode } from "../src/engine/passport/assembly/index.js";
 
-// Mirrors `packages/ui/src/accordion/entity/io.ts`'s `z.infer<typeof input>` — not imported: this
-// test is about the type machinery, not that specific schema (same stance as `paths.test.ts`).
+// Повторяет форму реальной io-схемы компонента, но не импортирует её: тест про машинерию типов,
+// не про конкретную схему.
 interface Item {
   readonly id: string;
   readonly title: string;

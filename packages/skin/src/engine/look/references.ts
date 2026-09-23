@@ -68,7 +68,7 @@ function refsIn(value: unknown): string[] {
   return [...JSON.stringify(value ?? null).matchAll(/var\(\s*(--[^\s,)]+)/gu)].map((m) => bare(m[1]!));
 }
 
-/** Refs from a part's OWN `props`/`states` — never descends into `ancestors`, see `partRefs`. */
+/** Ссылки из СОБСТВЕННЫХ `props`/`states` части — в `ancestors` не спускается, см. `partRefs`. */
 function localRefs(style: LocalStyle, part: string, where: string): FormReference[] {
   const found: FormReference[] = [];
 
@@ -78,15 +78,7 @@ function localRefs(style: LocalStyle, part: string, where: string): FormReferenc
   return found;
 }
 
-/**
- * A rule inside `.ancestors[]` still lands on THIS part's node — `ancestors` conditions the
- * selector with a prefix, it does not relocate the declaration (`growAncestor`,
- * `rules/traverse/local.ts`). But a variable referenced there is legal when the ANCESTOR declares
- * it, not when this part does — that is the whole point of the block, and the flaw's own text
- * ("Move the rule to that part, or address it through an ancestor") promises exactly this. Refs
- * found here are attributed to `ancestor.part`, not the growing part, so the legality check below
- * asks the right passport part the right question.
- */
+/** Ссылки из блока `ancestors` приписываются части-ПРЕДКУ, не растущей — разбор в FAQ.md. */
 function partRefs(style: PartStyle, part: string, where: string): FormReference[] {
   const found = localRefs(style, part, where);
 

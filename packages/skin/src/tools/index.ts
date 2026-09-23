@@ -1,14 +1,6 @@
-// Операции этого пакета над своими понятиями (Palette/Form/Outfit/Skin) — двояко: голой функцией
-// (реэкспорт как есть, для прямого вызова) и `toolDefinition()`-обёрткой рядом (контракт для того,
-// кто решит открыть операцию агенту — не решается здесь, `packages/neurobox/ROADMAP.yaml`'s
-// `app-zone-tool-registry`). Ни один `toolDefinition()` не зовёт `.server(execute)` сам — это тоже
-// дело того, кто регистрирует: связать контракт с реальным `PassportLookup`/реестром компонентов
-// приложения, которого у голой функции пакета нет и не должно быть.
-//
-// `lookup`/`passports`/`editorInfo` НЕ входят в `inputSchema`: `PassportAnatomy` несёт функции
-// (`keys()`/`build()`), это знание живого реестра компонентов приложения — инфраструктура вызова
-// (аналог второго параметра `execute(input, context)` у `@tanstack/ai`), не значение, которое агент
-// выбирает за один вызов. Разбор — FAQ.md.
+// Операции пакета над своими понятиями — двояко: голой функцией и `toolDefinition()`-обёрткой
+// рядом. `.server(execute)` здесь не зовётся, `lookup`/`passports` в `inputSchema` не входят —
+// разбор в FAQ.md, «Тулы для агента».
 
 import { z } from "@web-core/io";
 import { toolDefinition } from "@web-core/neurobox/tool";
@@ -27,11 +19,8 @@ export { assemble, checkOutfit } from "../engine/look/index.js";
 export { generateSkinCss } from "../engine/generate/index.js";
 export { skinGaps } from "../engine/coverage/index.js";
 
-// Схемы вынесены в именованные константы, а не подставлены литералом в `toolDefinition({...})`:
-// без `typeof`-ссылки на них компилятор не может назвать инстанцированный `ToolDefinition<...>` в
-// `.d.ts` (rollup-plugin-dts падает — тип живёт в чужом вложенном `node_modules/@tanstack/ai`,
-// не в поднятом). Явная аннотация ниже — тот же обход, что уже есть у самого `toolDefinition()` в
-// `@web-core/neurobox/tool`.
+// Схемы — именованными константами, не литералом в вызове: без `typeof`-ссылки эмит деклараций не
+// собирается. Разбор — FAQ.md.
 const OutfitPartsInput = z.object({ outfit: OutfitSchema, parts: LookPartsSchema });
 const OutfitFlawsOutput = z.array(OutfitFlawSchema);
 const GenerateSkinCssInput = z.object({ skin: SkinSchema, vocabulary: ValueVocabularySchema.optional() });

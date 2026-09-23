@@ -5,12 +5,8 @@ import type { VariableHome } from "../variables/index.js";
 import { Flaws } from "./flaws.js";
 import { VAR_REFERENCE } from "./var-reference.js";
 
-/**
- * Настоящие (не custom) CSS-свойства, у которых смысл заранее известен: одни красят текст/иконку
- * («краска», ступени 11/12/`contrast`), другие — заливку и границу («заливка», ступени 1–10).
- * Свойство вне списка ничего не обещает и гейтом не проверяется — как и custom-property без
- * объявленного `colorPurpose` в паспорте: молчание значит «нечего проверять», а не «разрешено всё».
- */
+/** Настоящие CSS-свойства, у которых класс ступени известен заранее. Свойство вне списка гейтом не
+ *  проверяется — разбор в FAQ.md. */
 const CSS_PROPERTY_PURPOSE: Readonly<Record<string, StepPurposeClass>> = {
   color: "ink",
   fill: "ink",
@@ -47,12 +43,8 @@ function expectedPurpose(
 const CLASS_TEXT: Record<StepPurposeClass, string> = { fill: "заливку/границу", ink: "текст/иконку" };
 const PROMISE_TEXT: Record<StepPurposeClass, string> = { fill: "не даётся", ink: "есть" };
 
-/**
- * Проверяет, что значение ОДНОГО свойства (или custom-property, объявленной паспортом как
- * цветовой контейнер) ссылается на ступень своего класса — заливку на заливку, краску на краску.
- * Свойство, у которого класс не известен ни таблицей выше, ни паспортом, пропускается: гейту
- * нечего с ним сверять.
- */
+/** Сверяет значение ОДНОГО свойства со ступенью его класса: заливку на заливку, краску на краску.
+ *  Класс не известен ни таблицей выше, ни паспортом — пропуск. */
 export function checkStepPurpose(
   property: string,
   value: string | number,

@@ -1,12 +1,5 @@
-// `checkAssemblyData` — the value half of assembly validation, `checkAssembly`'s own README
-// section names the gap this closes: structure is checked, `bind`/`repeat.path` never was.
-//
-// "Broken" fixtures below are typed `PassportAssembly<Part, Registry>` — the UNTYPED default
-// (`Data = unknown`), not `PassportAssembly<Part, Registry, ListInput>`. That is not an oversight:
-// a real, `Data`-typed literal with a typo in `bind`/`repeat.path` does not compile at all
-// (`BoundPath`, `../assembly/paths.ts`) — `tsc` already rejects it, which is exactly why this
-// function exists for the OTHER case, JSON arriving with no compiler over it at all. The untyped
-// fixtures below are what that JSON looks like on the way in.
+// «Сломанные» фикстуры ниже намеренно НЕ типизированы настоящими данными — разбор в FAQ.md,
+// «Тесты».
 
 import { describe, expect, it } from "vitest";
 import { checkAssemblyData } from "../src/editor/check-assembly-data.js";
@@ -21,7 +14,7 @@ interface ListInput {
   readonly items: readonly Item[];
 }
 
-// Real `Data`, compiler-checked — proves the happy path end to end, not just runtime-clean.
+// Настоящие данные, проверенные компилятором — доказывают счастливый путь целиком.
 const rows: PassportAssembly<"root" | "item", string, ListInput> = {
   name: "rows",
   means: "proof",

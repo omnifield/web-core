@@ -75,13 +75,8 @@ export function growAncestor<Mark>(cursor: Cursor, ancestor: AncestorStyle, wher
   growLocal(
     {
       ...cursor,
-      // The style block that follows is the ANCESTOR's own — `known` up to here only ever held
-      // the growing part's own variables (`growPart`'s `partVariables(passport, part)`), so a
-      // rule addressing `var(--x)` where `--x` is declared ON THE ANCESTOR read as
-      // "variable-elsewhere" even though the flaw's own text promises "address it through an
-      // ancestor" as the fix. Adding the ancestor's variables here is that promise kept — the
-      // same call `growPart` makes for the part growing the style, just for the part the style is
-      // now addressed through.
+      // Блок ниже — собственный блок ПРЕДКА, поэтому к известным добавляются и его переменные
+      // (разбор — FAQ.md, «Переменные компонента»).
       known: new Set([...cursor.known, ...partVariables(owner, ancestor.part)]),
       prefix: cursor.prefix === "" ? prefix : `${cursor.prefix} ${prefix}`,
       unreliable: [...cursor.unreliable, ...unreliable],

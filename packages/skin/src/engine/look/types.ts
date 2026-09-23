@@ -18,14 +18,8 @@ export interface Form {
   readonly author?: string;
 }
 
-/**
- * Сборка компонента, отданная на хранение — запись рядом с `Form`, а не новый тип сборки.
- *
- * `assembly` — `PassportAssembly` БЕЗ ИЗМЕНЕНИЙ: та же форма, что кодовая сборка кита несёт в
- * `editorInfo.assemblies`. Заведи мы для хранимой сборки свою форму — читателю (`baseAssemblyOf`)
- * пришлось бы разбирать происхождение, а по заявке этого разбора как раз и не должно быть: обе
- * идут через один и тот же вызов, кодовая или сохранённая — не важно.
- */
+/** Сборка компонента на хранении — запись рядом с `Form`, несёт `PassportAssembly` без изменений
+ *  (кодовая и сохранённая неразличимы по построению, разбор — FAQ.md). */
 export interface ComponentAssembly {
   readonly component: string;
   readonly assembly: PassportAssembly;

@@ -1,12 +1,4 @@
-// Live proof for a real gap named live: `growAll`'s `recur` recursion had no depth counter and no
-// cycle detection — a self-recursing node with no exit in the data, or `repeat`-bound data that
-// circles back on itself (a node's own descendant array happening to include an ancestor),
-// recurses with no other exit condition. Both used to read as a raw `RangeError: Maximum call
-// stack size exceeded`, not an engine error.
-//
-// Fix: a depth counter threaded through `grow`/`growAll`'s mutual recursion, throwing a named
-// error well before the real native stack limit. This does not replace `repeat`'s own "not an
-// array" exit — it is the backstop for the two paths that exit has never covered.
+// Предел глубины разворота — разбор в FAQ.md, «Тесты».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expect, it } from "vitest";

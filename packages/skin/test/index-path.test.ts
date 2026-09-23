@@ -1,13 +1,5 @@
-// Live proof for a real gap named live: `growAll` (`../src/passport/assembly/expand.ts`) already
-// counts each repeat element's index (`items.flatMap((_, index) => …)`) to build the string PATH
-// data binds resolve against, then throws that number away — an author has no way to ask for it
-// as its own value. `indexPathBind` closes it: name a prop, and the engine writes in the
-// accumulated index path as a literal `number[]` — a structural fact of the tree's shape, known
-// already at `baseAssemblyOf`, never a `bind` path resolved against data.
-//
-// Fixture is `repeat-field.test.ts`'s own sections/rows nesting (same passport, same data) — the
-// real case (an outer repeat's per-instance template itself repeating) `indexPathBind` needs to
-// prove itself against, not a single-level stand-in.
+// Накопленный индексный путь отдаётся автору значением. Фикстура — то же двухуровневое вложение
+// повторов, что у проверки поля повтора. Разбор — FAQ.md, «Тесты».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expect, it } from "vitest";

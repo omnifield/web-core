@@ -1,15 +1,5 @@
-// Live proof for a real gap found live: `growAncestor` (`../src/rules/traverse/local.ts`) built
-// the right selector for a rule addressed through an ancestor, but never added the ANCESTOR's own
-// declared variables to `known` before checking the ancestor's own style block — `growPart` does
-// this for the growing part's own variables (`partVariables(passport, part)`), `growAncestor` did
-// not do the equivalent for the part it points AT. A rule using `var(--x)` where `--x` is declared
-// on the ancestor, addressed exactly as the "variable-elsewhere" flaw's own text recommends
-// ("Move the rule to that part, or address it through an ancestor"), failed the second half of
-// that promise: it read as `variable-elsewhere` regardless.
-//
-// Fixture mirrors the real case that found it (`tree-view`'s `branch`/`branchControl`, `--depth`)
-// at minimum size: a parent part declares a variable, a child part reaches it only through
-// `ancestors`, never its own `props`.
+// Переменная предка, прочитанная через блок `ancestors`, законна — разбор в FAQ.md, «Переменные
+// компонента».
 
 import { createAnatomy } from "@zag-js/anatomy";
 import { describe, expect, it } from "vitest";

@@ -33,11 +33,8 @@ export interface StyleOrderReport {
   message: string;
 }
 
-/**
- * Приехал ли на корень базовый CSS под надетым скином.
- *
- * @throws если у пары пуста любая половина
- */
+/** Приехал ли на корень базовый CSS под надетым скином.
+ *  @throws если у пары пуста любая половина */
 export function checkStyleOrder(options: StyleOrderOptions): StyleOrderReport {
   const done = trace("checkStyleOrder");
   const { marker } = options;
@@ -69,20 +66,16 @@ export function checkStyleOrder(options: StyleOrderOptions): StyleOrderReport {
   return { status, marker, seen, skin, message };
 }
 
-/** Одно значение одной оси рецепта — `variant` (значение оси variant) либо `setting` (значение
- *  именованной настройки). Компонент сам называет то, что у него сейчас на разметке. `variant` без
- *  `value` — на разметке нет атрибута вовсе (сегодняшний рендер не назвал вариант явно): всё равно
- *  бутстрапит `base`+`defaultVariant`, просто не добавляет НИКАКОГО конкретного значения сверху. */
+/** Одно значение одной оси рецепта, названное самим компонентом по его текущей разметке.
+ *  `variant` без `value` — атрибута на разметке нет: бутстрапит `base`+`defaultVariant`, своего
+ *  значения сверху не добавляет. */
 export type ComponentSkinAxis =
   | { readonly kind: "variant"; readonly value?: string }
   | { readonly kind: "setting"; readonly name: string; readonly value: string };
 
-/** Побочный груз источника, отданный вместе с CSS — `unknown` сознательно на этом слое: он не знает
- *  и не должен знать, что внутри (движок ничего не знает про `Form`/`Outfit`/`Palette` как типы,
- *  это домен `presets/lazy.ts`, не `wear/*`). `data` — то, что источник нашёл про ОДИН компонент
- *  (`component-skin-data-passthrough`); `outfit` — то же самое, но про наряд целиком, одно значение
- *  на весь `ensureComponentSkin`, не по компоненту (`outfit-data-passthrough`). Оба независимо
- *  необязательны — источник может не нести один из них, оба, или ни одного. */
+/** Побочный груз источника, отданный вместе с CSS: `data` — про ОДИН компонент, `outfit` — про
+ *  наряд целиком. `unknown` на этом слое сознательно, оба поля независимо необязательны. Разбор —
+ *  FAQ.md (`component-skin-data-passthrough`, `outfit-data-passthrough`). */
 export interface EnsuredSkinData {
   readonly data?: unknown;
   readonly outfit?: unknown;
@@ -92,11 +85,8 @@ export interface EnsuredSkinData {
  *  variant/setting, а не всего наряда сразу. Источники без ленивой загрузки её не реализуют —
  *  `ensureComponentSkin` тогда молча ничего не делает (`component-skin-on-demand`, ROADMAP.yaml). */
 export interface ComponentSkinSource {
-  /**
-   * Печатает НОВОЕ значение оси компонента, аддитивно к уже увиденным для него значениям под этим
-   * же нарядом — возвращает актуальный ПОЛНЫЙ текст CSS этого компонента (база + всё увиденное на
-   * сегодня), который надевание целиком кладёт в СВОЙ тег компонента, плюс {@link EnsuredSkinData}.
-   */
+  /** Печатает НОВОЕ значение оси аддитивно к уже увиденным под этим нарядом — отдаёт ПОЛНЫЙ
+   *  текущий текст CSS компонента плюс {@link EnsuredSkinData}. */
   ensure(outfitName: string, component: string, axis: ComponentSkinAxis): Promise<{ css: string } & EnsuredSkinData>;
 }
 
@@ -143,21 +133,17 @@ export interface SkinSwitch {
    */
   wear(name: string, options?: SkinWearOptions): Promise<SkinWorn | null>;
   takeOff(options?: SkinWearOptions): void;
-  /**
-   * Переключает половину БЕЗ повторного похода к источнику — обе половины уже приехали одним
-   * CSS-текстом на `wear()` (`DARK_SELECTOR` в `engine/generate/print.ts`), переключение — это
-   * класс на корне, а не новый скин. Ничего не надето — тихий no-op.
-   */
+  /** Переключает половину БЕЗ похода к источнику — обе половины уже приехали одним CSS-текстом на
+   *  `wear()`, переключение это класс на корне. Ничего не надето — тихий no-op. */
   setMode(mode: SkinMode): void;
   /** Восстанавливает запомненный выбор — и скин, и половину. */
   restore(): Promise<SkinWorn | null>;
   /**
-   * Допечатывает CSS одного компонента под ОДНО новое значение оси — источник без ленивой
-   * способности (`SkinSource.components`) или ничего не надето — тихий no-op, не отказ: кит
-   * обязан жить без presets/провайдера вовсе.
+   * Допечатывает CSS одного компонента под ОДНО новое значение оси. Источник без ленивой
+   * способности или ничего не надето — тихий no-op, не отказ.
    *
-   * @returns {@link EnsuredSkinData} источника — пустой объект и когда источник ничего не дал, и
-   *   когда сработал no-op/устаревший ответ; различать эти случаи не входит в контракт.
+   * @returns {@link EnsuredSkinData} источника; пустой объект и при no-op, и при устаревшем
+   *   ответе — различать эти случаи не входит в контракт.
    */
   ensureComponentSkin(component: string, axis: ComponentSkinAxis): Promise<EnsuredSkinData>;
   /** Снимает свой лист стилей и листы всех допечатанных компонентов. Опознание на корне не трогает. */

@@ -41,11 +41,8 @@ export type ElementAt<T, K extends ArrayPaths<T> | ""> = unknown extends T ? unk
 /** Снимает ведущий `/`, если есть. */
 export type Bare<K extends string> = K extends `/${infer Rest}` ? Rest : K;
 
-/**
- * Путь в формате, которым его реально пишет ЭТА позиция дерева — абсолютный от корня io-схемы
- * до первого `repeat`, относительный внутри него. `""` — легальный третий вариант («сами текущие
- * данные»), тот же маркер, что `resolveDataBinding` разбирает первым.
- */
+/** Путь в формате ЭТОЙ позиции дерева: абсолютный до первого `repeat`, относительный внутри него;
+ *  `""` — «сами текущие данные», третий легальный вариант. */
 export type BoundPath<T, AtRoot extends boolean> = unknown extends T ? string : "" | (AtRoot extends true ? `/${Paths<T>}` : Paths<T>);
 
 /** `BoundPath`, суженный до путей-в-массив — формат, которым `repeat.path` пишет себя сам. */
