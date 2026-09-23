@@ -29,7 +29,7 @@ export const recipe: SlotRecipe = {
         borderRadius: "var(--radius-md)",
         background: "transparent",
         color: "var(--neutral-11)",
-        fontSize: "var(--font-size-md)",
+        fontSize: "var(--font-size-sm)",
         fontWeight: "var(--weight-medium)",
         cursor: "pointer",
         transition,

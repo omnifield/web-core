@@ -55,6 +55,7 @@ export const recipe: SlotRecipe = {
         gap: "var(--space-1)",
         minHeight: "var(--control-height-sm)",
         paddingInlineEnd: "var(--space-3)",
+        paddingBlock: "var(--space-2)",
         borderRadius: "var(--radius-sm)",
         color: "var(--neutral-12)",
         fontSize: "var(--font-size-md)",

@@ -69,7 +69,7 @@ export const recipe: SlotRecipe = {
     itemGroupLabel: {
       props: {
         paddingInline: "var(--space-3)",
-        paddingBlock: "var(--space-2)",
+        paddingBlock: "var(--space-1)",
         fontSize: "var(--font-size-sm)",
         fontWeight: "var(--weight-medium)",
         color: "var(--neutral-11)",

@@ -36,7 +36,6 @@ export const recipe: SlotRecipe = {
     },
     content: {
       props: {
-        padding: "var(--space-3)",
         color: "var(--neutral-12)",
         fontSize: "var(--font-size-md)",
         lineHeight: "var(--leading-relaxed)",

@@ -18,11 +18,15 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-/** `minHeight`/`minBlockSize` значение → обязанный `paddingInline` (`packages/style` `SPACE_ROLES`). */
-const CONTROL_PADDING_INLINE: Readonly<Record<string, string>> = {
-  "var(--control-height-md)": "var(--space-4)",
-  "var(--control-height-sm)": "var(--space-3)",
+/** Ступень высоты → набивка и шрифт, которые едут ВМЕСТЕ с ней (`packages/style` `SPACE_ROLES`,
+ *  таблица видов частей — `README.md` зоны, раздел «Рецепт»). */
+const CONTROL: Readonly<Record<string, { readonly paddingInline: string; readonly fontSize: string }>> = {
+  "var(--control-height-md)": { paddingInline: "var(--space-4)", fontSize: "var(--font-size-md)" },
+  "var(--control-height-sm)": { paddingInline: "var(--space-3)", fontSize: "var(--font-size-sm)" },
 };
+
+/** Набивка строки списка — одна на все списки кита, независимо от компонента. */
+const ROW = { paddingInline: "var(--space-3)", paddingBlock: "var(--space-2)" } as const;
 
 // НЕ `import.meta.glob` — этот приём уже роняло витрину зоны один раз (`PWEB-126`, разбор
 // «попытка import.meta.glob... провалена и откачена», Windshift): путь через кастомный алиас
@@ -58,8 +62,25 @@ function collectProps(node: unknown, hits: Record<string, unknown>[]): void {
   for (const value of Object.values(record)) collectProps(value, hits);
 }
 
-describe.each(components)("%s/playground/recipe.ts — набивка контрола в паре с его высотой", (name) => {
-  it("paddingInline соответствует роли control-padding-inline/compact-padding-inline", async () => {
+/** Вид части выводится из самих `props`, а не из её имени: имена у компонентов свои, а вид — общий.
+ *  Кликабельная часть с вертикальной набивкой — строка списка (пункт меню, узел дерева, заголовок
+ *  секции); часть со ступенью высоты и без вертикальной набивки — контрол. Нулевая набивка значит
+ *  «набивку даёт родитель» (кнопка сортировки внутри ячейки) — такая часть не меряется ни тем, ни
+ *  другим. */
+function roleOf(declarations: Record<string, unknown>): "row" | "control" | undefined {
+  const paddingBlock = (declarations["paddingBlock"] ?? declarations["padding"]) as string | undefined;
+  const ownPadding = paddingBlock !== undefined && paddingBlock !== "0";
+
+  if (declarations["cursor"] === "pointer" && ownPadding) return "row";
+
+  const height = (declarations["minHeight"] ?? declarations["minBlockSize"]) as string | undefined;
+  if (height !== undefined && CONTROL[height] !== undefined && !ownPadding) return "control";
+
+  return undefined;
+}
+
+describe.each(components)("%s/playground/recipe.ts — вид части задаёт набивку и шрифт", (name) => {
+  it("контрол несёт высоту, набивку и шрифт одной ступени; строка списка — общую набивку кита", async () => {
     const mod = (await import(/* @vite-ignore */ `../src/${name}/playground/recipe.js`)) as {
       recipe?: unknown;
     };
@@ -69,12 +90,29 @@ describe.each(components)("%s/playground/recipe.ts — набивка контр
     collectProps(mod.recipe, hits);
 
     for (const props of hits) {
-      const height = (props["minHeight"] ?? props["minBlockSize"]) as string | undefined;
-      const expected = height !== undefined ? CONTROL_PADDING_INLINE[height] : undefined;
-      const actual = props["paddingInline"] as string | undefined;
+      const role = roleOf(props);
+      const paddingInline = props["paddingInline"] as string | undefined;
 
-      if (expected !== undefined && actual !== undefined) {
-        expect(actual, `${height} требует paddingInline ${expected}, найдено ${actual}`).toBe(expected);
+      if (role === "row") {
+        const paddingBlock = (props["paddingBlock"] ?? props["padding"]) as string;
+        if (paddingInline !== undefined) {
+          expect(paddingInline, `строка списка требует paddingInline ${ROW.paddingInline}`).toBe(ROW.paddingInline);
+        }
+        expect(paddingBlock, `строка списка требует paddingBlock ${ROW.paddingBlock}`).toBe(ROW.paddingBlock);
+        continue;
+      }
+
+      if (role === "control") {
+        const height = (props["minHeight"] ?? props["minBlockSize"]) as string;
+        const step = CONTROL[height] as { paddingInline: string; fontSize: string };
+        const fontSize = props["fontSize"] as string | undefined;
+
+        if (paddingInline !== undefined) {
+          expect(paddingInline, `${height} требует paddingInline ${step.paddingInline}`).toBe(step.paddingInline);
+        }
+        if (fontSize !== undefined) {
+          expect(fontSize, `${height} требует fontSize ${step.fontSize}`).toBe(step.fontSize);
+        }
       }
     }
   });

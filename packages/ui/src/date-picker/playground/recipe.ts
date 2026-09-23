@@ -105,7 +105,7 @@ export const recipe: SlotRecipe = {
         gap: "var(--space-2)",
         minBlockSize: "0",
         overflow: "auto",
-        padding: "var(--space-3)",
+        padding: "var(--space-4)",
         background: "var(--neutral-1)",
         borderWidth: "var(--border-width-1)",
         borderStyle: "solid",
@@ -155,7 +155,7 @@ export const recipe: SlotRecipe = {
         background: "transparent",
         color: "var(--neutral-12)",
         fontWeight: "var(--weight-medium)",
-        fontSize: "var(--font-size-md)",
+        fontSize: "var(--font-size-sm)",
         cursor: "pointer",
         transition,
         "@media (prefers-reduced-motion: reduce)": { transition: "none" },
@@ -305,8 +305,8 @@ export const recipe: SlotRecipe = {
     presetTrigger: {
       props: {
         display: "inline-flex",
-        paddingInline: "var(--space-2)",
-        paddingBlock: "var(--space-1)",
+        paddingInline: "var(--space-3)",
+        paddingBlock: "var(--space-2)",
         borderWidth: "0",
         borderRadius: "var(--radius-md)",
         background: "var(--neutral-3)",

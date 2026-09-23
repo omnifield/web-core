@@ -23,7 +23,7 @@ export const recipe: SlotRecipe = {
         background: "var(--neutral-3)",
         color: "var(--neutral-12)",
         paddingInline: "var(--space-4)",
-        paddingBlock: "var(--space-3)",
+        paddingBlock: "var(--space-4)",
         willChange: "translate, opacity, scale",
       },
       states: {
