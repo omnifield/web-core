@@ -26,12 +26,7 @@ const manifest = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8"))
   peerDependenciesMeta: Record<string, { optional?: boolean }>;
 };
 
-/**
- * Пути, которые обязаны реально лежать в тарболе: ветки `types`/`default` условного
- * экспорта — то, что видит потребитель из `node_modules`. `development` НЕ сюда: она ведёт в
- * `src/*.ts` намеренно (быстрый путь монорепы мимо сборки) и намеренно не едет в публикацию —
- * см. ниже «не тащит потребителю исходники».
- */
+/** Обязаны лежать в тарболе только ветки `types`/`default`; почему не `development` — FAQ.md. */
 const SHIPPED_CONDITIONS = new Set(["types", "default"]);
 
 const exportTargets = (exports: Exports): string[] =>
@@ -86,7 +81,7 @@ describe("манифест", () => {
     ]);
   });
 
-  it("ESM-only и без побочных эффектов — норма публикации кита", () => {
+  it("ESM-only и без побочных эффектов — норма публикации", () => {
     expect(manifest.type).toBe("module");
     expect(manifest.sideEffects).toBe(false);
   });

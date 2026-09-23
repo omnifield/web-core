@@ -5,13 +5,7 @@ import solid from "eslint-plugin-solid";
 import { canonRules, companionRules, offRules, rules as canonAll } from "../solid/index.js";
 import type { CanonRule } from "../engine/index.js";
 
-/**
- * Опции конкретных правил `eslint-plugin-solid`, которых нет в каноне (канон — id + severity,
- * не формат опций движка). `jsx-no-undef` отдаёт проверку известных имён компилятору TS.
- * `reactivity` узнаёт трекнутый скоуп по `/^(?:use|create)[A-Z]/` ИЛИ по точному совпадению с
- * `customReactiveFunctions` — голое `.use()` (`defineQuery(...).use()`, `store.use(selector)`,
- * см. `@web-core/query`/`@web-core/store`) не подходит ни под что без этой опции.
- */
+/** Опции правил движка — канону они не принадлежат. Что стоит за каждой — FAQ.md. */
 const ESLINT_RULE_OPTIONS: Readonly<Partial<Record<string, unknown>>> = Object.freeze({
   "jsx-no-undef": { typescriptEnabled: true },
   reactivity: { customReactiveFunctions: ["use"] },
@@ -70,13 +64,8 @@ export interface PresetOptions {
 }
 
 /**
- * ESLint-плагин канона `@web-core/lint` — сегодня единственная реализация, позже рядом
- * появится `./biome`. Возвращает МАССИВ flat-конфигов — плоский конфиг ESLint это массив,
- * поэтому пресет разворачивается в чужой спредом и может вырасти в новые секции, не меняя
- * вызов.
- *
- * Секций три: правила общие для всего кода, а `jsx` в разборе включается только там, где JSX
- * бывает — обоснование и граница `no-destructure` — FAQ.md.
+ * ESLint-плагин Solid-канона. Возвращает МАССИВ flat-конфигов: три секции — правила и два
+ * разбора, `.ts` отдельно от `.tsx`. Почему так и где граница `no-destructure` — FAQ.md.
  */
 export function defineConfig(options: PresetOptions = {}): Linter.Config[] {
   const { ignores } = options;

@@ -17,11 +17,7 @@ describe("defineBiomeConfig()", () => {
     expect(config.linter.enabled).toBe(false);
   });
 
-  /**
-   * Настоящий прогон CLI, не мок: доказывает, что сгенерированный конфиг реально сортирует
-   * импорты, реально держит 2 пробела (а не молча съезжает на табы) и реально не трогает
-   * неиспользуемую переменную — линтер выключен, а не просто типизирован как выключенный.
-   */
+  // Настоящий прогон CLI, не мок: линтер выключен на практике, а не только по типу.
   it("реальный `biome check --write` сортирует импорты и держит 2 пробела, линтер молчит", () => {
     const dir = mkdtempSync(join(tmpdir(), "lint-biome-"));
     writeFileSync(join(dir, "biome.json"), JSON.stringify(defineBiomeConfig(), null, 2));
@@ -40,11 +36,7 @@ describe("defineBiomeConfig()", () => {
     expect(result).toContain("const unused = 1;");
   });
 
-  /**
-   * Свои группы импортов (`IMPORT_GROUPS` в `../src/biome/index.ts`) — по прямой просьбе user:
-   * голые имена (node + npm) → любой `@`-scoped (наши и чужие вперемешку) → `#`-алиасы →
-   * относительные, одним куском, БЕЗ пустой строки между блоками.
-   */
+  // Рецепт `IMPORT_GROUPS` из `../src/biome/index.ts` целиком; разбор рецепта — FAQ.md.
   it("группы импортов: голые имена → @-scoped → #-алиасы → относительные, без пустых строк между блоками", () => {
     const dir = mkdtempSync(join(tmpdir(), "lint-biome-groups-"));
     writeFileSync(join(dir, "biome.json"), JSON.stringify(defineBiomeConfig(), null, 2));
@@ -67,8 +59,7 @@ describe("defineBiomeConfig()", () => {
 
     execFileSync(BIOME_BIN, ["check", "--config-path=.", "--write", "sample.ts"], { cwd: dir });
 
-    // Чужой (`@tanstack`) и наш (`@web-core`) scoped-пакет — одним блоком, не разведены:
-    // это осознанное отличие от первой версии группировки (та же дата, тот же файл).
+    // Чужой (`@tanstack`) и свой (`@web-core`) scoped-пакет — одним блоком, не разведены.
     expect(readFileSync(join(dir, "sample.ts"), "utf8")).toBe(
       [
         'import { readFile } from "node:fs";',
