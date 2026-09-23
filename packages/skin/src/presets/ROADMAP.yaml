@@ -88,7 +88,7 @@ categories:
         milestone: null
         name: "createPresetsClient — REST → GraphQL внутри, PresetsClient/PresetRecord<T> наружу без изменений"
         description: |
-          Backend/presets REST удалён (`internal/api`, см. `backend/presets/ROADMAP.yaml`) — этот
+          REST службы хранения пресетов удалён её владельцем — этот
           клиент сейчас ходит в никуда. Чинится ЗДЕСЬ и только здесь: `packages/ui/src/
           component-info.ts` (`createComponentInfo`) и `./source.ts` (`createPresetsSkinSource`,
           рантайм `wear`) стоят целиком на публичном интерфейсе `PresetsClient` — ничего не знают
@@ -109,7 +109,7 @@ categories:
              `{ presets(kind: $kind) { id label name savedAt ... on Form { component recipe
              keyframes variantTags author } ... on Outfit { palette { name } forms { name } tags
              { name } overrides author } ... }}` (фрагмент по нужному типу — kind уже известен
-             вызывающему, схема — `backend/presets/internal/graphql/schema.graphql`).
+             вызывающему, форма — GraphQL-схема самой службы).
 
           3. Ответ конвертируется в СЕГОДНЯШНИЙ `PresetRecord<T>` — `state` собирается из полей
              фрагмента ОДИН В ОДИН с `packages/skin/src/engine/look/types.ts`: для `Outfit`
@@ -168,14 +168,14 @@ categories:
 
           Три места, зеркально тому, что уже сделано для остальных пяти видов:
           1. `PRESET_KIND.tag = "tag"` + запись в `PresetKindState`.
-          2. `LIST_QUERY` — фрагмент `... on Tag { tagLabel author }` (схема —
-             `backend/presets/internal/graphql/schema.graphql`, поле называется `tagLabel`, НЕ
+          2. `LIST_QUERY` — фрагмент `... on Tag { tagLabel author }` (в схеме службы
+             поле называется `tagLabel`, НЕ
              `label` — тот верхнеуровневый у `Preset`, разные значения на живой записи).
           3. `toState()` — ветка `kind === "tag"`, форма `{ name, label: tagLabel, author }` (не
              падать в `content`-ветку по умолчанию, как сегодня).
 
-          Канона TS для `Tag` в `src/engine/look/types.ts` НЕТ (см. `internal/kinds/tag.go`'s
-          комментарий на бэке — форма взята с живой записи, не с кода, которого не было). Значит
+          Канона TS для `Tag` в `src/engine/look/types.ts` НЕТ (на стороне службы этот вид тоже
+          описан по живой записи, а не по коду, которого не было). Значит
           здесь тот же вопрос, что уже решали для `author`/`tags` у остальных видов: заводить
           интерфейс `Tag` в каноне (`{name, label?, author?}`) или оставить тип inline в
           `client.ts`, раз канона для него никогда не было и другие модули его не импортируют.
@@ -221,15 +221,15 @@ categories:
         milestone: null
         name: "createPresetsClient.list() — принять фильтр по компоненту, не только по kind"
         description: |
-          Вторая половина заявки `presets-component-filter` в `backend/presets/ROADMAP.yaml` —
-          та же цепь (слова user, разбор `runtime-wear-once`), сюда не повторяются, см. бэковый
-          файл. Коротко: `source.ts`'s `css()` сегодня зовёт `client.list(PRESET_KIND.form)` без
+          Вторая половина заявки о фильтре по компоненту, первая половина которой сделана на
+          стороне службы хранения пресетов — та же цепь (слова user, разбор `runtime-wear-once`),
+          сюда не повторяются. Коротко: `source.ts`'s `css()` сегодня зовёт `client.list(PRESET_KIND.form)` без
           фильтра — тянет формы ВСЕХ компонентов аутфита, хотя странице нужна часть. Движок
           (`generateSkinCss`/`assemble`) уже принимает произвольное подмножество `forms` — упирается
           только в клиент, который сегодня не умеет попросить подмножество у бэка.
 
           Зависит от бэка: контракт (скорее всего `presets(kind: String, component: [String!])`,
-          список компонентов, совпадение — ЛЮБОЙ из списка) выбирает овнер `backend/presets` по
+          список компонентов, совпадение — ЛЮБОЙ из списка) выбирает владелец службы по
           факту реализации — его форму здесь ждать, не угадывать заранее по этому файлу.
 
           По шагам (ориентир, не жёсткий рецепт):
@@ -272,7 +272,7 @@ categories:
         milestone: null
         name: "«Дай одну запись» стоит дороже, чем «дай все записи компонента» — фильтр по имени в схеме есть, клиент его не просит"
         description: |
-          Заявка owner-studio-app (2026-09-23), сверена architect'ом по коду перед тем, как лечь
+          Заявка владельца витрины компонентов (2026-09-23), сверена architect'ом по коду перед тем, как лечь
           сюда — ниже факты со строками, не пересказ заявки.
 
           Что происходит сегодня. `get(kind, name)` (`client/index.ts:71`) — это `wireList(kind)`
@@ -283,8 +283,8 @@ categories:
           есть.
 
           Служба это уже умеет: `presets(kind: String, component: [String!], name: [String!])`
-          (`backend/presets/internal/graphql/schema.graphql:174`, пункт `presets-by-name` их
-          роадмапа) — отбор по машинному имени, ЛЮБОЕ из списка. `LIST_QUERY` (`client/queries.ts`)
+          в её GraphQL-схеме (отбор по имени сделан там отдельным пунктом) — ЛЮБОЕ имя из
+          списка. `LIST_QUERY` (`client/queries.ts`)
           переменной `$name` не объявляет вовсе. Правок на бэке заявка не просит, и они не нужны.
 
           По шагам — ориентир, не жёсткий рецепт:
@@ -344,12 +344,12 @@ categories:
         milestone: null
         name: "createPresetsSkinSource принимает готовый клиент, а не только адрес — сеть скина перестаёт быть параллельной"
         description: |
-          Заявка owner-studio-app (2026-09-23), третья в тот же день. Факт из заявки сверен по коду:
+          Заявка владельца витрины компонентов (2026-09-23), третья в тот же день. Факт из заявки сверен по коду:
           `source.ts` первым делом звал `createPresetsClient({ url })` и передавал клиент дальше в
           `createLazyComponentSkin({ client, lookup })` — внутренний слой готовый клиент принимал
           всегда, наружу эта возможность выведена не была.
 
-          Что это стоило потребителю (их замер в браузере, наряд omnifield, переход на невиданный
+          Что это стоило потребителю (их замер в браузере, реальный наряд, переход на невиданный
           компонент): четыре запроса к `/graphql`, из них два — `ListPresets(kind:"form",
           component:[...])` с одинаковыми переменными. Один их, через `variantsOf`, второй от
           источника скина, ради CSS. Бага в пакете нет: `createLazyComponentSkin` честно кэширует и
@@ -389,7 +389,7 @@ categories:
         milestone: null
         name: "Список для выбора глазами не обязан везти тела записей — цена списка не должна зависеть от их объёма"
         description: |
-          Вторая половина той же заявки owner-studio-app (2026-09-23), сверена по коду.
+          Вторая половина той же заявки владельца витрины компонентов (2026-09-23), сверена по коду.
 
           `LIST_QUERY` (`client/queries.ts:3-54`) всегда запрашивает полный фрагмент КАЖДОГО вида:
           у `Content` — `data`, у `Form` — `recipe`/`keyframes`/`variantTags`, у `Palette` —
