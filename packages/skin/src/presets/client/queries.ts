@@ -1,8 +1,8 @@
 import { gql } from "@web-core/query/graphql";
 
 export const LIST_QUERY = gql`
-  query ListPresets($kind: String, $component: [String!]) {
-    presets(kind: $kind, component: $component) {
+  query ListPresets($kind: String, $component: [String!], $name: [String!]) {
+    presets(kind: $kind, component: $component, name: $name) {
       id
       label
       name
@@ -49,6 +49,18 @@ export const LIST_QUERY = gql`
         tagLabel
         author
       }
+    }
+  }
+`;
+
+export const HEADS_QUERY = gql`
+  query ListPresetHeads($kind: String, $component: [String!], $name: [String!]) {
+    presets(kind: $kind, component: $component, name: $name) {
+      id
+      label
+      name
+      kind
+      savedAt
     }
   }
 `;

@@ -1,5 +1,5 @@
 import type { PresetKind, PresetKindState } from "./kinds.js";
-import type { PresetRecord } from "./record.js";
+import type { PresetHeader, PresetRecord } from "./record.js";
 import type { WirePreset } from "./wire-preset.js";
 
 export function text(value: unknown): string {
@@ -48,7 +48,7 @@ function toState<T>(kind: PresetKind, item: WirePreset): T {
   return { component: item.component, data: item.data, author: item.author } as T;
 }
 
-export function toRecord<K extends PresetKind>(kind: K, item: WirePreset): PresetRecord<PresetKindState[K]> {
+export function toHeader(item: WirePreset): PresetHeader {
   const name = text(item.name);
   return {
     id: text(item.id),
@@ -56,6 +56,10 @@ export function toRecord<K extends PresetKind>(kind: K, item: WirePreset): Prese
     name,
     kind: text(item.kind) as PresetKind,
     savedAt: text(item.savedAt),
-    state: { name, ...toState<PresetKindState[K]>(kind, item) },
   };
+}
+
+export function toRecord<K extends PresetKind>(kind: K, item: WirePreset): PresetRecord<PresetKindState[K]> {
+  const header = toHeader(item);
+  return { ...header, state: { name: header.name, ...toState<PresetKindState[K]>(kind, item) } };
 }

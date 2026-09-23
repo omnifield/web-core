@@ -35,7 +35,7 @@
 | Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategories`, `CategoryClash`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
 | Плоский CSS | `@web-core/skin/flat` | `flattenCss` |
 | Срез редактора | `@web-core/skin/editor` | `admits`, `defineEditorInfo`, `checkAssembly`, `checkAssemblyData`, `footprintOf`, `GROUPS`, `groupOf`, `baseAssemblyOf`, `isAssemblyContent`, `isAssemblyRepeat`, `isContentNode`, `isDataBinding`, `resolveDataBinding`, `PassportAssembly`, `PassportEditorInfo` и её срез-типы |
-| Служба раздачи | `@web-core/skin/presets` | `createPresetsClient`, `createPresetsSkinSource`, `PRESET_KIND`, `PresetsDown`, `PresetsRefused`, `PresetRecord` |
+| Служба раздачи | `@web-core/skin/presets` | `createPresetsClient`, `createPresetsSkinSource`, `PRESET_KIND`, `PresetsDown`, `PresetsRefused`, `PresetRecord`, `PresetHeader`, `PresetsCatalog` |
 | Надевание | `@web-core/skin/wear` | `makeSkinSwitch`, `checkStyleOrder`, `SkinSwitch`, `SkinSource`, `SkinWorn`, `SkinMode`, `StyleMarker`, `StyleOrderReport`, `ComponentSkinAxis`, `ComponentSkinSource` |
 | Solid-плагин | `@web-core/skin/solid` | `createSkinConnection`, `SkinConnection`, `SkinProvider`, `useSkin`, `useComponentSkin`, `useComponentSkinData`, `useOutfitData`, `SkinContextValue`, `SkinProviderProps` |
 | Теги | `@web-core/skin/tags` | `sortTags`, `checkTags`, `groupByTag`, `DEFAULT_TAG`, `TagFlaw`, `TagGroup` |

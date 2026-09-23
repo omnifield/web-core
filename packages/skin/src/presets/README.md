@@ -39,6 +39,18 @@ await client.replace(PRESET_KIND.form, "button-primary", nextForm);
 await client.remove(PRESET_KIND.form, "button-primary");
 ```
 
+📇 **Список для выбора глазами — без тел записей.** `listHeaders` спрашивает у службы только общие
+поля записи (`id`/`label`/`name`/`kind`/`savedAt`), ни одного поля содержимого — цена такого списка
+не зависит от того, насколько тяжёлые в нём записи. Тело выбранной записи берётся вторым,
+отдельным обращением (`get`), и у двух обращений могут быть разные ключи кэша:
+
+```ts
+const heads = await client.listHeaders(PRESET_KIND.content, { component: ["button"] });
+// [{ id: "1", label: "Данные кнопки", name: "button-data", kind: "content", savedAt: "…" }, …]
+
+const chosen = await client.get(PRESET_KIND.content, heads[0]!.name);
+```
+
 **Как источник скина** (обычно передаётся в `makeSkinSwitch`/`SkinProvider`, не зовётся напрямую):
 
 ```ts
@@ -92,6 +104,7 @@ const variants = await variantsOf(client, "button");
 | `createPresetsClient({ url })` | адрес службы раздачи (`/graphql` целиком) |
 | `createPresetsSkinSource({ url, lookup })` | тот же адрес + `PassportLookup` кита |
 | `client.list(kind, { component? })` | вид записи; `component` сужает выдачу до ЛЮБОГО из перечисленных (OR) |
+| `client.listHeaders(kind, { component? })` | то же самое, но в ответ едут заголовки — без содержимого записей |
 | `client.get(kind, name)` | вид + имя записи |
 | `client.save/replace(kind, name, state, label?)` | вид, имя, содержимое (форма своего вида), необязательный ярлык |
 | `client.remove(kind, name)` | вид + имя |
@@ -112,6 +125,12 @@ const variants = await variantsOf(client, "button");
 | `kind` | вид записи (`PRESET_KIND`) |
 | `savedAt` | когда записана — ставит служба, не клиент |
 | `state` | содержимое: `Palette`/`Form`/`Outfit`/`ComponentAssembly`/`ContentState`/`Tag` — по виду |
+
+`PresetHeader` — та же запись без `state`, и `PresetRecord<T>` буквально построен как «заголовок
+плюс содержимое»: все поля выше, кроме последнего, — это и есть заголовок. Отдаёт его `listHeaders`.
+
+📮 Адресные операции спрашивают у службы ОДНУ запись по имени, а не весь список вида: `get` — с её
+содержимым, `replace`/`remove` — заголовком, им нужен только `id`.
 
 `get(kind, name)` — запись либо `undefined` (такой в службе нет, не отказ). `remove(kind, name)` —
 имени нет — уже убрано, тоже не отказ (идемпотентно). `save` кладёт новую запись (уникальность имени

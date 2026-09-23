@@ -15,6 +15,16 @@ function operationOf(call: unknown): string {
   return (/^\s*(?:query|mutation)\s+(\w+)/.exec(body.query))?.[1] ?? "";
 }
 
+function queryOf(call: unknown): string {
+  const body = JSON.parse(String((call as RequestInit).body)) as { query: string };
+  return body.query;
+}
+
+function variablesOf(call: unknown): unknown {
+  const body = JSON.parse(String((call as RequestInit).body)) as { variables: unknown };
+  return body.variables;
+}
+
 describe("createPresetsClient — GraphQL транспорт, PresetRecord<T> наружу без изменений", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -164,14 +174,11 @@ describe("createPresetsClient — GraphQL транспорт, PresetRecord<T> н
     expect(body.variables).toEqual({ kind: "form", component: ["Button", "Card"] });
   });
 
-  it("get() фильтрует список на клиенте одним запросом — второго чтения по id не делает", async () => {
+  it("get() просит у службы запись по имени — один запрос, $name в переменных", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse(200, {
         data: {
-          presets: [
-            { id: "1", label: "A", name: "a", component: "Button", recipe: {}, author: "egor" },
-            { id: "2", label: "B", name: "b", component: "Button", recipe: {}, author: "egor" },
-          ],
+          presets: [{ id: "2", label: "B", name: "b", component: "Button", recipe: {}, author: "egor" }],
         },
       }),
     );
@@ -180,8 +187,38 @@ describe("createPresetsClient — GraphQL транспорт, PresetRecord<T> н
     const found = await client.get(PRESET_KIND.form, "b");
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(operationOf(fetchMock.mock.calls[0]![1])).toBe("ListPresets");
+    expect(variablesOf(fetchMock.mock.calls[0]![1])).toEqual({ kind: "form", name: ["b"] });
     expect(found?.id).toBe("2");
     expect(found?.state).toMatchObject({ name: "b", component: "Button" });
+  });
+
+  it("listHeaders() отдаёт заголовки без state и не просит ни одного поля содержимого", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        data: {
+          presets: [
+            { id: "1", label: "Данные кнопки", name: "button-data", kind: "content", savedAt: "2026-09-23T07:00:00Z" },
+          ],
+        },
+      }),
+    );
+
+    const client = createPresetsClient({ url: URL });
+    const heads = await client.listHeaders(PRESET_KIND.content, { component: ["Button"] });
+
+    expect(operationOf(fetchMock.mock.calls[0]![1])).toBe("ListPresetHeads");
+    expect(queryOf(fetchMock.mock.calls[0]![1])).not.toContain("... on");
+    expect(variablesOf(fetchMock.mock.calls[0]![1])).toEqual({ kind: "content", component: ["Button"] });
+    expect(heads).toEqual([
+      {
+        id: "1",
+        label: "Данные кнопки",
+        name: "button-data",
+        kind: "content",
+        savedAt: "2026-09-23T07:00:00Z",
+      },
+    ]);
   });
 
   it("get() отдаёт undefined, когда имени в списке нет — не отказ", async () => {
@@ -237,6 +274,8 @@ describe("createPresetsClient — GraphQL транспорт, PresetRecord<T> н
     const replaced = await client.replace(PRESET_KIND.outfit, "brand", state, "L");
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(operationOf(fetchMock.mock.calls[0]![1])).toBe("ListPresetHeads");
+    expect(variablesOf(fetchMock.mock.calls[0]![1])).toEqual({ kind: "outfit", name: ["brand"] });
     expect(operationOf(fetchMock.mock.calls[1]![1])).toBe("ReplacePreset");
 
     const body = JSON.parse(String((fetchMock.mock.calls[1]![1] as RequestInit).body)) as {
@@ -289,6 +328,8 @@ describe("createPresetsClient — GraphQL транспорт, PresetRecord<T> н
     await client.remove(PRESET_KIND.outfit, "brand");
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(operationOf(fetchMock.mock.calls[0]![1])).toBe("ListPresetHeads");
+    expect(variablesOf(fetchMock.mock.calls[0]![1])).toEqual({ kind: "outfit", name: ["brand"] });
     expect(operationOf(fetchMock.mock.calls[1]![1])).toBe("DeletePreset");
   });
 
