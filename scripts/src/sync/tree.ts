@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rename, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -51,6 +51,11 @@ export async function layTree(repo: string, worktree: string, target: Target): P
   await rm(folder, { recursive: true, force: true });
   if (!spread.ok) return failed("не вышло разложить файлы в цели", { details: { stderr: spread.stderr } });
 
+  if (target.root) {
+    const lifted = await liftRoot(worktree, target.root);
+    if (!lifted.ok) return failed(`не вышло поднять «${target.root}» в корень цели`, { details: { stderr: lifted.stderr } });
+  }
+
   for (const path of target.ignore) {
     await rm(join(worktree, path), { recursive: true, force: true });
   }
@@ -69,6 +74,25 @@ async function untar(bundle: string, into: string, strip: number): Promise<{ ok:
 
   try {
     await exec("tar", ["-xf", bundle, "-C", into, ...level]);
+    return { ok: true, stderr: "" };
+  } catch (error) {
+    return { ok: false, stderr: (error as { message?: string }).message ?? "" };
+  }
+}
+
+/**
+ * Корневые файлы цели лежат в группе скрытой папкой НАРОЧНО: положи их на своё место в рабочем
+ * дереве — и любая команда, запущенная внутри группы, возьмёт этот корень и заведёт там второе
+ * дерево зависимостей. Разбор — `web-core/ROADMAP.yaml`, `group-is-a-repository-not-a-folder`.
+ */
+async function liftRoot(worktree: string, root: string): Promise<{ ok: boolean; stderr: string }> {
+  const from = join(worktree, root);
+
+  try {
+    for (const entry of await readdir(from)) {
+      await rename(join(from, entry), join(worktree, entry));
+    }
+    await rm(from, { recursive: true, force: true });
     return { ok: true, stderr: "" };
   } catch (error) {
     return { ok: false, stderr: (error as { message?: string }).message ?? "" };

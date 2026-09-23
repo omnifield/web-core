@@ -11,6 +11,8 @@ export interface Target {
   readonly exclude: readonly string[];
   /** Путь, чей префикс снимается при раскладке: его содержимое ложится в КОРЕНЬ цели. */
   readonly strip: string;
+  /** Папка с корневыми файлами цели: её содержимое поднимается в корень, сама она не едет. */
+  readonly root: string;
 }
 
 export interface Targets {
@@ -34,6 +36,7 @@ export async function readTargets(cwd: string, file: string): Promise<Targets> {
       ignore: strings(valueAt(raw, "ignore")),
       exclude: strings(valueAt(raw, "exclude")),
       strip: text(valueAt(raw, "strip")),
+      root: text(valueAt(raw, "root")),
     });
   }
 
