@@ -1,7 +1,7 @@
 import { createAtom } from "@xstate/store";
 import type { Atom, AtomOptions, Observer, ReadonlyAtom, Subscription } from "@xstate/store";
 import { useAtom } from "@xstate/store-solid";
-import { createEffect, createRoot, getOwner, onCleanup, untrack } from "@web-core/solid";
+import { createComputed, createRoot, createSignal, getOwner, onCleanup, untrack } from "@web-core/solid";
 import type { Accessor } from "@web-core/solid";
 import { createSingletonRoot } from "@web-core/solid/rootless";
 
@@ -130,12 +130,37 @@ export function createActionStore<
 }
 
 /**
+ * `absent` — адресовать нечего: активного ключа нет, ячейка дефолтная и запись в неё заглушена.
+ * `initial` — настоящая ячейка, но в неё ещё ни разу не писали. `written` — писали хотя бы раз.
+ */
+export type ActionStoreCellStatus = "absent" | "initial" | "written";
+
+/** Стор, полученный от семьи: тот же `ActionStore` плюс пометка, чью ячейку читаешь и в каком она виде. */
+export interface ActionStoreCell<T, TActions, TSelectors extends SelectorsShape<T>, K>
+  extends ActionStore<T, TActions, TSelectors> {
+  readonly key: Accessor<K | undefined>;
+  readonly status: Accessor<ActionStoreCellStatus>;
+}
+
+/** Опции семьи, у которой начальное значение задано функцией ключа: `empty` — значение ячейки-заглушки. */
+export interface ActionStoreFamilyOptions<T> extends AtomOptions<T> {
+  readonly empty: T;
+}
+
+/**
  * Семья сторов: ключом её зовут либо значением (стор фиксирован), либо Solid-аксессором (стор
- * переезжает вслед за ключом). Разбор обоих режимов — README и FAQ.md.
+ * переезжает вслед за ключом), либо не зовут вовсе — `active()` отдаёт ячейку активного ключа.
+ * Разбор режимов — README и FAQ.md.
  */
 export interface ActionStoreFamily<T, TActions, TSelectors extends SelectorsShape<T>, K> {
-  (key: K): ActionStore<T, TActions, TSelectors>;
-  (key: Accessor<K>): ActionStore<T, TActions, TSelectors>;
+  (key: K | undefined): ActionStoreCell<T, TActions, TSelectors, K>;
+  (key: Accessor<K | undefined>): ActionStoreCell<T, TActions, TSelectors, K>;
+  /** Родить ячейку явной операцией: есть — отдаёт её же, нет — создаёт и наполняет фабрикой ключа. */
+  create(key: K): ActionStoreCell<T, TActions, TSelectors, K>;
+  /** Сделать ячейку активной. Заранее создавать её не обязательно — ячейка рождается при первом обращении. */
+  activate(key: K | undefined): void;
+  /** Ячейка активного ключа: тот же стор, подписка переезжает за активацией. */
+  active(): ActionStoreCell<T, TActions, TSelectors, K>;
 }
 
 /** Объект той же формы, где каждый вызов адресован стору, который актуален в момент вызова. */
@@ -154,13 +179,16 @@ function forwardCalls<TShape extends object>(shape: TShape, target: () => TShape
  * остаётся в `Map` семьи. Почему это живёт здесь, а не ремаунтом поддерева у потребителя, — FAQ.md.
  */
 function storeBoundToKey<T, TActions, TSelectors extends SelectorsShape<T>, K>(
-  storeOf: (key: K) => ActionStore<T, TActions, TSelectors>,
-  key: Accessor<K>,
-): ActionStore<T, TActions, TSelectors> {
+  storeOf: (key: K | undefined) => ActionStoreCell<T, TActions, TSelectors, K>,
+  key: Accessor<K | undefined>,
+): ActionStoreCell<T, TActions, TSelectors, K> {
   const currentStore = () => storeOf(key());
   const shape = untrack(currentStore);
 
-  const facade: ActionStore<T, TActions, TSelectors> = {
+  const facade: ActionStoreCell<T, TActions, TSelectors, K> = {
+    key,
+    status: () => currentStore().status(),
+
     get: () => currentStore().get(),
 
     subscribe(
@@ -169,20 +197,23 @@ function storeBoundToKey<T, TActions, TSelectors extends SelectorsShape<T>, K>(
       complete?: () => void,
     ): Subscription {
       const notify = typeof observerOrNext === "function" ? observerOrNext : observerOrNext.next;
-      const subscribeTo = (store: ActionStore<T, TActions, TSelectors>): Subscription =>
+      const subscribeTo = (store: ActionStoreCell<T, TActions, TSelectors, K>): Subscription =>
         typeof observerOrNext === "function"
           ? store.subscribe(observerOrNext, error, complete)
           : store.subscribe(observerOrNext);
 
-      // Первая подписка — синхронно, до эффекта: между вызовом subscribe и первым прогоном
-      // эффекта читатель иначе пропустил бы изменения текущего стора.
+      // Первая подписка — синхронно, до вычисления: между вызовом subscribe и первым прогоном
+      // читатель иначе пропустил бы изменения текущего стора.
       let subscribed = untrack(key);
       let inner = subscribeTo(storeOf(subscribed));
 
       let disposeRoot = (): void => {};
       createRoot((dispose) => {
         disposeRoot = dispose;
-        createEffect(() => {
+        // Переезд — В ФАЗЕ ВЫЧИСЛЕНИЙ, не эффектом: get/селекторы адресуют стор текущего ключа
+        // синхронно, и подписка обязана успеть туда же до того, как отработает хоть один
+        // читательский эффект. Разбор — FAQ.md.
+        createComputed(() => {
           const next = key();
           if (next === subscribed) return;
           subscribed = next;
@@ -233,16 +264,35 @@ function storeBoundToKey<T, TActions, TSelectors extends SelectorsShape<T>, K>(
  * сравниваются по значению, объекты — по ссылке. Для конечного каталога (имя компонента, id
  * вкладки) это ровно то, что нужно; для составных ключей нужен свой `toKey(k): string` снаружи.
  *
- * Ключ зовут двумя способами. Значением (`familyOf("button")`) — стор фиксирован на всё время
+ * Ключ зовут тремя способами. Значением (`familyOf("button")`) — стор фиксирован на всё время
  * жизни вызывающего. Solid-аксессором (`familyOf(() => params().component)`) — отдаётся тот же
- * `ActionStore`, но подписка переезжает на стор нового ключа сама; состояние прежнего остаётся
- * в `Map` нетронутым. Режимы различаются по `typeof key === "function"`, и цена этого известна:
- * ключ, который сам является функцией, во втором режиме неадресуем.
+ * стор, но подписка переезжает на стор нового ключа сама; состояние прежнего остаётся в `Map`
+ * нетронутым. Без ключа (`familyOf.active()` после `familyOf.activate(key)`) — то же самое, но
+ * ключ семья держит у себя, и читателю знать его не нужно. Режимы различаются по
+ * `typeof key === "function"`, и цена этого известна: ключ, который сам является функцией,
+ * аксессором неадресуем.
+ *
+ * Начальное значение — либо одно на все ячейки, либо функция ключа (`(key) => T`), когда ячейка
+ * при рождении обязана нести то, что считается ИЗ её ключа. Форма-функция заодно снимает общий
+ * объект по ссылке у всех ячеек и требует `options.empty` — значение ячейки-заглушки; на заглушку
+ * фабрика ключа не зовётся, ключа у неё нет.
+ *
+ * Ключ `undefined` (активного ещё нет либо его сняли) адресует ОДНУ дефолтную ячейку — она не
+ * попадает в `Map` и запись в неё заглушена: читается как обычная, `status()` у неё `absent`.
  */
 export function createActionStoreFamily<T, TActions extends Record<string, (...args: never[]) => unknown>, K = string>(
   initialValue: T,
   actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
   options?: AtomOptions<T>,
+): ActionStoreFamily<T, TActions, Record<string, never>, K>;
+export function createActionStoreFamily<
+  T,
+  TActions extends Record<string, (...args: never[]) => unknown>,
+  K = string,
+>(
+  initialValue: (key: K) => T,
+  actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
+  options: ActionStoreFamilyOptions<T>,
 ): ActionStoreFamily<T, TActions, Record<string, never>, K>;
 export function createActionStoreFamily<
   T,
@@ -258,34 +308,97 @@ export function createActionStoreFamily<
 export function createActionStoreFamily<
   T,
   TActions extends Record<string, (...args: never[]) => unknown>,
+  TSelectors extends SelectorsShape<T>,
+  K = string,
+>(
+  initialValue: (key: K) => T,
+  actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
+  selectorsFactory: () => TSelectors,
+  options: ActionStoreFamilyOptions<T>,
+): ActionStoreFamily<T, TActions, TSelectors, K>;
+export function createActionStoreFamily<
+  T,
+  TActions extends Record<string, (...args: never[]) => unknown>,
   TSelectors extends SelectorsShape<T> = Record<string, never>,
   K = string,
 >(
-  initialValue: T,
+  initialValue: T | ((key: K) => T),
   actionsFactory: (helpers: ActionStoreHelpers<T>) => TActions,
   selectorsFactoryOrOptions?: (() => TSelectors) | AtomOptions<T>,
   maybeOptions?: AtomOptions<T>,
 ): ActionStoreFamily<T, TActions, TSelectors, K> {
-  const cache = new Map<K, ActionStore<T, TActions, TSelectors>>();
+  const withSelectors = typeof selectorsFactoryOrOptions === "function";
+  const selectorsFactory = withSelectors ? (selectorsFactoryOrOptions as () => TSelectors) : undefined;
+  const options = withSelectors ? maybeOptions : (selectorsFactoryOrOptions as AtomOptions<T> | undefined);
 
-  function getOrCreate(key: K): ActionStore<T, TActions, TSelectors> {
+  const initialOf = typeof initialValue === "function" ? (initialValue as (key: K) => T) : undefined;
+  if (initialOf !== undefined && !(options !== undefined && "empty" in options)) {
+    throw new Error(
+      "createActionStoreFamily: начальное значение задано функцией ключа — задайте options.empty, значение ячейки-заглушки (ключа ещё нет)",
+    );
+  }
+  const emptyValue = initialOf === undefined ? (initialValue as T) : (options as ActionStoreFamilyOptions<T>).empty;
+
+  const cache = new Map<K, ActionStoreCell<T, TActions, TSelectors, K>>();
+  const [activeKey, setActiveKey] = createSignal<K | undefined>(undefined);
+  let emptyCell: ActionStoreCell<T, TActions, TSelectors, K> | undefined;
+  let activeCell: ActionStoreCell<T, TActions, TSelectors, K> | undefined;
+
+  function createCell(key: K | undefined, value: T, writable: boolean): ActionStoreCell<T, TActions, TSelectors, K> {
+    const [written, setWritten] = createSignal(false);
+
+    const factory = (helpers: ActionStoreHelpers<T>): TActions => {
+      const setState: Atom<T>["set"] = writable
+        ? (next: T | ((prev: T) => T)) => {
+            setWritten(true);
+            helpers.setState(next as T);
+          }
+        : () => {};
+      return actionsFactory({ setState, get: helpers.get });
+    };
+
+    const store =
+      selectorsFactory !== undefined
+        ? createActionStore<T, TActions, TSelectors>(value, factory, selectorsFactory, options)
+        : (createActionStore<T, TActions>(value, factory, options) as ActionStore<T, TActions, TSelectors>);
+
+    return {
+      ...store,
+      key: () => key,
+      status: () => (!writable ? "absent" : written() ? "written" : "initial"),
+    };
+  }
+
+  function getOrCreate(key: K | undefined): ActionStoreCell<T, TActions, TSelectors, K> {
+    if (key === undefined) {
+      if (emptyCell === undefined) emptyCell = createCell(undefined, emptyValue, false);
+      return emptyCell;
+    }
+
     const cached = cache.get(key);
     if (cached !== undefined) return cached;
 
-    const store =
-      typeof selectorsFactoryOrOptions === "function"
-        ? createActionStore(initialValue, actionsFactory, selectorsFactoryOrOptions as () => TSelectors, maybeOptions)
-        : (createActionStore(initialValue, actionsFactory, selectorsFactoryOrOptions as AtomOptions<T> | undefined) as ActionStore<
-            T,
-            TActions,
-            TSelectors
-          >);
-
-    cache.set(key, store);
-    return store;
+    const cell = createCell(key, initialOf === undefined ? (initialValue as T) : initialOf(key), true);
+    cache.set(key, cell);
+    return cell;
   }
 
-  return function storeOf(key: K | Accessor<K>): ActionStore<T, TActions, TSelectors> {
-    return typeof key === "function" ? storeBoundToKey(getOrCreate, key as Accessor<K>) : getOrCreate(key);
-  } as ActionStoreFamily<T, TActions, TSelectors, K>;
+  function storeOf(key: K | undefined | Accessor<K | undefined>): ActionStoreCell<T, TActions, TSelectors, K> {
+    return typeof key === "function"
+      ? storeBoundToKey(getOrCreate, key as Accessor<K | undefined>)
+      : getOrCreate(key as K | undefined);
+  }
+
+  storeOf.create = (key: K): ActionStoreCell<T, TActions, TSelectors, K> => getOrCreate(key);
+
+  storeOf.activate = (key: K | undefined): void => {
+    setActiveKey(() => key);
+  };
+
+  storeOf.active = (): ActionStoreCell<T, TActions, TSelectors, K> => {
+    if (activeCell === undefined) activeCell = storeBoundToKey(getOrCreate, activeKey);
+    return activeCell;
+  };
+
+  return storeOf as ActionStoreFamily<T, TActions, TSelectors, K>;
 }

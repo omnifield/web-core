@@ -1,6 +1,6 @@
 {
   "name": "@web-core/solid",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Solid.js web-core: единственная точка резолва вместо вендора, плюс собственные добавления поверх (первое — mountApp()/#root).",
   "license": "UNLICENSED",
   "type": "module",
@@ -37,7 +37,29 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./web": {
+        "types": "./dist/web/index.d.ts",
+        "default": "./dist/web/index.js"
+      },
+      "./mount": {
+        "types": "./dist/mount/index.d.ts",
+        "default": "./dist/mount/index.js"
+      },
+      "./keyed": {
+        "types": "./dist/keyed/index.d.ts",
+        "default": "./dist/keyed/index.js"
+      },
+      "./rootless": {
+        "types": "./dist/rootless/index.d.ts",
+        "default": "./dist/rootless/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

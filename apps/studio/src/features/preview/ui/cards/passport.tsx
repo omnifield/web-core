@@ -1,12 +1,12 @@
 import { Surface, Typography } from "@web-core/ui";
-import { useComponent } from "#/entities/component";
+import { componentStoreOf } from "#/entities/component";
 
 export function Passport() {
-  const { name } = useComponent();
+  const component = componentStoreOf.active();
 
   return (
     <Surface data-variant="filled">
-      <Typography>{name()}</Typography>
+      <Typography>{component.selectors.name()}</Typography>
     </Surface>
   );
 }

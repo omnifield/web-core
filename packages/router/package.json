@@ -1,6 +1,6 @@
 {
   "name": "@web-core/router",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Роутинг web-core поверх @tanstack/solid-router: одна точка входа вместо вендора, готовый vite-плагин с верным порядком, вкус дефолтов (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",
@@ -32,7 +32,25 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./vite": {
+        "types": "./dist/vite/index.d.ts",
+        "default": "./dist/vite/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./virtual-file-routes": {
+        "types": "./dist/virtual-file-routes/index.d.ts",
+        "default": "./dist/virtual-file-routes/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -50,10 +68,10 @@
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
-    "@web-core/build": "workspace:*",
-    "@web-core/lint": "workspace:*",
     "@tanstack/solid-router": "^1.170.30",
     "@types/node": "^24.10.1",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
     "eslint": "^10.8.1",
     "jsdom": "^30.0.1",
     "solid-js": "^1.9.14",

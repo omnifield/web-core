@@ -1,6 +1,6 @@
 {
   "name": "@web-core/lint",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Машинный контроль кода канонами, независимо от движка проверки: Solid-реактивность (`./eslint`, поверх eslint-plugin-solid) сегодня, кодстиль/импорты (`./biome`) — в работе.",
   "license": "UNLICENSED",
   "type": "module",
@@ -34,7 +34,26 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./eslint": {
+        "types": "./dist/eslint/index.d.ts",
+        "default": "./dist/eslint/index.js"
+      },
+      "./style": {
+        "types": "./dist/style/index.d.ts",
+        "default": "./dist/style/index.js"
+      },
+      "./biome": {
+        "types": "./dist/biome/index.d.ts",
+        "default": "./dist/biome/index.js"
+      },
+      "./biome.json": "./dist/biome/biome.json"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/generate-biome-json.mjs",

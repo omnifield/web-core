@@ -6,7 +6,14 @@ export type { ResourceFetcherInfo, ResourceState } from "./resource.js";
 export { createBoundAtom } from "./bound.js";
 
 export { createActionStore, createActionStoreFamily } from "./action-store.js";
-export type { ActionStore, ActionStoreHelpers } from "./action-store.js";
+export type {
+  ActionStore,
+  ActionStoreCell,
+  ActionStoreCellStatus,
+  ActionStoreFamily,
+  ActionStoreFamilyOptions,
+  ActionStoreHelpers,
+} from "./action-store.js";
 
 // Переопределяет createAsyncAtom из реэкспорта выше — разбор в FAQ.md.
 export function createAsyncAtom(): never {

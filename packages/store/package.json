@@ -1,6 +1,6 @@
 {
   "name": "@web-core/store",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Стейт web-core поверх семьи XState: @xstate/store как zustand-подобное глобальное хранилище, xstate как опциональный слой полноценных стейт-машин (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",
@@ -47,7 +47,37 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./machine": {
+        "types": "./dist/machine/index.d.ts",
+        "default": "./dist/machine/index.js"
+      },
+      "./persist": {
+        "types": "./dist/addons/persist.d.ts",
+        "default": "./dist/addons/persist.js"
+      },
+      "./undo": {
+        "types": "./dist/addons/undo.d.ts",
+        "default": "./dist/addons/undo.js"
+      },
+      "./reset": {
+        "types": "./dist/addons/reset.d.ts",
+        "default": "./dist/addons/reset.js"
+      },
+      "./validate": {
+        "types": "./dist/addons/validate.d.ts",
+        "default": "./dist/addons/validate.js"
+      },
+      "./mutate": {
+        "types": "./dist/addons/mutate.d.ts",
+        "default": "./dist/addons/mutate.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -75,9 +105,9 @@
     }
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@types/node": "^24.10.1",
     "@xstate/solid": "^2.0.0",
     "eslint": "^10.8.1",
     "jsdom": "^30.0.1",

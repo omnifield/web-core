@@ -1,6 +1,6 @@
 {
   "name": "@web-core/skin",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "web-core skin mechanic: model, part-by-part recipe assembly, anatomy-based addressing, CSS generation, and wearing it (switch/connection) — a framework, not a product's own dressing.",
   "license": "UNLICENSED",
   "type": "module",
@@ -58,7 +58,46 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./model": {
+        "types": "./dist/model.d.ts",
+        "default": "./dist/model.js"
+      },
+      "./flat": {
+        "types": "./dist/flat.d.ts",
+        "default": "./dist/flat.js"
+      },
+      "./editor": {
+        "types": "./dist/editor.d.ts",
+        "default": "./dist/editor.js"
+      },
+      "./presets": {
+        "types": "./dist/presets.d.ts",
+        "default": "./dist/presets.js"
+      },
+      "./wear": {
+        "types": "./dist/wear.d.ts",
+        "default": "./dist/wear.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      },
+      "./tags": {
+        "types": "./dist/tags.d.ts",
+        "default": "./dist/tags.js"
+      },
+      "./tools": {
+        "types": "./dist/tools.d.ts",
+        "default": "./dist/tools.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",
@@ -76,7 +115,7 @@
     "@zag-js/anatomy": "^1.43.1"
   },
   "peerDependencies": {
-    "@web-core/style": "^0.1.0",
+    "@web-core/style": "workspace:^",
     "postcss": "^8.5.14",
     "postcss-nested": "^7.0.2",
     "solid-js": "^1.9.14"

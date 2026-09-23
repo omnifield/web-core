@@ -1,6 +1,6 @@
 {
   "name": "@web-core/feeder",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Фундамент слоя interfaces: сводит @web-core/generators и @web-core/io в переиспользуемый UI настройки/загрузки данных для более чем одного приложения. Функциональность не спроектирована — пока только каркас пакета и плейсхолдер.",
   "license": "UNLICENSED",
   "type": "module",
@@ -18,7 +18,14 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "solid": "./dist/index.jsx",
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",

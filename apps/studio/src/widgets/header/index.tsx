@@ -14,7 +14,7 @@ import {
   SegmentGroupItemText,
 } from "@web-core/ui";
 import { Auth } from "#/entities/user";
-import { ThemeSwitch } from "#/shared/ui/theme-switch";
+import { ThemeSwitch } from "#/entities/outfit";
 
 const SCREENS = [
   { value: "lab", label: "Lab", to: "/lab/{-$component}", prefix: "/lab" },

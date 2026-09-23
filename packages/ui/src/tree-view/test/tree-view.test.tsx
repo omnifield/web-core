@@ -3,6 +3,7 @@ import { RenderTree } from "@web-core/assembly/render";
 import { admits, baseAssemblyOf } from "@web-core/skin/editor";
 import type { PassportAssembly, PassportEditorInfo } from "@web-core/skin/editor";
 import type { ComponentPassport } from "@web-core/skin/model";
+import { createSignal } from "solid-js";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -229,6 +230,52 @@ describe('tree view "base" — the real consumer path: instanceOf feeds the root
 
     const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
     expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "2", "1"]);
+  });
+});
+
+describe('tree view "base" — a leaf that GAINS its first child turns into a real branch', () => {
+  it("swaps the wrapper on live data: the node opens, its child renders, nothing falls in the console", async () => {
+    const { registry, instanceOf } = kitComponentRenderer();
+    const [data, setData] = createSignal<Data>({ items: [{ value: "a", label: "Alpha" }] });
+
+    const failures: unknown[][] = [];
+    const console_error = vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+      failures.push(args);
+    });
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(
+      () => <RenderTree registry={registry} tree={instanceOf("tree-view", {}, "base", data())} data={data()} />,
+      host,
+    );
+
+    const itemOf = () => host.querySelector('[data-scope="tree-view"][data-part="item"]')!;
+    const controlsOf = () => [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+
+    await vi.waitFor(() => {
+      if (controlsOf().length === 0) throw new Error("suspended tree not resolved yet");
+    });
+    // Лист: ветка ставит на узел data-state, лист — нет.
+    expect(itemOf().getAttribute("data-state")).toBeNull();
+
+    setData({
+      items: [{ value: "a", label: "Alpha", children: [{ value: "a1", label: "Alpha One" }] }],
+    });
+
+    await vi.waitFor(() => {
+      if (itemOf().getAttribute("data-state") === null) throw new Error("still a leaf");
+    });
+    expect(itemOf().getAttribute("data-state")).toBe("closed");
+
+    (controlsOf()[0] as HTMLElement).click();
+    await Promise.resolve();
+
+    expect(itemOf().getAttribute("data-state")).toBe("open");
+    expect(controlsOf().map((node) => node.textContent)).toEqual(["Alpha", "Alpha One"]);
+    expect(failures).toEqual([]);
+
+    console_error.mockRestore();
   });
 });
 

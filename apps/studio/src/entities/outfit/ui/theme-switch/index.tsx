@@ -5,7 +5,6 @@
 // сам не владеет.
 
 import { createEffect, createMemo, For, Show } from "solid-js";
-import { PresetsDown, PresetsRefused } from "@web-core/skin/presets";
 import { useSkin } from "@web-core/skin/solid";
 import {
   Select,
@@ -22,15 +21,8 @@ import {
   Toggle,
   ToggleIndicator,
 } from "@web-core/ui";
-import { componentStore } from "#/entities/component";
-
-/** Причина отказа — короткой строкой человеку, не в отладчик. */
-function reasonOf(cause: unknown): string {
-  if (cause instanceof PresetsDown)
-    return `${cause.message} · служба раздачи не отвечает`;
-  if (cause instanceof PresetsRefused) return cause.message;
-  return cause instanceof Error ? cause.message : String(cause);
-}
+import { reasonOf } from "../../lib";
+import { outfitStore } from "../../model";
 
 interface SkinItem {
   readonly value: string;
@@ -48,7 +40,7 @@ export function ThemeSwitch() {
   const outfitName = createMemo(() => skin.worn()?.name);
 
   createEffect(() => {
-    componentStore.actions.setOutfit(outfitName());
+    outfitStore.actions.setOutfit(outfitName());
   });
 
   const trouble = (): string | null => {

@@ -1,6 +1,6 @@
 {
   "name": "@web-core/query",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Данные из сети web-core поверх @tanstack/solid-query: одна точка входа вместо вендора, готовый QueryClient с дефолтами (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",
@@ -37,11 +37,33 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./persist": {
+        "types": "./dist/persist/index.d.ts",
+        "default": "./dist/persist/index.js"
+      },
+      "./graphql": {
+        "types": "./dist/graphql/index.d.ts",
+        "default": "./dist/graphql/index.js"
+      },
+      "./rest": {
+        "types": "./dist/rest/index.d.ts",
+        "default": "./dist/rest/index.js"
+      }
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json",
     "lint": "eslint . && pnpm run typecheck",
     "test": "vitest run"
   },
@@ -57,9 +79,9 @@
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@types/node": "^24.10.1",
     "eslint": "^10.8.1",
     "graphql": "^16.14.2",
     "jsdom": "^30.0.1",

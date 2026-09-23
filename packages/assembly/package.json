@@ -1,6 +1,6 @@
 {
   "name": "@web-core/assembly",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "description": "Механика сборки web-core: дерево узлов, реестр из паспортов, правки, проверка вложенности и отрисовка по данным. Одна на редактор скинов и конструктор страниц (PWEB-23).",
   "license": "UNLICENSED",
   "type": "module",
@@ -23,7 +23,18 @@
     "README.md"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./render": {
+        "solid": "./dist/render.jsx",
+        "types": "./dist/render/index.d.ts",
+        "default": "./dist/render.js"
+      }
+    }
   },
   "scripts": {
     "build": "vite build",
@@ -68,9 +79,9 @@
     "package.json, не по тому, что реально попадает в собранный код после tsc."
   ],
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@types/node": "^24.10.1",
     "eslint": "^10.8.1",
     "jsdom": "^30.0.1",
     "solid-js": "^1.9.14",

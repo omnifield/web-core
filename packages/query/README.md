@@ -40,8 +40,8 @@
 | Данные из сети | `@web-core/query`         | весь `@tanstack/solid-query` (`useQuery`/`createQuery`, `useMutation`/`createMutation`, `useInfiniteQuery`/`createInfiniteQuery`, `useQueries`/`createQueries`, `QueryClient`, `QueryClientProvider`, `queryOptions`, `infiniteQueryOptions`, `mutationOptions`, `useIsFetching`, `useIsMutating`, …), весь `@tanstack/query-core` реэкспортом, `defineQuery` (⚠️ эксперимент, см. ниже) |
 | Devtools       | `@web-core/query/devtools` | `SolidQueryDevtools`, `SolidQueryDevtoolsPanel`                                                                                                                                                                               |
 | Persist        | `@web-core/query/persist`  | `persistQueryClient`, `createSyncStoragePersister`, весь `@tanstack/query-persist-client-core` (`persistQueryClientRestore`, `persistQueryClientSave`, `persistQueryClientSubscribe`, ретрай-стратегии, `createPersister`)  |
-| GraphQL        | `@web-core/query/graphql`  | `createGraphQLClient` (основной способ) + `graphqlRequest`/`gql`/`ClientError` (внутренности движка — см. ниже)                                                                                                               |
-| REST           | `@web-core/query/rest`     | `createRestClient` (основной способ) + `restRequest`/`rawRestRequest`/`HTTPError`/`RestResult` (внутренности движка — см. ниже)                                                                                                |
+| GraphQL        | `@web-core/query/graphql`  | `createGraphQLClient` (основной способ) + `RequestHeaders` + `graphqlRequest`/`gql`/`ClientError` (внутренности движка — см. ниже)                                                                                            |
+| REST           | `@web-core/query/rest`     | `createRestClient` (основной способ) + `RequestHeaders`/`RestRequestInit` + `restRequest`/`rawRestRequest`/`HTTPError`/`RestResult` (внутренности движка — см. ниже)                                                           |
 
 ⚠️ **`graphqlRequest`/`restRequest` — внутренности движка, не рекомендуемый способ.** Оба берут
 url/эндпоинт параметром на КАЖДЫЙ вызов, а не один раз при старте — значит вызывающий код либо
@@ -55,6 +55,10 @@ url/эндпоинт параметром на КАЖДЫЙ вызов, а не 
 `export * from "@tanstack/solid-query"` вместе с обоснованием полноты реэкспорта),
 `src/devtools/index.ts`, `src/persist/index.ts`, `src/graphql/index.ts`, `src/rest/index.ts` —
 каждый подпуть в своей папке, по образцу `@web-core/store`'s `./machine`.
+
+🧷 `pnpm typecheck` гоняет ДВА проекта: `tsconfig.json` (весь пакет, с `DOM`) и `tsconfig.node.json`
+(только `src/graphql`+`src/rest`, база `@web-core/build/tsconfig-node` — без `DOM`). Второй держит
+границу: транспорт обязан типизироваться у серверного потребителя, а не только в браузерном.
 
 <h2 id="использование">🚀 Использование</h2>
 
@@ -281,8 +285,9 @@ query.data / query.isPending / query.isError
 | `new QueryClient(config?)`        | `QueryClientConfig` — `{ defaultOptions?, queryCache?, mutationCache? }`                         |
 | `persistQueryClient(options)`     | `{ queryClient, persister, buster?, maxAge?, dehydrateOptions?, hydrateOptions? }`                |
 | `createSyncStoragePersister(options)` | `{ storage, key?, throttleTime?, serialize?, deserialize?, retry? }`                          |
-| `createGraphQLClient(config)`     | `{ url: string, headers?: HeadersInit }` — один раз при старте, дальше держит их сам             |
-| `createRestClient(config)`        | `{ baseUrl: string, headers?: HeadersInit }` — один раз при старте, дальше держит их сам          |
+| `createGraphQLClient(config)`     | `{ url: string, headers?: RequestHeaders }` — один раз при старте, дальше держит их сам           |
+| `createRestClient(config)`        | `{ baseUrl: string, headers?: RequestHeaders }` — один раз при старте, дальше держит их сам       |
+| `RequestHeaders` (оба транспорта) | `Readonly<Record<string, string>>` — карта «имя → значение», не глобал `HeadersInit` из `DOM`: транспорт зовут и из серверных пакетов, типизированных без этой библиотеки |
 | `<graphqlApi>.request(document, variables?)` | результат `createGraphQLClient(...)`'s поле — url/headers уже внутри клиента               |
 | `<restApi>.request(path, init?)`  | результат `createRestClient(...)`'s поле — `init?: RequestInit & { json?: unknown }`, per-call `headers` перекрывают клиентские по имени |
 | `<restApi>.raw(path, init?)`      | тот же вход, что и `.request`, но отдаёт `response`+`data` и на успехе тоже — см. "Выход"          |

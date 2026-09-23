@@ -1011,6 +1011,71 @@ categories:
           оставлен в роадмапе как факт (что предполагалось, почему не понадобилось), не удалён
           молча.
 
+  - category: Поставка наружу
+    items:
+      - id: peer-style-range-pinned-by-hand
+        type: bug
+        status: Done
+        priority: High
+        milestone: null
+        name: "`@web-core/style` в peerDependencies записан диапазоном `^0.1.0` — установка пакета у потребителя падает"
+        description: |
+          Найдено architect'ом 2026-09-22 при первой реальной публикации пакетов в реестр. Симптом
+          виден только СНАРУЖИ монорепозитория: в чистом проекте `npm i @web-core/ui` обрывается —
+          `No matching version found for @web-core/style@^0.1.0`, потому что `@web-core/style`
+          давно уехал на `0.2.0`. Внутри репозитория это невидимо в принципе: `devDependencies`
+          того же пакета держат `@web-core/style: workspace:*`, симлинк подставляет соседа, и
+          диапазон в `peerDependencies` никто не проверяет.
+
+          Причина не в самой цифре, а в способе записи. `pnpm version -r` (механика выпуска,
+          заведённая тем же заходом — `versioning` в `pnpm-workspace.yaml`) отказывается собрать
+          план выпуска и называет её прямо:
+
+          ```
+          [ERR_PNPM_VERSIONING_INTERNAL_RANGE] Package @web-core/skin declares the internal
+          dependency @web-core/style in peerDependencies as "^0.1.0". Internal dependencies must
+          use the workspace: protocol so that dependency ranges never need rewriting at release
+          time.
+          ```
+
+          То есть ручной диапазон на СВОЙ пакет — это обещание, которое некому пересматривать при
+          подъёме версии соседа: он расходится молча и всплывает у того, кто пакет ставит, а не у
+          того, кто его выпускает.
+
+          Что решить: записать зависимость `workspace:`-протоколом (`workspace:^` — при публикации
+          подменяется реальной версией пакета на момент выпуска, тем же механизмом, каким это уже
+          происходит с `dependencies`). Проверить заодно, нет ли в пакете других ручных диапазонов
+          на `@web-core/*` — сверка по репозиторию на момент находки дала ровно одно расхождение,
+          это, но проверка стоит одной команды.
+
+          Блокирует выпуск ВСЕХ пакетов: пока план выпуска не собирается, `pnpm version -r` не
+          отработает ни для одного из них — группа выпускается вместе (`versioning.fixed`).
+
+          Воспроизведение: `pnpm version -r --dry-run` из корня.
+
+          СДЕЛАНО (2026-09-22). Одна строка в `package.json`: `peerDependencies` →
+          `"@web-core/style": "workspace:^"`. Вторая половина заявки («нет ли других ручных
+          диапазонов на `@web-core/*`») проверена грепом по `packages/`/`interfaces/`/`apps/`/
+          `backend/`/`products/` — совпадение ровно одно, это; больше в репозитории ручных
+          диапазонов на свои пакеты нет. `pnpm-lock.yaml` не изменился: старого диапазона в нём не
+          было вовсе (peer на свой же пакет резолвился симлинком через `devDependencies`).
+
+          Подмена при выпуске проверена не по доке, а эмпирически — доку pnpm про workspace-протокол
+          (pnpm.io/workspaces, сверено 2026-09-22) поле `peerDependencies` вообще не упоминает, там
+          только `dependencies`. `pnpm pack` пакета и разбор манифеста из тарбола:
+          `peerDependencies["@web-core/style"]` = `^0.2.0` (реальная версия соседа на момент
+          упаковки), то есть преобразование на `peerDependencies` распространяется.
+
+          Проверено: воспроизведение из заявки (`pnpm version -r --dry-run` из корня) больше не
+          падает — план выпуска собирается, `ERR_PNPM_VERSIONING_INTERNAL_RANGE` нет. `lint`/
+          `typecheck`/`test` (182/182)/`build` пакета — зелёные (предупреждения
+          `treating it as an external dependency` предсуществующие, штатное поведение
+          `externalizeDependencies`).
+
+          Версия пакета не поднималась — это architect при публикации. Содержимое поставки правка не
+          меняет (ни одного файла в `dist`, только запись зависимости в манифесте), но манифест
+          уезжает потребителю, поэтому по каденсу репозитория это патч.
+
   - category: Открытое
     items:
       - id: agent-tooling-by-the-book

@@ -331,7 +331,9 @@ function FeedPreset(props: { component: string }) {
 🔑 Ключ зовут двумя способами. **Значением** — как выше, стор фиксирован на всё время жизни
 вызывающего. **Solid-аксессором** — когда ключ приходит из маршрута и меняется, пока компонент
 смонтирован: наружу тот же `ActionStore`, но подписка переезжает на стор нового ключа сама,
-поддерево не пересоздаётся, а состояние прежнего ключа остаётся в `Map` нетронутым:
+поддерево не пересоздаётся, а состояние прежнего ключа остаётся в `Map` нетронутым. Переезд
+происходит ТЕМ ЖЕ тактом, что и смена ключа: `key()`, `get()`, `selectors` и `use()` меняются
+вместе, кадра «новый ключ, старые данные» читатель не видит:
 
 ```tsx
 function FeedManual() {
@@ -345,6 +347,64 @@ function FeedManual() {
 Режимы различаются по `typeof key === "function"` — значит ключ, который сам является функцией,
 аксессором адресовать нельзя. Когда ремаунт поддерева нужен намеренно (внутри некооперативное
 состояние, которое проще пересоздать) — это `<Show keyed>`, см. `EXAMPLES.md`, пример 6a.
+
+🎯 **Третий способ — не звать ключ вовсе.** Семья держит активный ключ у себя: `family.activate(key)`
+объявляет ячейку активной (создавать её заранее не нужно), `family.active()` отдаёт тот же
+`ActionStore`, привязанный к активному ключу реактивно — ровно как в аксессорном режиме. Читателю
+имя ключа при этом не нужно знать вообще:
+
+```tsx
+// маршрут — единственное место, где имя вообще произносится
+function ComponentRoute(props: { component: string }) {
+  createEffect(() => {
+    feedStoreOf.create(props.component); // сперва собрать ячейку…
+    feedStoreOf.activate(props.component); // …и только потом показать её всем
+  });
+  return <FeedPanel />;
+}
+
+// панель имени не знает и не получает его пропом
+function FeedPanel() {
+  const store = feedStoreOf.active();
+  return <p>{JSON.stringify(store.use((state) => state.feedData)())}</p>;
+}
+```
+
+🏷️ Стор от семьи несёт две пометки — `key()` (чью ячейку читаешь) и `status()`:
+
+| `status()` | Когда                                                              |
+| ---------- | ------------------------------------------------------------------ |
+| `absent`   | активного ключа нет (`active()` до `activate`, либо `activate(undefined)`) |
+| `initial`  | ячейка настоящая, но в неё ещё ни разу не писали                    |
+| `written`  | в ячейку писали хотя бы раз                                         |
+
+Ключ `undefined` адресует ОДНУ дефолтную ячейку — общую на семью, в `Map` она не попадает.
+Читается она как обычная (`use`/`get`/`selectors` работают), но **запись в неё заглушена**:
+`actions` отрабатывают вхолостую, состояние остаётся тем, что дало начальное значение. Ничего не
+падает и не копится — заметить это можно по `status() === "absent"`.
+
+🌱 **Начальное значение — либо одно на все ячейки, либо функция ключа.** Форма `(key) => T` нужна,
+когда ячейка при рождении обязана нести то, что считается ИЗ её ключа; заодно у каждой ячейки
+получается свой объект, а не один общий по ссылке. У ячейки-заглушки ключа нет — фабрика на неё не
+зовётся, её значение объявляется рядом, `options.empty` (без него семья с фабрикой не собирается):
+
+```ts
+export const feedStoreOf = createActionStoreFamily<FeedState, { setFeedData(value: unknown): void }, string>(
+  (key) => ({ passport: passportOf(key) }), // ключ здесь всегда настоящий
+  ({ setState }) => ({
+    setFeedData(value) {
+      setState((state) => ({ ...state, feedData: value }));
+    },
+  }),
+  { empty: { passport: undefined } },
+);
+```
+
+🐣 **Рождение ячейки — операцией, а не побочным эффектом чтения.** `family.create(key)` идемпотентна:
+ячейка есть — отдаёт её же, нет — создаёт и наполняет фабрикой ключа. Нужна там, где порядок важен:
+собрать ячейку и только потом активировать, чтобы `active()` ни на один кадр не смотрел на
+несобранную. Обращение по ключу (`family(key)`) ячейку тоже родит — но читается как чтение, а не как
+намерение.
 
 Ленивое создание + кэш (`Map<K, ActionStore<...>>`) под капотом: `actionsFactory`/`selectorsFactory`
 вызываются один раз на первое обращение к ключу, дальше — тот же инстанс. Без политики вытеснения
@@ -451,6 +511,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | Настройка                                          | Где                                                              | Тип                                               | По умолчанию              |
 | -------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- | ------------------------- |
 | `compare`                                          | `createAtom`/`createResourceAtom`/`createReducerAtom`, `options` | `(prev: T, next: T) => boolean`                   | `Object.is`               |
+| `empty`                                            | `createActionStoreFamily`, `options` (только с фабрикой ключа)   | `T`                                               | обязательное              |
 | `schemas`                                          | `createStore`, `definition.schemas`                              | `{context?, events?, emitted?}` (Standard Schema) | —                         |
 | `strategy`                                         | `persist`, `options.strategy`                                    | `"snapshot" \| "event"`                           | `"snapshot"`              |
 | `name`                                             | `persist`, `options.name`                                        | `string`                                          | обязательное              |
@@ -506,7 +567,7 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createResourceAtom` с ключом  | `(source: Accessor<Key>, fetcher: (key, info: { signal }) => Data \| Promise<Data>, options?)`                                                     |
 | `createBoundAtom`              | `(source: Accessor<T>, options?: AtomOptions<T>)`                                                                                                  |
 | `createActionStore`            | `(initialValue: T, actionsFactory: (helpers: {setState, get}) => TActions, options?: AtomOptions<T>)`, либо с третьим `selectorsFactory: () => TSelectors` перед `options` — селектор `(state) => R` даёт `store.selectors.x()`, `(state, ...args) => R` даёт `store.selectors.x(...args)` |
-| `createActionStoreFamily`      | те же аргументы, что у `createActionStore` — отдаёт не стор, а семью: `(key: K \| Accessor<K>) => ActionStore<T, TActions, TSelectors>`                                                                        |
+| `createActionStoreFamily`      | те же аргументы, что у `createActionStore`, но `initialValue` можно отдать и фабрикой ключа (`(key: K) => T`, тогда `options.empty` обязателен) — отдаёт не стор, а семью: `(key: K \| undefined \| Accessor<K \| undefined>) => ActionStoreCell<…>` плюс `create(key)`/`activate(key)`/`active()` |
 | `store.send`                   | `{ type, ...payload }`                                                                                                                             |
 | `store.trigger.<type>`         | `payload`                                                                                                                                          |
 | `store.can.<type>`             | `payload`                                                                                                                                          |
@@ -520,7 +581,8 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `useAtom` / `useSelector`             | аксессор `() => T`                                                                                           |
 | `createResourceAtom`                  | `ResourceState<Data, Err> = { status: "pending" } \| { status: "done", data } \| { status: "error", error }` |
 | `createActionStore`                   | `ActionStore<T, TActions, TSelectors?> = ReadonlyAtom<T> & { actions, selectors, use(selector?) }` — `.set()` не публичный |
-| `createActionStoreFamily`             | `(key: K) => ActionStore<...>` — ленивая, с кэшем по ключу; `(key: Accessor<K>) => ActionStore<...>` — тот же стор наружу, подписка переезжает за ключом |
+| `createActionStoreFamily`             | `(key: K) => ActionStoreCell<...>` — ленивая, с кэшем по ключу; `(key: Accessor<K>) => ActionStoreCell<...>` — тот же стор наружу, подписка переезжает за ключом; `active()` — то же самое по активному ключу семьи |
+| `ActionStoreCell`                     | `ActionStore<T, TActions, TSelectors> & { key: Accessor<K \| undefined>, status: Accessor<"absent" \| "initial" \| "written"> }` |
 | `store.can.<type>`                    | `boolean`                                                                                                    |
 
 <h2 id="сборки">🏗️ Сборки</h2>
@@ -561,6 +623,22 @@ setKit(kit: Kit) { // Kit.tags: readonly string[]
 | `createActionStoreFamily`, ключ аксессором — запись и чтение   | `actions`/`selectors` адресуют стор текущего ключа                  | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, ключ значением рядом с сигналом     | на смену сигнала такой стор не реагирует — как и раньше             | `test/action-store.test.tsx` |
 | `createActionStoreFamily`, переезд и размонтирование           | подписка на прежний ключ снята, читателя он больше не дёргает        | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, начальное значение функцией ключа    | ячейка при рождении несёт посчитанное из своего ключа                | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, начальное значение — свой объект     | правка одной ячейки не видна в другой, общей ссылки нет              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, заглушка и фабрика ключа             | на заглушку фабрика не зовётся, её значение — `options.empty`        | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, фабрика без `options.empty`          | семья не собирается вовсе — ошибка на месте объявления               | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create(key)`                        | ячейка рождается операцией и наполняется фабрикой ключа              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create` повторно                    | идемпотентна — тот же инстанс, состояние не пересобрано              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `create` + `activate`                | «сперва собрать, потом активировать» — `active()` видит наполненную  | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, активация и `use()`                  | `use()` переезжает тем же тактом, что `key`/`get`/селекторы          | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, ключ аксессором и `use()`             | тот же один проход, без кадра со старыми данными                     | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, цепочка активаций                    | значение не отстаёт от ключа ни на один проход                       | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `active()` до активации              | дефолтная ячейка, `status()` — `absent`, `key()` — `undefined`       | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, запись в дефолтную ячейку            | заглушена, состояние остаётся начальным                              | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `activate` + `active()`              | стор переезжает на ячейку ключа, записи доходят, прежняя цела        | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `active()` в реальном рендере        | активация меняет данные и `status()`, тело компонента отработало один раз | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `activate(undefined)`                | возврат к дефолтной ячейке, состояние прежнего ключа цело            | `test/action-store.test.tsx` |
+| `createActionStoreFamily`, `status()` по ячейке                 | `initial` до первой записи, `written` после                          | `test/action-store.test.tsx` |
 | `persistAtom` + localStorage                              | гидратация при вызове, запись при `.set()`                        | `test/persist.test.tsx`      |
 | `persistAtom` + `createJSONStorage(() => sessionStorage)` | тот же `persistAtom`, локал и сешн не пересекаются                | `test/persist.test.tsx`      |
 | `mutate`                                                   | recipe мутирует draft, наружу — новое значение, старое не тронуто | `test/mutate.test.tsx`       |
