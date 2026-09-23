@@ -8,9 +8,13 @@
     "lint": "FORCE_COLOR=0 nx run-many -t lint -p '@web-core/*'",
     "typecheck": "FORCE_COLOR=0 nx run-many -t typecheck -p '@web-core/*'",
     "graph": "nx graph",
-    "nx": "nx"
+    "nx": "nx",
+    "release": "nx release",
+    "release:publish": "nx release publish",
+    "plan": "nx release plan"
   },
   "devDependencies": {
+    "@nx/js": "23.1.1",
     "nx": "23.1.1"
   }
 }

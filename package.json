@@ -10,14 +10,15 @@
     "dev": "nx run-many -t dev -p '@web-core/*' --parallel=10",
     "graph": "nx graph",
     "nx": "nx",
-    "release": "pnpm -C web-core --filter @web-core/release release",
-    "change": "pnpm -C web-core change",
+    "release": "pnpm -C web-core exec nx release",
     "sync": "pnpm --filter @web-core/scripts sync",
     "sync:targets": "pnpm --filter @web-core/scripts sync targets",
     "sync:webcore": "pnpm --filter @web-core/scripts sync send work-webcore",
-    "sync:webcore:dry": "pnpm --filter @web-core/scripts sync send work-webcore --dry-run"
+    "sync:webcore:dry": "pnpm --filter @web-core/scripts sync send work-webcore --dry-run",
+    "plan": "pnpm -C web-core exec nx release plan"
   },
   "devDependencies": {
+    "@nx/js": "23.1.1",
     "nx": "23.1.1"
   }
 }

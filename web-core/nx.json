@@ -15,6 +15,19 @@
       "{workspaceRoot}/nx.json"
     ]
   },
+  "release": {
+    "projects": ["@web-core/*", "!@web-core/release"],
+    "projectsRelationship": "fixed",
+    "versionPlans": true,
+    "version": {
+      "generatorOptions": {
+        "specifierSource": "version-plans"
+      }
+    },
+    "changelog": {
+      "projectChangelogs": true
+    }
+  },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
