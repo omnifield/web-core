@@ -35,7 +35,7 @@ CSS — плюс **Solid-обвес** (`cn`, `createStyle`, реэкспорт `
 
 | Часть | Адрес | Экспортирует |
 |---|---|---|
-| Ядро (значения) | `@web-core/style` | `buildScale`, `buildAlphaScale`, `buildCategorySeeds`, `buildScrim`, `AXES`, `axisOf`, `CONTRAST_PROMISES`, `NO_PROMISE`, `CATEGORY_LIGHTNESS`, `CATEGORY_CHROMA`, `CATEGORY_TELLING`, `CATEGORY_TELLING_LIMIT`, `CATEGORY_TELLING_MARGIN`, `CATEGORY_NO_TELLING`, `SCALE_STEPS`, `STEP_PURPOSE`, `STEP_PURPOSE_CLASS`, `DERIVED_SCALES`, `DERIVED_TOKENS`, `FIXED_TOKENS`, `GRID_STEP`, `GRID_NOTE`, `ROUND_SUPPORT_TEST`, `ROUND_FALLBACK_NOTE`, `DENSITY_TOKEN`, `DENSITY_DEFAULT`, `DENSITY_FLOOR`, `DENSITY_CEILING`, `DENSITY_NOTE`, `SPACE_ROLES`, `LAYERS`, `LAYER_TOKENS`, `BASE_MARKER`, `contrastRatio`, `AA_TEXT`, `AA_NON_TEXT`, `deltaEok`, `OKLAB_JND`, `parseColor`, `tryParseColor`, `formatOklch`, `oklchToSrgb`, `srgbToOklch`, `inSrgbGamut`, `toSrgbGamut`, `NAMED_COLORS`, `NAMED_COLOR_COUNT` + типы (`Axis`, `AxisBound`, `BoundKind`, `ScaleMode`, `ScaleKey`, `ScaleStep`, `ScaleValues`, `AlphaKey`, `AlphaValues`, `ContrastPromise`, `StepPurposeClass`, `DerivedScale`, `DerivedStep`, `SpaceRole`, `SpaceRoleEntry`, `Layer`, `BaseMarker`, `Oklch`, `Srgb`, `ColorRefusal`, `ParsedColor`) |
+| Ядро (значения) | `@web-core/style` | `buildScale`, `buildAlphaScale`, `buildCategorySeeds`, `buildScrim`, `AXES`, `axisOf`, `CONTRAST_PROMISES`, `NO_PROMISE`, `CATEGORY_LIGHTNESS`, `CATEGORY_CHROMA`, `CATEGORY_TELLING`, `CATEGORY_TELLING_LIMIT`, `CATEGORY_TELLING_MARGIN`, `CATEGORY_NO_TELLING`, `SCALE_STEPS`, `STEP_PURPOSE`, `STEP_PURPOSE_CLASS`, `DERIVED_SCALES`, `DERIVED_TOKENS`, `FIXED_TOKENS`, `GRID_STEP`, `GRID_NOTE`, `ROUND_SUPPORT_TEST`, `ROUND_FALLBACK_NOTE`, `DENSITY_TOKEN`, `DENSITY_DEFAULT`, `DENSITY_FLOOR`, `DENSITY_CEILING`, `DENSITY_NOTE`, `SPACE_ROLES`, `SPACE_BANDS`, `LAYERS`, `LAYER_TOKENS`, `BASE_MARKER`, `contrastRatio`, `AA_TEXT`, `AA_NON_TEXT`, `deltaEok`, `OKLAB_JND`, `parseColor`, `tryParseColor`, `formatOklch`, `oklchToSrgb`, `srgbToOklch`, `inSrgbGamut`, `toSrgbGamut`, `NAMED_COLORS`, `NAMED_COLOR_COUNT` + типы (`Axis`, `AxisBound`, `BoundKind`, `ScaleMode`, `ScaleKey`, `ScaleStep`, `ScaleValues`, `AlphaKey`, `AlphaValues`, `ContrastPromise`, `StepPurposeClass`, `DerivedScale`, `DerivedStep`, `SpaceRole`, `SpaceRoleEntry`, `SpaceBand`, `SpaceBandEntry`, `AxisReference`, `Layer`, `BaseMarker`, `Oklch`, `Srgb`, `ColorRefusal`, `ParsedColor`) |
 | Порождение CSS | `@web-core/style/generate` | `baseCss()` — чистая функция, из которой берётся файл ниже |
 | Готовый сброс | `@web-core/style/base.css` | CSS: **только сброс** — `box-sizing`, `margin`, `appearance: none` на кнопках, ни одного кастом-свойства |
 | Solid-обвес | `@web-core/style/solid` | `cn`, `createStyle`, `type VariantFn`, реэкспорт `cva`, `type VariantProps` |
@@ -122,15 +122,38 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 <h2 id="настройки">🎚️ Настройки</h2>
 
 🔧 Настроек-переключателей у ядра нет — оно даёт данные (границы осей, цену ступеней) и чистые
-функции построения. Таблица — реально объявленные границы (`AXES` из `src/engine/axes.ts`) и
+функции построения. Таблица — реально объявленные оси (`AXES` из `src/engine/axes.ts`) и
 именованные опции Solid-обвеса.
 
-| Ось / опция | Где | Пол | Потолок |
+⚖️ **Опора — значение семени, при котором ступени дают числа, сверенные с рынком.** Семя ставит
+наряд, и ставить он волен что угодно: пол и потолок — это границы законного, опора — точка, в
+которой верны обещания зоны. Отклонился наряд от опоры — сместился ВЕСЬ словарь разом, каждая
+роль в ту же сторону и во столько же раз. След сверки по каждой опоре лежит в самих данных
+(`reference.market`), разбор — [`FAQ.md`](./FAQ.md).
+
+| Ось | Опора | Пол | Потолок |
 |---|---|---|---|
-| `--density` | `AXES` | `0.75` — **норма** (WCAG 2.2, 2.5.8) | `1.5` — предел поддержки |
-| `--control-height` | `AXES` | `1.875rem` — **норма** (2.5.8) | границы нет |
-| `--radius` | `AXES` | границы нет | практический предел (пилюля) |
-| `--font-size` · `--space` · `--column` · `--border-width` · `--tracking` | `AXES` | границы нет | границы нет |
+| `--density` | `1` — «сто процентов» | `0.75` — **норма** (WCAG 2.2, 2.5.8) | `1.5` — предел поддержки |
+| `--space` | `0.25rem` | границы нет | границы нет |
+| `--font-size` | `1rem` | границы нет | границы нет |
+| `--control-height` | `2.5rem` — выведена из нормы, не взята у рынка | `1.875rem` — **норма** (2.5.8), подвижен по плотности | границы нет |
+| `--column` | `0.5rem` | границы нет | границы нет |
+| `--radius` | `0.5rem` | границы нет | практический предел (пилюля) |
+| `--rail` | `16rem` | границы нет | границы нет |
+| `--card` | `24rem` | границы нет | границы нет |
+| `--layout` | `80rem` | границы нет | границы нет |
+| `--border-width` | `1px` | границы нет | границы нет |
+| `--tracking` | `0em` | границы нет | границы нет |
+
+📏 **Полосы шкалы интервалов** (`SPACE_BANDS`) — куда роль отступа имеет право попасть при опорном
+семени. Ровно три, по тому же разрезу, каким рынок делит набивку (малый компонент · крупный
+элемент · страница):
+
+| Полоса | При опоре | Что там живёт |
+|---|---|---|
+| `inside` | `0.25rem`…`0.5rem` | внутренности одного компонента: зазоры частей, набивка компактной ячейки |
+| `block` | `0.75rem`…`1.5rem` | набивка самостоятельного элемента: контрол в полный рост, попап, карточка |
+| `page` | `2rem`…`10rem` | расстояния уровня страницы: между виджетами, поля, зазоры раскладки |
 
 | Опция | Где | Тип | По умолчанию |
 |---|---|---|---|
@@ -204,6 +227,9 @@ cn("p-2", "p-4"); // → "p-4" — конфликт утилит разреша�
 | Сборка | Что доказывает | Файл |
 |---|---|---|
 | `SPACE_ROLES` + `DERIVED_SCALES` | каждая роль отступа называет реально существующую ступень шкалы `space`, и у каждой роли есть `means` для человека | `test/spacing-roles.test.ts` |
+| `SPACE_ROLES` + `SPACE_BANDS` + `AXES` | при опорном семени каждая роль попадает в объявленную ей полосу, каждая ступень шкалы — ровно в одну полосу, полосы не перекрываются | `test/spacing-roles.test.ts` |
+| `AXES` + `DERIVED_SCALES` | у каждой оси есть опора, у опоры — след сверки с датой, опора лежит между полом и потолком; опора контрола держит минимум цели 24×24 на всём диапазоне плотности | `test/seed-reference.test.ts` |
+| `DERIVED_SCALES` + `AXES` (`rail`/`card`/`layout`) | три шкалы ширины объявлены с плотностью и сеткой, их ступени попадают в `DERIVED_TOKENS`, `*-full` — фиксированные `100%`, и у каждой шкалы с плотностью есть ось | `test/rail-card-layout.test.ts` |
 | `buildCategorySeeds` + `buildScale` + `deltaEok` + `contrastRatio` | семьдесят две стартовые точки по всему кругу в обоих режимах: заявленная цветность доживает до строки семени (не срезается гамутом), на каждой ступени из `CATEGORY_TELLING` любые две категории расходятся не меньше `OKLAB_JND` вплоть до `CATEGORY_TELLING_LIMIT`, за пределом обещание кончается, текст 11 читается на фонах 1–3 по AA, а снятые обещания (`CATEGORY_NO_TELLING`) не пересекаются с выданными | `test/category-seeds.test.ts` |
 | `createStyle` + `cva` | варианты и дефолты применяются, конфликт утилит разрешается, `class` идёт последним и не удваивается, реактивность доходит до варианта и до `class`, принимает рукописную вариант-функцию | `test/solid/create-style.test.ts` |
 | `cn` (`clsx` + `tailwind-merge`) | конфликт групп разрешается по правому аргументу, неконфликтующие утилиты остаются обе, модификаторы состояний не конфликтуют с базой, произвольные классы проходят насквозь | `test/solid/cn.test.ts` |

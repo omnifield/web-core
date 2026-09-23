@@ -163,6 +163,32 @@ export const DERIVED_SCALES: readonly DerivedScale[] = [
   },
 ];
 
+export type SpaceBand = "inside" | "block" | "page";
+
+export interface SpaceBandEntry {
+  readonly floor: string;
+  readonly ceiling: string;
+  readonly means: string;
+}
+
+export const SPACE_BANDS: Readonly<Record<SpaceBand, SpaceBandEntry>> = {
+  inside: {
+    floor: "0.25rem",
+    ceiling: "0.5rem",
+    means: "внутренности ОДНОГО компонента: зазоры между его частями и набивка компактной ячейки",
+  },
+  block: {
+    floor: "0.75rem",
+    ceiling: "1.5rem",
+    means: "набивка самостоятельного крупного элемента: контрол в полный рост, попап, карточка",
+  },
+  page: {
+    floor: "2rem",
+    ceiling: "10rem",
+    means: "расстояния уровня страницы: между виджетами и секциями, внешние поля, зазоры раскладки",
+  },
+};
+
 export type SpaceRole =
   | "item-stack-gap"
   | "control-inline-gap"
@@ -181,64 +207,79 @@ export type SpaceRole =
 
 export interface SpaceRoleEntry {
   readonly step: string;
+  readonly band: SpaceBand;
   readonly means: string;
 }
 
 export const SPACE_ROLES: Readonly<Record<SpaceRole, SpaceRoleEntry>> = {
   "item-stack-gap": {
     step: "space-1",
+    band: "inside",
     means: "зазор между соседними пунктами списка/группы — секции аккордеона, пункты меню/селекта, вкладки-список, файлы в списке загрузки",
   },
   "listbox-inset": {
     step: "space-1",
+    band: "inside",
     means: "внешняя рамка панели, несущей СВОИ пункты (список меню/селекта, вкладки-панель) — пункты уже несут собственную набивку",
   },
   "control-inline-gap": {
     step: "space-2",
+    band: "inside",
     means: "зазор между иконкой и подписью внутри ОДНОГО интерактивного контрола",
   },
   "compact-padding-block": {
     step: "space-2",
+    band: "inside",
     means: "вертикальная набивка компактного (sm) контрола или ячейки списка/таблицы",
   },
   "compact-padding-inline": {
     step: "space-3",
+    band: "block",
     means: "горизонтальная набивка компактного (sm) контрола или ячейки списка/таблицы — в паре с `control-height-sm`",
   },
   "section-gap": {
     step: "space-3",
+    band: "block",
     means: "зазор между крупными частями ОДНОГО составного компонента — трек/контролы/индикаторы карусели, список/панель вкладок",
   },
   "control-padding-inline": {
     step: "space-4",
+    band: "block",
     means: "горизонтальная набивка крупного самостоятельного контрола (кнопка, триггер аккордеона/селекта/вкладок/поповера/меню/загрузки файла) — в паре с `control-height-md`",
   },
   "content-container-padding": {
     step: "space-4",
+    band: "block",
     means: "набивка контейнера свободного содержимого — попап, поверхность",
   },
   "card-padding": {
     step: "space-6",
+    band: "block",
     means: "набивка карточки — например зона перетаскивания файла",
   },
   "panel-padding": {
     step: "space-8",
+    band: "page",
     means: "зазор между виджетами на странице",
   },
   "modal-padding": {
     step: "space-12",
+    band: "page",
     means: "набивка модалки, зазор между секциями страницы",
   },
   "page-margin-narrow": {
     step: "space-16",
+    band: "page",
     means: "внешние поля страницы на узком экране",
   },
   "page-margin-wide": {
     step: "space-24",
+    band: "page",
     means: "внешние поля страницы на широком экране",
   },
   "layout-gap": {
     step: "space-32",
+    band: "page",
     means: "зазор между крупными блоками лэйаута",
   },
 };

@@ -24,7 +24,7 @@ export {
   type StepPurposeClass,
 } from "./scale.js";
 export { LAYERS, LAYER_TOKENS, type Layer } from "./layer.js";
-export { AXES, axisOf, type Axis, type AxisBound, type BoundKind } from "./axes.js";
+export { AXES, axisOf, type Axis, type AxisBound, type AxisReference, type BoundKind } from "./axes.js";
 export {
   DENSITY_CEILING,
   DENSITY_DEFAULT,
@@ -38,9 +38,12 @@ export {
   GRID_STEP,
   ROUND_FALLBACK_NOTE,
   ROUND_SUPPORT_TEST,
+  SPACE_BANDS,
   SPACE_ROLES,
   type DerivedScale,
   type DerivedStep,
+  type SpaceBand,
+  type SpaceBandEntry,
   type SpaceRole,
   type SpaceRoleEntry,
 } from "./dimension.js";
