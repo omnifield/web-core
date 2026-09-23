@@ -6,6 +6,7 @@ import type {
   ReadablePart,
   ReadablePassport,
 } from "./passport-read.js";
+import type { AssemblyTree } from "./tree.js";
 
 export interface ReadableComponent {
   readonly passport: ReadablePassport;
@@ -13,9 +14,15 @@ export interface ReadableComponent {
   readonly provider?: unknown;
 }
 
+/** Откуда берётся дерево модуля по имени — вход движка, не его собственность: тем же приёмом,
+ * каким сюда подаётся правило допуска (`admits`). Источника нет — узел-ссылка не разрешается
+ * (`module-unknown`), это законное состояние, а не поломка. */
+export type ModuleSource = (name: string) => AssemblyTree | undefined;
+
 export interface Registry {
   readonly components: Readonly<Record<string, ReadableComponent>>;
   admits(part: ReadablePart, candidate: Admission): boolean;
+  moduleOf(name: string): AssemblyTree | undefined;
 }
 
 export interface Address {
@@ -27,6 +34,7 @@ export interface Address {
 
 export interface RegistrySpec extends AdmissionRule {
   readonly components: Readonly<Record<string, ReadableComponent>>;
+  readonly modules?: ModuleSource;
 }
 
 export function createRegistry(spec: RegistrySpec): Registry {
@@ -45,6 +53,7 @@ export function createRegistry(spec: RegistrySpec): Registry {
   return {
     components: spec.components,
     admits: (part, candidate) => spec.admits(part, candidate),
+    moduleOf: (name) => spec.modules?.(name),
   };
 }
 

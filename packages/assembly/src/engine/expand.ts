@@ -1,7 +1,7 @@
 // см. README.md / FAQ.md
 
 import type { Genus, GrowablePassport } from "./passport-read.js";
-import { isContent, isDataBinding, resolveDataBinding } from "./tree.js";
+import { isDataBinding, isElement, resolveDataBinding } from "./tree.js";
 import type { AssemblyElement, AssemblyNode, AssemblyTree, DispatchAction, DynamicValue, NodeId } from "./tree.js";
 
 // Форма шаблона у автора компонента (`@web-core/skin/editor`'s `PassportAssembly*`) несёт
@@ -211,7 +211,7 @@ export function baseAssemblyOf(
         const targetType = declared.includes(node.recur.into) ? addressOf(node.recur.into) : node.recur.into;
         const targetId = children.find((childId) => {
           const target = nodes[childId];
-          return target !== undefined && !isContent(target) && target.type === targetType;
+          return target !== undefined && isElement(target) && target.type === targetType;
         });
 
         if (targetId) {

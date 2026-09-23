@@ -3,7 +3,7 @@
 import { createMemo } from "solid-js";
 
 import { resolveComponent, type Registry } from "../engine/registry.js";
-import { isContent, type AssemblyNode } from "../engine/tree.js";
+import { isElement, type AssemblyNode } from "../engine/tree.js";
 
 /** Часть кита, которой рисуется узел по его собственному `type` — `undefined` у content-узла
  * (те не резолвятся, печатаются значением) и у адреса, которого нет в реестре. `registry` —
@@ -13,7 +13,7 @@ import { isContent, type AssemblyNode } from "../engine/tree.js";
 export function createResolvedComponent(registry: () => Registry, node: () => AssemblyNode | undefined) {
   const resolvedComponent = createMemo(() => {
     const current = node();
-    if (!current || isContent(current)) return undefined;
+    if (!current || !isElement(current)) return undefined;
     return resolveComponent(registry(), current.type);
   });
   return resolvedComponent;
@@ -24,7 +24,7 @@ export function createResolvedComponent(registry: () => Registry, node: () => As
 export function createOuterComponent(registry: () => Registry, node: () => AssemblyNode | undefined) {
   const outerComponent = createMemo(() => {
     const current = node();
-    const composed = current && !isContent(current) ? current.composedInto : undefined;
+    const composed = current && isElement(current) ? current.composedInto : undefined;
     if (composed === undefined) return undefined;
     return resolveComponent(registry(), composed);
   });
@@ -43,7 +43,7 @@ export function assembleComponent(
   Inner: unknown,
   outer: () => unknown,
 ): Assembled {
-  if (!current || isContent(current)) return { kind: "missing", type: "" };
+  if (!current || !isElement(current)) return { kind: "missing", type: "" };
   if (!Inner) return { kind: "missing", type: current.type };
 
   const composed = current.composedInto;

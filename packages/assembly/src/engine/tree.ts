@@ -93,14 +93,36 @@ export interface AssemblyContent {
   readonly meta?: Readonly<Record<string, unknown>>;
 }
 
-export type AssemblyNode = AssemblyElement | AssemblyContent;
+/** Третий род узла: указание на ЧУЖОЕ дерево, а не его копия. Своего поддерева не носит
+ * (`children` пуст всегда) — дерево подставляет отрисовка, спрашивая источник модулей у реестра.
+ * `props`/`bind` здесь не пропы кита, а данные подставленного дерева — тем же приёмом, каким их
+ * получает поддерево self-assembly. Разбор — FAQ.md. */
+export interface AssemblyReference {
+  readonly id: NodeId;
+  readonly module: string;
+  readonly parentId: NodeId | null;
+  readonly children: readonly [];
+  readonly props?: Readonly<Record<string, unknown>>;
+  readonly bind?: Readonly<Record<string, string>>;
+  readonly meta?: Readonly<Record<string, unknown>>;
+}
+
+export type AssemblyNode = AssemblyElement | AssemblyContent | AssemblyReference;
 
 export function isContent(node: AssemblyNode): node is AssemblyContent {
   return "genus" in node;
 }
 
+export function isReference(node: AssemblyNode): node is AssemblyReference {
+  return "module" in node;
+}
+
+export function isElement(node: AssemblyNode): node is AssemblyElement {
+  return !isContent(node) && !isReference(node);
+}
+
 export function outerTypeOf(node: AssemblyNode): string | undefined {
-  return isContent(node) ? undefined : (node.composedInto ?? node.type);
+  return isElement(node) ? (node.composedInto ?? node.type) : undefined;
 }
 
 export interface AssemblyTree {
@@ -108,6 +130,9 @@ export interface AssemblyTree {
     readonly root: NodeId;
     readonly nodes: Readonly<Record<NodeId, AssemblyNode>>;
     readonly providerProps?: Readonly<Record<string, unknown>>;
+    /** Как это дерево зовут в источнике модулей. Без имени узел-ссылка работает, но цикл на
+     * вставке не вычислим: хозяина, до которого дошла бы цепочка ссылок, назвать нечем. */
+    readonly module?: string;
   };
 }
 

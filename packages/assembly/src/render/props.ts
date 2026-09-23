@@ -3,6 +3,7 @@
 import {
   isContent,
   isDataBinding,
+  isElement,
   isEventBinding,
   resolveDataBinding,
   resolveEventBinding,
@@ -42,7 +43,7 @@ export function dispatchHandlersFor(
   data: unknown,
   dispatch: ((event: DispatchedEvent) => void) | undefined,
 ): Record<string, (domEvent: Event) => void> {
-  if (!current || isContent(current) || !current.on) return {};
+  if (!current || !isElement(current) || !current.on) return {};
 
   return Object.fromEntries(
     Object.entries(current.on).flatMap(([domEvent, action]) => {
@@ -90,7 +91,7 @@ export function ownPropsFor(
   dispatch: ((event: DispatchedEvent) => void) | undefined,
   rootProps: Readonly<Record<string, unknown>> | undefined,
 ): Record<string, unknown> {
-  if (!current || isContent(current)) return {};
+  if (!current || !isElement(current)) return {};
 
   return {
     ...current.props,
@@ -100,9 +101,10 @@ export function ownPropsFor(
   };
 }
 
-/** Данные для self-assembly-поддерева — пропы+`bind` узла-ссылки, БЕЗ `on`/`rootProps` (те не
- * данные показа, а связь наружу/состояние показа этого конкретного узла, вложенному дереву они
- * не принадлежат). */
+/** Данные для вложенного дерева — пропы+`bind` узла-ссылки, БЕЗ `on`/`rootProps` (те не данные
+ * показа, а связь наружу/состояние показа этого конкретного узла, вложенному дереву они не
+ * принадлежат). Одна и та же дверь у двух видов ссылки: своё поведение компонента (self-assembly)
+ * и чужой модуль — данные подставленному дереву даёт узел-ссылка, форма у обоих одна. */
 export function innerDataFor(
   current: AssemblyNode | undefined,
   data: unknown,

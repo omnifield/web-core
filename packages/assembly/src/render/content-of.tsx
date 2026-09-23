@@ -2,7 +2,7 @@
 
 import { type Component, createMemo, createRoot, For, getOwner, onCleanup, runWithOwner, untrack, type JSX } from "solid-js";
 
-import { isContent, type AssemblyNode, type NodeId } from "../engine/tree.js";
+import { isElement, type AssemblyNode, type NodeId } from "../engine/tree.js";
 import { takesContent } from "./takes-content.js";
 import type { RenderNodeProps } from "./types.js";
 
@@ -145,7 +145,7 @@ export function createContentOf(
       contentCache.context = callerContext;
       const current = untrack(node);
       const declared =
-        !current || isContent(current) || !takesContent(props.registry, current.type) ? null : (
+        !current || !isElement(current) || !takesContent(props.registry, current.type) ? null : (
           createRoot((dispose) => {
             currentDispose = dispose;
             return (
@@ -172,7 +172,7 @@ export function createContentOf(
         const cur = node();
         if (!cur) return null;
 
-        const entry = !isContent(cur) ? props.slots?.[cur.type] : undefined;
+        const entry = isElement(cur) ? props.slots?.[cur.type] : undefined;
         if (!entry) return cur.children.length === 0 ? null : declared;
 
         const rendered = entry.render(ownProps());

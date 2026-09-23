@@ -3,7 +3,13 @@
 import type { Component, JSX } from "solid-js";
 
 import type { Registry } from "../engine/registry.js";
-import type { AssemblyElement, AssemblyTree, DispatchedEvent, NodeId } from "../engine/tree.js";
+import type {
+  AssemblyElement,
+  AssemblyReference,
+  AssemblyTree,
+  DispatchedEvent,
+  NodeId,
+} from "../engine/tree.js";
 
 export type SlotPlacement = "before" | "after" | "replace";
 
@@ -26,7 +32,9 @@ export interface ErrorFallbackProps {
 
 export interface EditOverlayProps {
   readonly nodeId: NodeId;
-  readonly node: AssemblyElement;
+  /** Ссылка на модуль украшается тем же оверлеем, что и обычный узел — редактору она такой же
+   * выбираемый узел дерева; поэтому род узла здесь называется честно, а не сужается до элемента. */
+  readonly node: AssemblyElement | AssemblyReference;
 }
 
 export interface RenderTreeProps {
@@ -61,5 +69,6 @@ export interface RenderNodeProps {
 export interface RenderSignature {
   type: string | undefined;
   genus: string | undefined;
+  module: string | undefined;
   fallback: Component<FallbackProps>;
 }

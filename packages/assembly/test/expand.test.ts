@@ -10,7 +10,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   baseAssemblyOf,
-  isContent,
+  isElement,
   resolveDataBinding,
   scopedPath,
   type AssemblyElement,
@@ -23,7 +23,7 @@ function passportOf(component: string, root: string, parts: readonly string[]): 
 
 function elementsOf(tree: ReturnType<typeof baseAssemblyOf>, type: string): AssemblyElement[] {
   return Object.values(tree.components.nodes).filter(
-    (node): node is AssemblyElement => !isContent(node) && node.type === type,
+    (node): node is AssemblyElement => isElement(node) && node.type === type,
   );
 }
 

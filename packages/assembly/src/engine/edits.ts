@@ -1,14 +1,18 @@
 // см. README.md / FAQ.md
 
-import { canAdmit, canContain, type NestingRefusal } from "./nesting.js";
+import { moduleCycleOf } from "./modules.js";
+import { canAdmit, canContain, canHoldModule, type NestingRefusal } from "./nesting.js";
 import type { Genus } from "./passport-read.js";
 import type { Registry } from "./registry.js";
 import {
   isContent,
+  isElement,
+  isReference,
   nodeOf,
   subtreeOf,
   type AssemblyContent,
   type AssemblyElement,
+  type AssemblyReference,
   type AssemblyNode,
   type AssemblyTree,
   type DispatchAction,
@@ -22,7 +26,9 @@ export type EditRefusal =
   | "root-locked"
   | "into-own-subtree"
   | "content-holds-nothing"
+  | "reference-holds-nothing"
   | "patch-not-of-node"
+  | "module-cycle"
   | NestingRefusal;
 
 export type EditResult =
@@ -46,9 +52,19 @@ export interface NewContent {
   readonly meta?: Readonly<Record<string, unknown>>;
 }
 
-export type NewNode = NewElement | NewContent;
+export interface NewReference {
+  readonly id: NodeId;
+  readonly module: string;
+  readonly props?: Readonly<Record<string, unknown>>;
+  readonly bind?: Readonly<Record<string, string>>;
+  readonly meta?: Readonly<Record<string, unknown>>;
+}
+
+export type NewNode = NewElement | NewContent | NewReference;
 
 const isContentSpec = (node: NewNode): node is NewContent => "genus" in node;
+
+const isReferenceSpec = (node: NewNode): node is NewReference => "module" in node;
 
 const refuse = (refusal: EditRefusal, means: string): EditResult => ({
   ok: false,
@@ -58,12 +74,22 @@ const refuse = (refusal: EditRefusal, means: string): EditResult => ({
 
 type Placed =
   | { readonly genus: Genus }
+  | { readonly module: string }
   | { readonly type: string; readonly composedInto?: string };
 
 const refuseContentOwner = (owner: AssemblyContent): EditResult =>
   refuse(
     "content-holds-nothing",
     `«${owner.id}» — узел содержимого рода «${owner.genus}»: внутрь него не кладётся ничего`,
+  );
+
+/** Внутрь ссылки не кладётся ничего по той же причине, что и внутрь содержимого, но причина
+ * НАЗВАНА отдельно: здесь дело не в роде значения, а в том, что содержимое узла принадлежит
+ * ЧУЖОМУ дереву — править его надо там, где оно объявлено. */
+const refuseReferenceOwner = (owner: AssemblyReference): EditResult =>
+  refuse(
+    "reference-holds-nothing",
+    `«${owner.id}» — ссылка на модуль «${owner.module}»: своих детей у неё нет, содержимое правится в самом модуле`,
   );
 
 const refusePlacement = (
@@ -74,6 +100,11 @@ const refusePlacement = (
   if ("genus" in placed) {
     const admitted = canAdmit(registry, ownerType, { kind: "content", genus: placed.genus });
     return admitted.allowed ? undefined : refuse(admitted.refusal, admitted.means);
+  }
+
+  if ("module" in placed) {
+    const held = canHoldModule(registry, ownerType, placed.module);
+    return held.allowed ? undefined : refuse(held.refusal, held.means);
   }
 
   const { type, composedInto } = placed;
@@ -94,15 +125,19 @@ const refusePlacement = (
   return undefined;
 };
 
+// Правка меняет УЗЛЫ, а не дерево целиком: всё остальное (`root`, `providerProps`, имя дерева в
+// источнике модулей) переносится как было. Прежняя форма пересобирала `components` из двух полей
+// и молча теряла соседние — на `module` это видно сразу, цикл после первой же правки перестал бы
+// вычисляться.
 const withNodes = (
   tree: AssemblyTree,
   nodes: Record<NodeId, AssemblyNode>,
-): AssemblyTree => ({ components: { root: tree.components.root, nodes } });
+): AssemblyTree => ({ components: { ...tree.components, nodes } });
 
 const withoutChild = (owner: AssemblyNode, id: NodeId): AssemblyNode =>
-  isContent(owner)
-    ? owner
-    : { ...owner, children: owner.children.filter((child) => child !== id) };
+  isElement(owner)
+    ? { ...owner, children: owner.children.filter((child) => child !== id) }
+    : owner;
 
 const insertAt = (children: readonly NodeId[], id: NodeId, index?: number): NodeId[] => {
   const next = [...children];
@@ -126,9 +161,21 @@ export function insertNode(
     return refuse("id-taken", `имя «${node.id}» в дереве уже занято`);
   }
   if (isContent(owner)) return refuseContentOwner(owner);
+  if (isReference(owner)) return refuseReferenceOwner(owner);
 
   const refusal = refusePlacement(registry, owner.type, node);
   if (refusal) return refusal;
+
+  if (isReferenceSpec(node)) {
+    const host = tree.components.module;
+    const cycle = host === undefined ? undefined : moduleCycleOf(registry, host, node.module);
+    if (cycle) {
+      return refuse(
+        "module-cycle",
+        `модуль «${node.module}» внутри «${host}» замкнул бы круг: ${[host, ...cycle].join(" → ")}`,
+      );
+    }
+  }
 
   const added: AssemblyNode = isContentSpec(node)
     ? {
@@ -139,17 +186,27 @@ export function insertNode(
         children: [] as const,
         ...(node.meta ? { meta: node.meta } : {}),
       }
-    : {
-        id: node.id,
-        type: node.type,
-        ...(node.composedInto ? { composedInto: node.composedInto } : {}),
-        parentId,
-        children: [],
-        ...(node.props ? { props: node.props } : {}),
-        ...(node.bind ? { bind: node.bind } : {}),
-        ...(node.on ? { on: node.on } : {}),
-        ...(node.meta ? { meta: node.meta } : {}),
-      };
+    : isReferenceSpec(node)
+      ? {
+          id: node.id,
+          module: node.module,
+          parentId,
+          children: [] as const,
+          ...(node.props ? { props: node.props } : {}),
+          ...(node.bind ? { bind: node.bind } : {}),
+          ...(node.meta ? { meta: node.meta } : {}),
+        }
+      : {
+          id: node.id,
+          type: node.type,
+          ...(node.composedInto ? { composedInto: node.composedInto } : {}),
+          parentId,
+          children: [],
+          ...(node.props ? { props: node.props } : {}),
+          ...(node.bind ? { bind: node.bind } : {}),
+          ...(node.on ? { on: node.on } : {}),
+          ...(node.meta ? { meta: node.meta } : {}),
+        };
 
   const nodes = { ...tree.components.nodes };
   nodes[node.id] = added;
@@ -201,6 +258,7 @@ export function moveNode(
   }
 
   if (isContent(owner)) return refuseContentOwner(owner);
+  if (isReference(owner)) return refuseReferenceOwner(owner);
 
   const refusal = refusePlacement(registry, owner.type, node);
   if (refusal) return refusal;
@@ -251,7 +309,9 @@ export function updateNode(tree: AssemblyTree, id: NodeId, patch: NodePatch): Ed
   if ("value" in patch) {
     return refuse(
       "patch-not-of-node",
-      `«${id}» — узел компонента «${node.type}»: значения у него нет, содержимое лежит отдельным узлом`,
+      isReference(node)
+        ? `«${id}» — ссылка на модуль «${node.module}»: значения у неё нет, содержимое живёт в самом модуле`
+        : `«${id}» — узел компонента «${node.type}»: значения у него нет, содержимое лежит отдельным узлом`,
     );
   }
 

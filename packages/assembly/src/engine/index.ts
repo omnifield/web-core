@@ -27,6 +27,7 @@ export type {
   AssemblyContent,
   AssemblyElement,
   AssemblyNode,
+  AssemblyReference,
   AssemblyTree,
   DataBinding,
   DispatchAction,
@@ -40,7 +41,9 @@ export {
   EMPTY_TREE,
   isContent,
   isDataBinding,
+  isElement,
   isEventBinding,
+  isReference,
   nodeOf,
   outerTypeOf,
   resolveDataBinding,
@@ -49,8 +52,12 @@ export {
   subtreeOf,
 } from "./tree.js";
 
+export type { ModuleRoot } from "./modules.js";
+export { moduleCycleOf, moduleRootOf, modulesReferencedBy } from "./modules.js";
+
 export type {
   Address,
+  ModuleSource,
   ReadableComponent,
   Registry,
   RegistryFlaw,
@@ -75,6 +82,7 @@ export {
   allowedInside,
   canAdmit,
   canContain,
+  canHoldModule,
   ownersAdmitting,
   possibleOwnersOf,
 } from "./nesting.js";
@@ -88,6 +96,7 @@ export { sketchOf } from "./sketch.js";
 export type {
   CompositionContent,
   CompositionElement,
+  CompositionReference,
   CompositionRefusal,
   CompositionResult,
   CompositionSpec,
@@ -103,6 +112,7 @@ export type {
   NewContent,
   NewElement,
   NewNode,
+  NewReference,
   NodePatch,
 } from "./edits.js";
 export { insertNode, moveNode, removeNode, updateNode } from "./edits.js";

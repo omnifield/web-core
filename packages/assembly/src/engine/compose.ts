@@ -35,7 +35,14 @@ export interface CompositionContent {
   readonly id?: NodeId;
 }
 
-export type CompositionSpec = CompositionElement | CompositionContent;
+export interface CompositionReference {
+  readonly module: string;
+  readonly id?: NodeId;
+  readonly props?: Readonly<Record<string, unknown>>;
+  readonly bind?: Readonly<Record<string, string>>;
+}
+
+export type CompositionSpec = CompositionElement | CompositionContent | CompositionReference;
 
 export interface CompositionRefusal {
   readonly id: NodeId;
@@ -49,7 +56,12 @@ export type CompositionResult =
 
 const isContentSpec = (spec: CompositionSpec): spec is CompositionContent => "genus" in spec;
 
+const isReferenceSpec = (spec: CompositionSpec): spec is CompositionReference => "module" in spec;
+
 const slugOf = (type: string): string => (type.includes(".") ? type.slice(type.lastIndexOf(".") + 1) : type);
+
+const slugFor = (spec: CompositionSpec): string =>
+  isContentSpec(spec) ? "content" : isReferenceSpec(spec) ? slugOf(spec.module) : slugOf(spec.type);
 
 function nextId(parentId: NodeId, slug: string, taken: ReadonlySet<NodeId>): NodeId {
   const base = `${parentId}.${slug}`;
@@ -115,18 +127,25 @@ export function composeTree(registry: Registry, spec: CompositionElement, rootId
 
   const place = (children: readonly CompositionSpec[] | undefined, parentId: NodeId): void => {
     for (const child of children ?? []) {
-      const childId = child.id ?? nextId(parentId, isContentSpec(child) ? "content" : slugOf(child.type), taken);
+      const childId = child.id ?? nextId(parentId, slugFor(child), taken);
       taken.add(childId);
 
       const node: NewNode = isContentSpec(child)
         ? { id: childId, genus: child.genus, value: child.value }
-        : {
-            id: childId,
-            type: child.type,
-            ...(child.props ? { props: child.props } : {}),
-            ...(child.bind ? { bind: child.bind } : {}),
-            ...(child.on ? { on: child.on } : {}),
-          };
+        : isReferenceSpec(child)
+          ? {
+              id: childId,
+              module: child.module,
+              ...(child.props ? { props: child.props } : {}),
+              ...(child.bind ? { bind: child.bind } : {}),
+            }
+          : {
+              id: childId,
+              type: child.type,
+              ...(child.props ? { props: child.props } : {}),
+              ...(child.bind ? { bind: child.bind } : {}),
+              ...(child.on ? { on: child.on } : {}),
+            };
 
       const result = insertNode(tree, registry, node, parentId);
       if (!result.ok) {
@@ -135,7 +154,8 @@ export function composeTree(registry: Registry, spec: CompositionElement, rootId
       }
 
       tree = result.tree;
-      if (!isContentSpec(child)) place(child.children, childId);
+      // Ссылка своих детей не растит — её поддерево принадлежит самому модулю.
+      if (!isContentSpec(child) && !isReferenceSpec(child)) place(child.children, childId);
     }
   };
 

@@ -1,14 +1,29 @@
 // см. README.md / FAQ.md
 
-import { type Component, createMemo, ErrorBoundary, For, type JSX, mergeProps } from "solid-js";
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  ErrorBoundary,
+  For,
+  type JSX,
+  mergeProps,
+  Show,
+} from "solid-js";
 import { createComponent } from "solid-js/web";
 
-import { isContent } from "../engine/tree.js";
+import { isContent, isElement, isReference } from "../engine/tree.js";
 import { trace } from "../shared/trace.js";
 import { assembleComponent, createOuterComponent, createResolvedComponent } from "./composition.js";
 import { createContentOf } from "./content-of.js";
 import { typeOrGenus, valueOf } from "./content-value.js";
 import { overlay, wrapped } from "./edit-overlay.js";
+import {
+  createModuleBranch,
+  ModuleStackProvider,
+  noteModuleCycle,
+  useModuleStack,
+} from "./module-branch.js";
 import { innerDataFor, ownPropsFor } from "./props.js";
 import { createSelfAssemblyTree } from "./self-assembly-branch.js";
 import { takesContent } from "./takes-content.js";
@@ -26,6 +41,13 @@ export const RenderNode: Component<RenderNodeProps> = (props) => {
   const resolved = createResolvedComponent(() => props.registry, node);
   const outer = createOuterComponent(() => props.registry, node);
   const selfAssemblyTree = createSelfAssemblyTree(() => props.registry, node);
+
+  const moduleStack = useModuleStack();
+  const moduleBranch = createModuleBranch(() => props.registry, node, () => moduleStack);
+  const substitution = createMemo(() => {
+    const branch = moduleBranch();
+    return branch?.kind === "tree" ? branch : undefined;
+  });
 
   const ownProps = () => ownPropsFor(node(), props.data, props.dispatch, props.rootProps);
   const innerData = () => innerDataFor(node(), props.data);
@@ -46,9 +68,58 @@ export const RenderNode: Component<RenderNodeProps> = (props) => {
     if (isContent(current)) {
       const closeContent = trace(`содержимое ${current.id} (${current.genus})`);
       try {
-        return <>{valueOf(current, props.data)}</>;
+        // `node()`, а не захваченный снимок `current`: значение содержимого живёт в САМОМ дереве,
+        // и правка дерева обязана доезжать до DOM так же, как доезжает правка данных показа.
+        // Снимок замораживал литерал на первом отрисованном значении (`updateNode` значения не
+        // было видно вовсе) — подписка тут своя, узла содержимого, детей у него нет и диспоузить
+        // ею нечего.
+        return <>{valueOf(node(), props.data)}</>;
       } finally {
         closeContent();
+      }
+    }
+
+    if (isReference(current)) {
+      const closeModule = trace(`ссылка ${current.id} (модуль ${current.module})`);
+      try {
+        createEffect(() => {
+          const branch = moduleBranch();
+          if (branch?.kind === "cycle") noteModuleCycle(branch.module, moduleStack);
+        });
+
+        const substituted = (
+          // `<Show>` НЕ keyed нарочно: подставленное дерево меняется на каждую правку исходного
+          // модуля, и keyed перемонтировал бы его целиком вместо того, чтобы дать `RenderTree`
+          // обновиться реактивно — ради чего ссылка и заводилась.
+          <Show
+            when={substitution()}
+            fallback={createComponent(props.fallback, {
+              type: `модуль:${current.module}`,
+              nodeId: current.id,
+            })}
+          >
+            {(found) => (
+              <ModuleStackProvider value={found().stack}>
+                <RenderTree
+                  registry={props.registry}
+                  tree={found().tree}
+                  data={innerData()}
+                  dispatch={props.dispatch}
+                  fallback={props.fallback}
+                  errorFallback={props.errorFallback}
+                  slots={props.slots}
+                />
+              </ModuleStackProvider>
+            )}
+          </Show>
+        );
+
+        const EditOverlayForModule = props.editOverlay;
+        return EditOverlayForModule
+          ? wrapped(substituted, EditOverlayForModule, node, props.nodeId)
+          : substituted;
+      } finally {
+        closeModule();
       }
     }
 
@@ -133,13 +204,15 @@ export const RenderNode: Component<RenderNodeProps> = (props) => {
   const signature = createMemo((previous: RenderSignature | undefined): RenderSignature => {
     const current = node();
     const next: RenderSignature = {
-      type: current && !isContent(current) ? current.type : undefined,
+      type: current && isElement(current) ? current.type : undefined,
       genus: current && isContent(current) ? current.genus : undefined,
+      module: current && isReference(current) ? current.module : undefined,
       fallback: props.fallback,
     };
     if (!previous) return next;
     if (previous.type !== next.type) return next;
     if (previous.genus !== next.genus) return next;
+    if (previous.module !== next.module) return next;
     if (previous.fallback !== next.fallback) return next;
     return previous;
   });

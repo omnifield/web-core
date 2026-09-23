@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { isContent, nodeOf, type AssemblyTree, type NodeId } from "./tree.js";
+import { isContent, isReference, nodeOf, type AssemblyTree, type NodeId } from "./tree.js";
 
 export type TreeFlawName =
   | "root-missing"
@@ -12,7 +12,8 @@ export type TreeFlawName =
   | "orphaned"
   | "cycle"
   | "content-in-props"
-  | "content-with-children";
+  | "content-with-children"
+  | "reference-with-children";
 
 export interface TreeFlaw {
   readonly flaw: TreeFlawName;
@@ -57,12 +58,22 @@ export function checkTree(tree: AssemblyTree): TreeFlaw[] {
           means: `узел «${key}» — содержимое рода «${node.genus}», но у него есть дети: внутрь содержимого не кладётся ничего`,
         });
       }
-    } else if (node.props && "children" in node.props) {
-      flaws.push({
-        flaw: "content-in-props",
-        nodeId: key,
-        means: `узел «${key}» несёт содержимое пропом «children» — это прежняя форма: содержимое кладётся ОТДЕЛЬНЫМ узлом среди детей, и пропом отрисовка его не покажет`,
-      });
+    } else {
+      if (isReference(node) && (node.children as readonly NodeId[]).length > 0) {
+        flaws.push({
+          flaw: "reference-with-children",
+          nodeId: key,
+          means: `узел «${key}» — ссылка на модуль «${node.module}», но у него есть дети: поддерево принадлежит самому модулю, здесь его быть не может`,
+        });
+      }
+
+      if (node.props && "children" in node.props) {
+        flaws.push({
+          flaw: "content-in-props",
+          nodeId: key,
+          means: `узел «${key}» несёт содержимое пропом «children» — это прежняя форма: содержимое кладётся ОТДЕЛЬНЫМ узлом среди детей, и пропом отрисовка его не покажет`,
+        });
+      }
     }
 
     const seen = new Set<NodeId>();

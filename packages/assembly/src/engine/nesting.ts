@@ -1,5 +1,6 @@
 // см. README.md / FAQ.md
 
+import { moduleRootOf } from "./modules.js";
 import { partOf, type Admission } from "./passport-read.js";
 import { readAddress, type Registry } from "./registry.js";
 
@@ -9,7 +10,9 @@ export type NestingRefusal =
   | "part-undeclared"
   | "foreign-part"
   | "content-not-admitted"
-  | "component-not-admitted";
+  | "component-not-admitted"
+  | "module-unknown"
+  | "module-rootless";
 
 export type NestingVerdict =
   | { readonly allowed: true }
@@ -82,6 +85,26 @@ export function canContain(registry: Registry, parent: string, child: string): N
   }
 
   return canAdmit(registry, parent, { kind: "component", genus: guest.passport.genus, name: guest.component });
+}
+
+/**
+ * Пускает ли часть внутрь себя ССЫЛКУ на модуль. Своего правила здесь нет и не заводится: у
+ * модуля нет паспорта, зато есть корень его дерева — он и отвечает адресом, дальше решает тот же
+ * `canContain`, что и для обычного компонента.
+ */
+export function canHoldModule(registry: Registry, parent: string, module: string): NestingVerdict {
+  const root = moduleRootOf(registry, module);
+
+  if (!root.ok) {
+    return root.reason === "unknown"
+      ? deny("module-unknown", `модуль «${module}» источнику модулей неизвестен — вкладывать нечего`)
+      : deny(
+          "module-rootless",
+          `у модуля «${module}» нет корня-компонента, которым он отвечал бы за вложенность — вкладывать нечего`,
+        );
+  }
+
+  return canContain(registry, parent, root.type);
 }
 
 export interface AllowedInside {

@@ -37,30 +37,38 @@
 
 | Часть | Адрес | Экспортирует |
 |---|---|---|
-| Дерево | `@web-core/assembly` | `AssemblyTree`, `AssemblyNode`, `AssemblyElement`, `AssemblyContent`, `NodeId`, `DataBinding`, `DynamicValue`, `EventBinding`, `EMPTY_TREE`, `isContent`, `isDataBinding`, `isEventBinding`, `resolveDataBinding`, `resolveEventBinding`, `nodeOf`, `rootOf`, `subtreeOf`, `ancestorsOf`, `outerTypeOf` |
+| Дерево | `@web-core/assembly` | `AssemblyTree`, `AssemblyNode`, `AssemblyElement`, `AssemblyContent`, `AssemblyReference`, `NodeId`, `DataBinding`, `DynamicValue`, `EventBinding`, `EMPTY_TREE`, `isContent`, `isElement`, `isReference`, `isDataBinding`, `isEventBinding`, `resolveDataBinding`, `resolveEventBinding`, `nodeOf`, `rootOf`, `subtreeOf`, `ancestorsOf`, `outerTypeOf` |
 | Разворот по данным | `@web-core/assembly` | `baseAssemblyOf`, `scopedPath`, `AssemblyTemplate`, `AssemblyTemplateElement`, `AssemblyTemplateContent`, `AssemblyTemplateNode`, `AssemblyTemplateRepeat` |
-| Правки | `@web-core/assembly` | `insertNode`, `removeNode`, `moveNode`, `updateNode`, `EditResult`, `EditRefusal`, `NewNode`, `NewElement`, `NewContent`, `NodePatch` |
+| Правки | `@web-core/assembly` | `insertNode`, `removeNode`, `moveNode`, `updateNode`, `EditResult`, `EditRefusal`, `NewNode`, `NewElement`, `NewContent`, `NewReference`, `NodePatch` |
 | Целостность | `@web-core/assembly` | `checkTree`, `TreeFlaw`, `TreeFlawName` |
-| Реестр | `@web-core/assembly` | `createRegistry`, `checkRegistry`, `knownComponents`, `readAddress`, `resolveComponent`, `Registry`, `RegistrySpec`, `ReadableComponent`, `Address`, `RegistryFlaw`, `RegistryFlawName` |
-| Вложенность | `@web-core/assembly` | `allowedInside`, `canAdmit`, `canContain`, `possibleOwnersOf`, `ownersAdmitting`, `AllowedInside`, `NestingVerdict`, `NestingRefusal`, `PossibleOwner` |
+| Реестр | `@web-core/assembly` | `createRegistry`, `checkRegistry`, `knownComponents`, `readAddress`, `resolveComponent`, `Registry`, `RegistrySpec`, `ReadableComponent`, `ModuleSource`, `Address`, `RegistryFlaw`, `RegistryFlawName` |
+| Модули | `@web-core/assembly` | `moduleRootOf`, `moduleCycleOf`, `modulesReferencedBy`, `ModuleRoot` |
+| Вложенность | `@web-core/assembly` | `allowedInside`, `canAdmit`, `canContain`, `canHoldModule`, `possibleOwnersOf`, `ownersAdmitting`, `AllowedInside`, `NestingVerdict`, `NestingRefusal`, `PossibleOwner` |
 | Координата | `@web-core/assembly` | `coordinateOfType`, `nodesByCoordinate`, `nodesSharingCoordinate`, `NodeCoordinate` |
 | Образец | `@web-core/assembly` | `sketchOf`, `SketchNaming` |
-| Композиция | `@web-core/assembly` | `composeTree`, `rootNode`, `CompositionElement`, `CompositionContent`, `CompositionSpec`, `CompositionRefusal`, `CompositionResult` |
+| Композиция | `@web-core/assembly` | `composeTree`, `rootNode`, `CompositionElement`, `CompositionContent`, `CompositionReference`, `CompositionSpec`, `CompositionRefusal`, `CompositionResult` |
 | Своё поведение | `@web-core/assembly` | `growSelfAssembly`, `SelfAssembly`, `SelfAssemblyElement`, `SelfAssemblyContent`, `SelfAssemblyNode` |
 | Паспорт (читаемый срез) | `@web-core/assembly` | `partOf`, `ReadablePassport`, `GrowablePassport`, `ReadablePart`, `Admission`, `AdmissionRule`, `Genus`, `ComponentGenus` |
 | Отрисовка | `@web-core/assembly/render` | `RenderTree`, `RenderTreeProps`, `FallbackProps`, `ErrorFallbackProps`, `EditOverlayProps`, `SlotEntry`, `SlotPlacement`, `DispatchedEvent` |
 
-📦 Внутри пакета: `src/index.ts` (тонкий реэкспорт `engine/`), `src/engine/` (одиннадцать файлов —
-дерево/правки/целостность/реестр/вложенность/координата/образец/композиция/self-assembly/
-разворот-по-данным/паспорт, ноль Solid), `src/render/` (двенадцать файлов, единственный сегодняшний
+📦 Внутри пакета: `src/index.ts` (тонкий реэкспорт `engine/`), `src/engine/` (двенадцать файлов —
+дерево/правки/целостность/реестр/модули/вложенность/координата/образец/композиция/self-assembly/
+разворот-по-данным/паспорт, ноль Solid), `src/render/` (тринадцать файлов, единственный сегодняшний
 потребитель `engine/`;
 `index.tsx` — тонкий реэкспорт по тому же образцу, что корневой `src/index.ts`; `render-tree.tsx`
 — провайдер/`Suspense`/`checkTree`; `render-node.tsx` — сборка ОДНОГО узла, точка входа рекурсии;
 `content-of.tsx` — дети узла, самая тонкая часть Solid-реактивности; `composition.ts`/
 `self-assembly-branch.ts` — ЧЕМ рисовать узел; `props.ts` — пропы/события/`bind` из данных;
-`content-value.ts` — значение content-узла; `edit-overlay.tsx` — украшение путей отрисовки;
-`takes-content.ts` — структурный вопрос реестра; `defaults.tsx` — запасные виды; `types.ts` —
-проп-контракты), `src/shared/trace.ts` (перф-трасса, общая на оба).
+`content-value.ts` — значение content-узла; `module-branch.ts` — подстановка чужого модуля на
+месте узла-ссылки; `edit-overlay.tsx` — украшение путей отрисовки; `takes-content.ts` —
+структурный вопрос реестра; `defaults.tsx` — запасные виды; `types.ts` — проп-контракты),
+`src/shared/trace.ts` (перф-трасса, общая на оба).
+
+🔗 Родов узла три, не два: часть/компонент (`AssemblyElement`), содержимое (`AssemblyContent`) и
+ссылка на чужой модуль (`AssemblyReference` — `{ module }`, детей своих не носит). Ссылка
+указывает, а не копирует: дерево модуля подставляется на отрисовке, поэтому правка исходного
+модуля видна всюду, где он вставлен. Откуда берутся модули — говорит приложение третьим входом
+`createRegistry` (`modules`), движок своего перечня не держит.
 
 🔤 `genus:"text"`/`genus:"icon"` у `AssemblyContent` — это уровень строки, не уровень компонента:
 `{ genus: "text", value: { path: "title" } }` рисуется как нативное значение (строка либо
@@ -156,6 +164,27 @@ const result = composeTree(registry, {
 if (!result.ok) console.warn(result.refusals);
 ```
 
+**Ссылка на чужой модуль (живая, не копия):**
+
+```ts
+import { createRegistry, insertNode } from "@web-core/assembly";
+
+const registry = createRegistry({
+  components: { grid: kitOf("grid"), card: kitOf("card") },
+  admits,
+  modules: (name) => modulesStore()[name], // читается на отрисовке — правка модуля доезжает сама
+});
+
+const placed = insertNode(
+  page, // дерево страницы; `components.module` называет её саму — по имени и ловится круг
+  registry,
+  { id: "promo-here", module: "promo", props: { title: "Скидка" } },
+  "grid.cell",
+);
+
+if (!placed.ok) console.warn(placed.refusal, placed.means); // module-unknown | module-cycle | …
+```
+
 **Слот живого контента на месте узла:**
 
 ```tsx
@@ -199,9 +228,9 @@ const slots: Record<string, SlotEntry> = {
 
 | Источник | Имя | Значит |
 |---|---|---|
-| `checkTree` (`TreeFlawName`) | `root-missing` \| `id-mismatch` \| `child-missing` \| `child-duplicated` \| `parent-mismatch` \| `child-shared` \| `orphaned` \| `cycle` \| `content-in-props` \| `content-with-children` | изъян целостности дерева — возвращаются все сразу, не по одному |
-| Правки (`EditRefusal`) | `node-unknown` \| `parent-unknown` \| `id-taken` \| `root-locked` \| `into-own-subtree` \| `content-holds-nothing` \| `patch-not-of-node` | отказ `insertNode`/`removeNode`/`moveNode`/`updateNode` — значение, не исключение |
-| Вложенность (`NestingRefusal`) | `parent-unknown` \| `child-unknown` \| `part-undeclared` \| `foreign-part` \| `content-not-admitted` \| `component-not-admitted` | отказ `allowedInside`/`canAdmit`/`canContain`; входит и в `EditRefusal` |
+| `checkTree` (`TreeFlawName`) | `root-missing` \| `id-mismatch` \| `child-missing` \| `child-duplicated` \| `parent-mismatch` \| `child-shared` \| `orphaned` \| `cycle` \| `content-in-props` \| `content-with-children` \| `reference-with-children` | изъян целостности дерева — возвращаются все сразу, не по одному |
+| Правки (`EditRefusal`) | `node-unknown` \| `parent-unknown` \| `id-taken` \| `root-locked` \| `into-own-subtree` \| `content-holds-nothing` \| `reference-holds-nothing` \| `patch-not-of-node` \| `module-cycle` | отказ `insertNode`/`removeNode`/`moveNode`/`updateNode` — значение, не исключение |
+| Вложенность (`NestingRefusal`) | `parent-unknown` \| `child-unknown` \| `part-undeclared` \| `foreign-part` \| `content-not-admitted` \| `component-not-admitted` \| `module-unknown` \| `module-rootless` | отказ `allowedInside`/`canAdmit`/`canContain`/`canHoldModule`; входит и в `EditRefusal` |
 | Реестр (`RegistryFlawName`) | `part-uncharted` \| `part-not-callable` \| `part-astray` | расхождение пары поставщика с анатомией — значение `checkRegistry`, не бросок |
 
 <h2 id="io">🔌 IO</h2>
@@ -216,7 +245,9 @@ const slots: Record<string, SlotEntry> = {
 
 | Конструктор | Принимает |
 |---|---|
-| `createRegistry(spec)` | `{ components: Record<address, ReadableComponent>, admits: AdmissionRule }` |
+| `createRegistry(spec)` | `{ components: Record<address, ReadableComponent>, admits: AdmissionRule, modules?: (name) => AssemblyTree \| undefined }` |
+| `canHoldModule(registry, parent, module)` | адрес части-владельца и имя модуля — отвечает корень дерева модуля |
+| `moduleCycleOf(registry, host, entry)` | имя дерева-хозяина и имя вставляемого модуля — обход графа ссылок |
 | `insertNode`/`removeNode`/`moveNode`/`updateNode` | `(tree, id, ...)` — дерево и координаты правки |
 | `RenderTree` | `RenderTreeProps` (см. «Настройки») |
 | `growSelfAssembly(assembly, address, rootPart)` | `SelfAssembly` компонента + куда он смотрит в реестре |
@@ -232,7 +263,9 @@ const slots: Record<string, SlotEntry> = {
 | Правки | `EditResult = { ok: true, tree } \| { ok: false, refusal, means }` |
 | `checkTree` | `readonly TreeFlaw[]` — `{ flaw, nodeId, relatedId?, means }` |
 | `checkRegistry` | `readonly RegistryFlaw[]` |
-| `allowedInside`/`canAdmit`/`canContain` | `NestingVerdict = { allowed: true } \| { allowed: false, refusal, means }` |
+| `allowedInside`/`canAdmit`/`canContain`/`canHoldModule` | `NestingVerdict = { allowed: true } \| { allowed: false, refusal, means }` |
+| `moduleRootOf` | `ModuleRoot = { ok: true, type } \| { ok: false, reason: "unknown" \| "rootless" }` |
+| `moduleCycleOf` | путь круга (`["promo", "hero"]`) либо `undefined` — редактору есть что показать, не голое «нельзя» |
 | `possibleOwnersOf`/`ownersAdmitting` | `readonly PossibleOwner[]` |
 | `coordinateOfType` | `NodeCoordinate \| undefined` |
 | `rootNode` | `AssemblyTree \| undefined` |
@@ -256,6 +289,9 @@ const slots: Record<string, SlotEntry> = {
 | `repeat`: 0 items → N items ПОСЛЕ монтирования, без потери Ark-дефолтов на пустом контенте | узел, структурно принимающий контент, подхватывает детей, добавленных позже, — плоский случай и вложенный (через `Portal`, как `select`'s `positioner`); часть, контент не принимающая (`trigger`), остаётся `null`; часть, принимающая контент по реестру, но без детей навсегда (`field`'s `requiredIndicator`), тоже остаётся `null` — Ark-паттерн `props.children ?? "*"` срабатывает | `test/contentof-null-vs-for.test.tsx` |
 | `baseAssemblyOf`: `repeat` полем и старой обёрткой `{repeat, template}`, вложенный `repeat`, пустой `bind` внутри `repeat` (весь текущий элемент, не `undefined`), `recur` с гвардом глубины на зацикленном шаблоне/данных | разворот шаблона по данным растит верное число узлов и не виснет на цикле — та же механика, что раньше жила в `packages/skin` | `test/expand.test.ts` |
 | `EventBinding` в `on.context` — синтетический вызов и настоящий `<input>` через `RenderTree` | контекст `dispatch` может прийти из самого живого DOM-события (`{event:"target.value"}`), не только из литерала/`DataBinding` по данным показа — закрывает текстовый инпут/global-search, которого раньше нельзя было выразить | `test/on-event-binding.test.tsx` |
+| Ссылка на модуль со стороны движка: вложенность корнем чужого дерева, круг на вставке, `composeTree` со ссылкой | модуль отвечает за допуск корнем своего дерева; круг между деревьями отказывает значением и называет путь круга; правка узлов не теряет имени дерева | `test/module-ref.test.ts` |
+| Ссылка на модуль на отрисовке: две площадки одного модуля, подмена модуля, круг | правка исходного модуля доезжает до ВСЕХ площадок без пересборки страницы; неизвестный модуль — запасной вид, появившийся дорисовывается; замкнутый круг не вешает отрисовку | `test/module-ref.test.tsx` |
+| Литерал содержимого при смене дерева (`updateNode` значения) | значение content-узла перечитывается из дерева, а не замирает на первом отрисованном | `test/content-literal-on-tree-swap.test.tsx` |
 
 ✅ Живая проверка на настоящем ките — транзитивно, через тесты пакетов, что реально зовут
 `RenderTree`/`baseAssemblyOf`: `packages/ui/src/button/test/button.test.tsx`,

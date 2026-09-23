@@ -1,7 +1,7 @@
 // см. README.md / FAQ.md
 
 import { readAddress, type Registry } from "./registry.js";
-import { isContent, type AssemblyTree, type NodeId } from "./tree.js";
+import { isElement, type AssemblyTree, type NodeId } from "./tree.js";
 
 export interface NodeCoordinate {
   readonly component: string;
@@ -22,8 +22,11 @@ export function nodesByCoordinate(
 ): Map<string, NodeId[]> {
   const groups = new Map<string, NodeId[]>();
 
+  // Координата — паспортная половина адреса правила скина: она есть у частей компонента и её
+  // нет ни у содержимого, ни у ссылки на модуль (у той свой адрес — имя модуля, не пара
+  // компонент+часть).
   for (const [id, node] of Object.entries(tree.components.nodes)) {
-    if (isContent(node)) continue;
+    if (!isElement(node)) continue;
 
     const coordinate = coordinateOfType(registry, node.type);
     if (!coordinate) continue;
@@ -42,7 +45,7 @@ export function nodesSharingCoordinate(
   nodeId: NodeId,
 ): NodeId[] | undefined {
   const node = tree.components.nodes[nodeId];
-  if (!node || isContent(node)) return undefined;
+  if (!node || !isElement(node)) return undefined;
 
   const coordinate = coordinateOfType(registry, node.type);
   if (!coordinate) return undefined;

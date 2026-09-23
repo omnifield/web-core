@@ -3,7 +3,7 @@
 import { type Component, type JSX } from "solid-js";
 import { createComponent } from "solid-js/web";
 
-import type { AssemblyElement, AssemblyNode, NodeId } from "../engine/tree.js";
+import type { AssemblyElement, AssemblyNode, AssemblyReference, NodeId } from "../engine/tree.js";
 import type { EditOverlayProps } from "./types.js";
 
 /** Украшение СНАРУЖИ путей отрисовки — абсолютно спозиционированный слой поверх узла, `node`
@@ -21,7 +21,7 @@ export function overlay(
           return node()?.id ?? fallbackId;
         },
         get node() {
-          return node() as AssemblyElement;
+          return node() as AssemblyElement | AssemblyReference;
         },
       })}
     </span>
