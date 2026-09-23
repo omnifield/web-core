@@ -13,28 +13,28 @@
     },
     "./transport": {
       "development": "./src/transport/index.ts",
-      "types": "./dist/transport/index.d.ts",
-      "default": "./dist/transport/index.js"
+      "types": "./dist/transport.d.ts",
+      "default": "./dist/transport.js"
     },
     "./pagination": {
       "development": "./src/pagination/index.ts",
-      "types": "./dist/pagination/index.d.ts",
-      "default": "./dist/pagination/index.js"
+      "types": "./dist/pagination.d.ts",
+      "default": "./dist/pagination.js"
     },
     "./peer": {
       "development": "./src/peer/index.ts",
-      "types": "./dist/peer/index.d.ts",
-      "default": "./dist/peer/index.js"
+      "types": "./dist/peer.d.ts",
+      "default": "./dist/peer.js"
     },
     "./browser": {
       "development": "./src/browser/index.ts",
-      "types": "./dist/browser/index.d.ts",
-      "default": "./dist/browser/index.js"
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
     },
     "./feedback": {
       "development": "./src/feedback/index.ts",
-      "types": "./dist/feedback/index.d.ts",
-      "default": "./dist/feedback/index.js"
+      "types": "./dist/feedback.d.ts",
+      "default": "./dist/feedback.js"
     }
   },
   "files": [
@@ -49,29 +49,29 @@
         "default": "./dist/index.js"
       },
       "./transport": {
-        "types": "./dist/transport/index.d.ts",
-        "default": "./dist/transport/index.js"
+        "types": "./dist/transport.d.ts",
+        "default": "./dist/transport.js"
       },
       "./pagination": {
-        "types": "./dist/pagination/index.d.ts",
-        "default": "./dist/pagination/index.js"
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
       },
       "./peer": {
-        "types": "./dist/peer/index.d.ts",
-        "default": "./dist/peer/index.js"
+        "types": "./dist/peer.d.ts",
+        "default": "./dist/peer.js"
       },
       "./browser": {
-        "types": "./dist/browser/index.d.ts",
-        "default": "./dist/browser/index.js"
+        "types": "./dist/browser.d.ts",
+        "default": "./dist/browser.js"
       },
       "./feedback": {
-        "types": "./dist/feedback/index.d.ts",
-        "default": "./dist/feedback/index.js"
+        "types": "./dist/feedback.d.ts",
+        "default": "./dist/feedback.js"
       }
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . && pnpm run typecheck",
     "test": "vitest run"
@@ -87,6 +87,7 @@
     "@web-core/lint": "workspace:*",
     "eslint": "^10.8.1",
     "typescript": "^7.0.2",
+    "vite": "^8.2.1",
     "vitest": "^4.1.10"
   }
 }

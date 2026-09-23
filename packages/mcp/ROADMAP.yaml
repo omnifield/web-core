@@ -354,7 +354,7 @@ categories:
     items:
       - id: dist-imports-directories
         type: bug
-        status: Open
+        status: Done
         priority: High
         milestone: null
         name: "Пакет не импортируется из реестра: `dist` ссылается на ДИРЕКТОРИЮ, а ESM так не умеет"
@@ -385,6 +385,18 @@ categories:
 
           Условие закрытия: `@web-core/mcp` из реестра импортируется голым `node` по всем шести
           подпутям. Инструмент под рукой — проба поставки (`@web-core/cli/probe`), ей же найдено.
+
+          Починено 2026-09-23 той же формой, что у `packages/cli`: сборка переехала с
+          `tsc -p tsconfig.build.json` на `vite build` с `defineLibraryConfig` из `@web-core/build`
+          (шесть входов — по одному на подпуть), `tsconfig.build.json` удалён за ненадобностью.
+          Относительные импорты бандлятся внутрь входа, пакеты остаются внешними, `.d.ts` кладутся
+          плоскими — выход стал `dist/transport.js`/`dist/peer.js`/…, и `exports`/`publishConfig`
+          переехали на эти имена с `dist/<часть>/index.js`. Дублирования между входами нет:
+          `dist/browser.js` импортирует `./peer.js` полным спецификатором.
+          Проверено так, как требовало условие закрытия, — не сборкой: `pnpm pack` → проба поставки
+          на тарбол, все шесть подпутей `ok` (import в чистом проекте вне репозитория, `tsc --noEmit`
+          там же зелёный), `broken`/`limited` пусты. Плюс штатный прогон пакета: lint+typecheck
+          зелёные, 42/42.
 
   - category: Не в этом пакете
     items:
@@ -422,6 +434,25 @@ categories:
           зоне (например skin-mcp), не часть общего тулинга.
 
 log:
+  - id: build-moved-to-library-factory
+    type: plan
+    date: 2026-09-23
+    summary: >
+      Сборка пакета переведена с `tsc` на `vite build` + `defineLibraryConfig` (`@web-core/build`),
+      шесть входов — по одному на подпуть поставки. Причина — отказ, найденный architect'ом на
+      приёмке выпуска `0.4.0`: `tsc` переносит спецификатор барреля как есть, `dist/index.js` нёс
+      `export * from "./register-tool"` (директория), и голый `node` падал
+      `ERR_UNSUPPORTED_DIR_IMPORT` — то есть пакет из реестра не импортировался ровно той
+      аудиторией, ради которой существует (MCP-серверы запускаются `node`, не бандлером). Форму
+      выбрали не изобретая: `packages/cli` ловил тот же отказ и решил его этой фабрикой (его FAQ,
+      «Почему сборка идёт через `defineLibraryConfig`»). Следствия правки: `tsconfig.build.json`
+      удалён, `vite` добавлен в devDependencies, выход стал плоским — `exports`/`publishConfig`
+      переехали с `dist/<часть>/index.js` на `dist/<часть>.js`/`dist/<часть>.d.ts`. Проверено
+      способом из условия закрытия, а не сборкой: `pnpm pack` → `@web-core/cli/probe` на тарбол —
+      шесть подпутей `ok`, `broken`/`limited` пусты, `tsc --noEmit` в чистом проекте зелёный.
+      Версию не поднимал (это architect при публикации) — правка меняет содержимое поставки, не
+      публичный API, по смыслу patch к `0.4.0`.
+
   - id: feedback-subpath-shipped
     type: plan
     date: 2026-09-09
