@@ -281,6 +281,28 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
+  packages/.release:
+    dependencies:
+      '@web-core/cli':
+        specifier: workspace:*
+        version: link:../cli
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.13.3
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../build
+      '@web-core/lint':
+        specifier: workspace:*
+        version: link:../lint
+      eslint:
+        specifier: ^10.8.1
+        version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
   packages/assembly:
     dependencies:
       '@web-core/trace':
@@ -366,6 +388,37 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
+
+  packages/cli:
+    dependencies:
+      commander:
+        specifier: ^15.0.0
+        version: 15.0.0
+      cosmiconfig:
+        specifier: ^10.0.1
+        version: 10.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.13.3
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../build
+      '@web-core/lint':
+        specifier: workspace:*
+        version: link:../lint
+      eslint:
+        specifier: ^10.8.1
+        version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.2.1
+        version: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   packages/form:
     dependencies:
@@ -3185,6 +3238,10 @@ packages:
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
+  commander@15.0.0:
+    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+    engines: {node: '>=22.12.0'}
+
   content-disposition@1.1.0:
     resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
     engines: {node: '>=18'}
@@ -3214,6 +3271,10 @@ packages:
   cors@2.8.6:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
+
+  cosmiconfig@10.0.1:
+    resolution: {integrity: sha512-/zvGoYn0y27QTBmK+0B+oPdEPC4fKGUmJsMTQbDjqph00TrkqfVFW/M+C6ya54sYCgHC6QCwK/mI6djt8cEGHQ==}
+    engines: {node: ^22.18 || >= 24}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -3383,6 +3444,10 @@ packages:
   entities@8.0.0:
     resolution: {integrity: sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==}
     engines: {node: '>=20.19.0'}
+
+  env-paths@2.2.1:
+    resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
+    engines: {node: '>=6'}
 
   es-define-property@1.0.1:
     resolution: {integrity: sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==}
@@ -3830,6 +3895,10 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
+
+  js-yaml@5.4.2:
+    resolution: {integrity: sha512-m+aqu+LwO1O6sIopafj8HUVl5aawITwZQe/yHpMCKjaWBaA/d07B/QdMb3529REftiU+RMMHL3Vlsw3hON7vWg==}
+    hasBin: true
 
   jsdom@30.0.1:
     resolution: {integrity: sha512-52v7mUVUfNQVYYqE1lcdaymWL0njO7lTLUog6ZvW2U5KsbiLk/GnZlVJ+qx0xfNJZ6Gn+KSpPNE52vurbxZwrA==}
@@ -7512,6 +7581,8 @@ snapshots:
 
   comma-separated-tokens@2.0.3: {}
 
+  commander@15.0.0: {}
+
   content-disposition@1.1.0: {}
 
   content-type@1.0.5: {}
@@ -7530,6 +7601,11 @@ snapshots:
     dependencies:
       object-assign: 4.1.1
       vary: 1.1.2
+
+  cosmiconfig@10.0.1:
+    dependencies:
+      env-paths: 2.2.1
+      js-yaml: 5.4.2
 
   cross-spawn@7.0.6:
     dependencies:
@@ -7674,6 +7750,8 @@ snapshots:
     optional: true
 
   entities@8.0.0: {}
+
+  env-paths@2.2.1: {}
 
   es-define-property@1.0.1: {}
 
@@ -8210,6 +8288,10 @@ snapshots:
   js-tokens@10.0.0: {}
 
   js-tokens@4.0.0: {}
+
+  js-yaml@5.4.2:
+    dependencies:
+      argparse: 2.0.1
 
   jsdom@30.0.1:
     dependencies:

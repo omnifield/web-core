@@ -27,6 +27,11 @@ packages:
   - packages/build/test/fixture-dep
   - packages/lint/test/consumer
 
+  # Скрипты выпуска пакетов (`packages/.release`) — рабочая папка скоупа, не пакет. Объявлена
+  # строкой, потому что `packages/*` скрытые папки не берёт; в поставку не едет (`private`), в
+  # выпуске не участвует (`versioning.ignore` ниже).
+  - packages/.release
+
   # MCP-сервер зоны skin (`apps/studio/.mcp`) — вложен глубже одного уровня, `apps/*`
   # его не видит. Ручки на уже готовую механику `packages/skin`, отдельный процесс, свой
   # package.json — тот же довод, что у стендов выше.
@@ -56,8 +61,7 @@ versioning:
   fixed:
     - - '@web-core/assembly'
       - '@web-core/build'
-      - '@web-core/chat'
-      - '@web-core/feeder'
+      - '@web-core/cli'
       - '@web-core/form'
       - '@web-core/generators'
       - '@web-core/io'
@@ -73,6 +77,12 @@ versioning:
       - '@web-core/trace'
       - '@web-core/ui'
   ignore:
+    - './packages/.release'
+    # Выпуск заведён для ПАКЕТОВ (`packages/`). У `interfaces/` свой скоуп выпуска — когда он
+    # понадобится, он получит свои скрипты и свою версию; пока они из выпуска исключены целиком,
+    # иначе приезжали бы в план прицепом («via dependencies») к каждой правке базы.
+    - './interfaces/chat'
+    - './interfaces/feeder'
     - './apps/dashboard'
     - './apps/reference'
     - './apps/studio'
