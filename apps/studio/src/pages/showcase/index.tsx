@@ -14,27 +14,20 @@ import { PreviewControls } from "#/widgets/preview";
 import { RailPanel, RailSections } from "#/widgets/rail";
 
 export function ShowcasePage() {
-  const groups = uiCatalog().map((catalog) => {
-    const selection = useRouterCatalogSelection({
-      param: "name",
-      to: catalog.to,
-    });
-
-    return {
-      value: catalog.value,
-      label: catalog.label,
-      adapter: catalog.items,
-      get activeValue() {
-        return selection.activeValue;
-      },
-      onSelect: selection.onSelect,
-    };
-  });
+  const selection = useRouterCatalogSelection("/showcase/{-$component}");
 
   return (
     <Workspace data-variant="multi-column" outlined>
       <WorkspaceSidebar style={{ width: railVar("rail-md"), padding: 0 }}>
-        <CatalogTrees groups={groups} />
+        <CatalogTrees
+          groups={uiCatalog().map((catalog) => ({
+            value: catalog.value,
+            label: catalog.label,
+            adapter: catalog.items,
+            activeValue: selection.activeValue,
+            onSelect: selection.onSelect,
+          }))}
+        />
       </WorkspaceSidebar>
       <WorkspaceMain style={{ padding: 0 }}>
         <Outlet />
