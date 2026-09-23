@@ -1,14 +1,14 @@
-// Тонкий GraphQL-клиент к фидбэку — зеркало трёх операций backend/presets's feedback.graphql
+// Тонкий GraphQL-клиент к фидбэку — зеркало трёх операций общей схемы службы хранения
 // (уже принята и реализована), ни поля сверх того, что там есть. Фидбэк — отдельная сущность,
-// не вид пресета (feedback-bucket-and-type, backend/presets/ROADMAP.yaml), поэтому свой минимальный
-// набор отказов (FeedbackDown/FeedbackRefused), не общий с ../wire.ts пресетов — делить контракт
+// не вид пресета — поэтому свой минимальный набор отказов (FeedbackDown/FeedbackRefused), не
+// общий с ../wire.ts пресетов — делить контракт
 // ошибок между несвязанными сущностями незачем. `url` — параметр каждого вызова, не константа
 // модуля: этот пакет не знает и не должен знать, что сегодня это тот же процесс, что у пресетов.
 // Тулы конкретной зоны — отдельное ТЗ, не этот файл.
 
 import { ClientError, gql, graphqlRequest } from "@web-core/query/graphql";
 
-/** Заявка — зеркало `FeedbackEntry` схемы (`backend/presets/internal/graphql/feedback.graphql`). */
+/** Заявка — зеркало `FeedbackEntry` из общей схемы фидбэка на стороне службы хранения. */
 export interface FeedbackEntry {
   readonly id: string;
   readonly savedAt: string;

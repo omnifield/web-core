@@ -121,7 +121,7 @@ categories:
         milestone: null
         name: paginate() — курсорная пагинация list_x
         description: |
-          Означает: любой list_x-тул (list_presets в skin-mcp, будущие list_x в других зонах)
+          Означает: любой list_x-тул (list_presets у первого потребителя, будущие list_x в других зонах)
           отдаёт страницу с nextCursor, а не весь список разом — сегодня list_presets в
           первом MCP-сервере зоны отдаёт всё по виду без лимита.
 
@@ -293,7 +293,7 @@ categories:
           опциональное, более дешёвый путь (серия screenshot без ожидания settle сразу после click)
           уже доступен существующими тулами без единой новой строки; трейсы — задача на будущее,
           если этого дешёвого пути не хватит на практике (см. FAQ.md).
-          Проверено живьём: полный цикл navigate→snapshot→click→snapshot через реальный skin-mcp
+          Проверено живьём: полный цикл navigate→snapshot→click→snapshot через реальный сервер зоны
           (не только сам пакет) — текст страницы после клика меняется ровно так, как задал
           обработчик. 28/28 в packages/mcp (было 27).
 
@@ -307,15 +307,15 @@ categories:
         name: "`@web-core/mcp/feedback` — тонкий GraphQL-клиент к фидбэку, product-agnostic"
         description: |
           Контекст: фидбэк-тулы первого MCP-сервера зоны сегодня зовут СВОЙ отдельный REST-клиент
-          (`engine/store.ts`, `save`/`list`/`read`/`update` на `kind:"feedback"`) — мёртв против
-          нового бэка (REST снят). Фидбэк решением user — сущность общая на все продукты, не скина
-          вид пресета: `backend/presets` завёл под неё отдельный кусок схемы, НЕ `Preset`
-          (`feedback-bucket-and-type`, `backend/presets/ROADMAP.yaml`). Этот пакет — общий тулинг
+          (`save`/`list`/`read`/`update` на `kind:"feedback"`) — мёртв против нового бэка (REST
+          снят). Фидбэк решением user — сущность общая на все продукты, не вид пресета одной
+          зоны: служба хранения завела под неё отдельный кусок схемы, НЕ `Preset`, своим
+          решением на своей стороне. Этот пакет — общий тулинг
           для ЛЮБОГО будущего MCP-сервера зоны, значит транспорт живёт здесь, не в зоне-потребителе.
 
           Своя папка `src/feedback/`, свой подпуть `@web-core/mcp/feedback` — тот же приём, что у
           `/peer`/`/browser` (независимая тема, не через корневой барель). Реальная схема бэка
-          (`backend/presets/internal/graphql/feedback.graphql`, уже реализована и принята):
+          (общая схема фидбэка службы хранения, уже реализована и принята):
 
           ```graphql
           type FeedbackEntry { id savedAt tool action expected actual sign status at resolvedAt note }
@@ -336,7 +336,7 @@ categories:
           (фидбэк не пресет, делить контракт ошибок незачем).
 
           `url` — параметр вызова, не константа пакета: этот адрес совпадает с адресом службы
-          пресетов ТОЛЬКО потому, что сегодня это один и тот же процесс backend/presets — пакет
+          пресетов ТОЛЬКО потому, что сегодня это один и тот же процесс — пакет
           об этом ничего не знает и не должен, вызывающий сам решает, какой
           адрес передать.
 
@@ -347,7 +347,7 @@ categories:
           НЕ входит в объём: тулы `report_feedback`/`list_feedback`/`get_feedback`/
           `resolve_feedback` в самой зоне-потребителе — это вайринг конкретной
           зоны поверх этих трёх функций, отдельное ТЗ, не этот файл. Поле "какой продукт/сервер"
-          в форме записи — открытый вопрос со стороны backend/presets, этот пакет зеркалит схему
+          в форме записи — открытый вопрос со стороны службы хранения, этот пакет зеркалит схему
           как она есть, не добавляет полей, которых там нет.
 
   - category: Поставка наружу
@@ -419,7 +419,7 @@ categories:
         name: response_format (concise/detailed)
         description: |
           Означает: переключатель подробности ответа (по совету Anthropic — DETAILED/CONCISE) —
-          решение конкретного тула конкретной зоны (например get_passport в skin-mcp), не общий
+          решение конкретного тула конкретной зоны (например get_passport у первого потребителя), не общий
           примитив этого пакета.
 
       - id: eval-harness
@@ -431,7 +431,7 @@ categories:
         description: |
           Означает: набор реалистичных многошаговых сценариев с проверяемым результатом (гайд
           Anthropic называет это главным способом измерить качество тула) — отдельная задача по
-          зоне (например skin-mcp), не часть общего тулинга.
+          зоне, не часть общего тулинга.
 
 log:
   - id: build-moved-to-library-factory
@@ -459,7 +459,7 @@ log:
     summary: >
       Реализован ровно по ТЗ user: своя папка `src/feedback/`, свой подпуть `@web-core/mcp/feedback`
       (тот же приём, что `/peer`/`/browser` — независимая тема, не через корневой барель), три
-      функции — зеркало трёх операций `backend/presets`'s `feedback.graphql`
+      функции — зеркало трёх операций общей схемы фидбэка службы хранения
       (`reportFeedback`/`listFeedback`/`resolveFeedback`), ни поля сверх того, что несёт схема
       (`FeedbackEntry`/`FeedbackInput` — рукописные типы тем же приёмом, что `packages/skin/
       src/presets/client.ts`'s `WirePreset`). Транспорт — `graphqlRequest`/`gql` из `@web-core/
@@ -476,7 +476,7 @@ log:
       `FeedbackDown`, HTTP < 500 с GraphQL-`errors` (в т.ч. «уже resolved» от бэка) —
       `FeedbackRefused` с текстом бэка. 42/42 в пакете (было 34).
 
-  - id: browser-mechanic-moved-from-skin-mcp
+  - id: browser-mechanic-moved-from-zone
     type: plan
     date: 2026-09-05
     summary: >
@@ -554,7 +554,7 @@ log:
       Vite, JSON-профиль типов, бинарник). Здесь все три функции потребляются одним способом
       (импорт в TS-файл MCP-сервера зоны) — подпути были поверхностью ради поверхности. Собрано в
       один src/index.ts, один адрес поставки; заодно убраны все объясняющие абзацы из кода
-      (правило корневого README "в коде — не проза") — обоснования только в FAQ.md.
+      (правило репозитория "в коде — не проза") — обоснования только в FAQ.md.
 
   - id: z-via-io-not-raw-zod
     type: plan
@@ -593,7 +593,7 @@ log:
       SDK (@modelcontextprotocol/sdk/server/mcp.js, normalizeObjectSchema/toJsonSchemaCompat)
       перед написанием кода показало: registerTool уже принимает настоящую Zod-схему в
       input/outputSchema напрямую и сам делает и конвертацию, и safeParseAsync-валидацию —
-      z.toJSONSchema в kit.ts решает другую задачу (показать io-схему КАК ДАННЫЕ внутри ответа
+      z.toJSONSchema там решает другую задачу (показать io-схему КАК ДАННЫЕ внутри ответа
       тула, не заявить outputSchema самого тула). Точка /schema снята, output стал просто полем
       ToolDefinition — меньше поверхности, тот же результат.
 
@@ -614,7 +614,7 @@ log:
     date: 2026-09-05
     summary: >
       Объём v1 согласован после трёх источников: 1) построчный аудит первого MCP-сервера зоны
-      (kit.ts/mechanics.ts/validate.ts/tools.ts/store.ts/server.ts) — консолидированные тулы и
+      (все его файлы, не выборка) — консолидированные тулы и
       actionable-флавы уже хороши, но annotations/outputSchema отсутствуют целиком, isError не
       используется никогда, list_presets без пагинации, транспорт только stdio; 2) внешний
       research — гайд Anthropic "Writing effective tools for AI agents" (консолидация тулов,
