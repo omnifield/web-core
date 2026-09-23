@@ -395,7 +395,7 @@ CSS: правило браузера `[hidden] { display: none }` бьётся �
 | --- | --- | --- |
 | контрол `md` | ступень высоты `control-height-md`, своей вертикальной набивки нет | `paddingInline: space-4`, `fontSize: font-size-md` |
 | контрол `sm` | то же со ступенью `control-height-sm` | `paddingInline: space-3`, `fontSize: font-size-sm` |
-| строка списка | кликабельна (`cursor: pointer`) и несёт свою вертикальную набивку | `paddingInline: space-3`, `paddingBlock: space-2`; шрифт свой |
+| строка списка | кликабельна (`cursor: pointer`) и несёт свою вертикальную набивку | `paddingInline: space-2`, `paddingBlock: space-1`; шрифт свой |
 | панель | контейнер вокруг содержимого | со своими пунктами — `space-1`; свободное содержимое — `space-4`; карточка — `space-6` |
 
 Высота, набивка и шрифт контрола едут ВТРОЁМ: взял ступень — взял все три значения. Смесь

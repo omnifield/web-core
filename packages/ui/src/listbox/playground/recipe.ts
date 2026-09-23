@@ -81,8 +81,8 @@ export const recipe: SlotRecipe = {
         alignItems: "center",
         justifyContent: "space-between",
         gap: "var(--space-2)",
-        paddingInline: "var(--space-3)",
-        paddingBlock: "var(--space-2)",
+        paddingInline: "var(--space-2)",
+        paddingBlock: "var(--space-1)",
         color: "var(--neutral-12)",
         cursor: "pointer",
         transition,
@@ -135,7 +135,7 @@ export const recipe: SlotRecipe = {
   variants: {
     comfortable: {
       content: { props: { gap: "var(--space-1)", padding: "var(--space-1)" } },
-      item: { props: { paddingInline: "var(--space-3)", paddingBlock: "var(--space-2)" } },
+      item: { props: { paddingInline: "var(--space-2)", paddingBlock: "var(--space-1)" } },
       itemGroupLabel: { props: { paddingBlock: "var(--space-2)" } },
     },
     compact: {

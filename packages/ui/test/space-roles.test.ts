@@ -26,7 +26,7 @@ const CONTROL: Readonly<Record<string, { readonly paddingInline: string; readonl
 };
 
 /** Набивка строки списка — одна на все списки кита, независимо от компонента. */
-const ROW = { paddingInline: "var(--space-3)", paddingBlock: "var(--space-2)" } as const;
+const ROW = { paddingInline: "var(--space-2)", paddingBlock: "var(--space-1)" } as const;
 
 // НЕ `import.meta.glob` — этот приём уже роняло витрину зоны один раз (`PWEB-126`, разбор
 // «попытка import.meta.glob... провалена и откачена», Windshift): путь через кастомный алиас

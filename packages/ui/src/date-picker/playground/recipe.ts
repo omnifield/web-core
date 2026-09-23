@@ -305,8 +305,8 @@ export const recipe: SlotRecipe = {
     presetTrigger: {
       props: {
         display: "inline-flex",
-        paddingInline: "var(--space-3)",
-        paddingBlock: "var(--space-2)",
+        paddingInline: "var(--space-2)",
+        paddingBlock: "var(--space-1)",
         borderWidth: "0",
         borderRadius: "var(--radius-md)",
         background: "var(--neutral-3)",
