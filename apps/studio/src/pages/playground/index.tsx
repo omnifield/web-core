@@ -6,16 +6,26 @@ import {
   WorkspaceRightbar,
   WorkspaceSidebar,
 } from "@web-core/ui";
-import { tree } from "#/entities/component";
+import { componentsTree } from "#/entities/component";
+import { catalogs } from "#/features/catalogs";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
 
 export function PlaygroundPage() {
   const selection = useRouterCatalogSelection("/showcase/{-$component}");
 
+  console.log(
+    "каталоги плейграунда",
+    catalogs().map((catalog) => ({
+      value: catalog.value,
+      label: catalog.label,
+      items: catalog.items(),
+    })),
+  );
+
   return (
     <Workspace data-variant="multi-column" outlined>
       <WorkspaceSidebar style={{ width: railVar("rail-md") }}>
-        <CatalogTree adapter={tree} {...selection} />
+        <CatalogTree adapter={componentsTree} {...selection} />
       </WorkspaceSidebar>
       <WorkspaceMain style={{ padding: 0 }}>
         <Outlet />

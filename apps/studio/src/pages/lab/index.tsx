@@ -7,7 +7,7 @@ import {
   WorkspaceSidebar,
 } from "@web-core/ui";
 
-import { tree } from "#/entities/component";
+import { componentsTree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
 import { ApiSetup } from "#/features/api-setup";
 import { RailPanel } from "#/widgets/rail";
@@ -28,7 +28,7 @@ export function LabPage() {
   return (
     <Workspace data-variant="multi-column" outlined>
       <WorkspaceSidebar style={{ width: railVar("rail-md") }}>
-        <CatalogTree adapter={tree} {...selection} />
+        <CatalogTree adapter={componentsTree} {...selection} />
       </WorkspaceSidebar>
         <WorkspaceMain style={{ padding: 0 }}>
           <Outlet />

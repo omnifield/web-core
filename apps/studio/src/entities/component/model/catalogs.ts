@@ -1,7 +1,7 @@
 import type { TreeItemData } from "@web-core/ui";
 import { GROUPS, groupOf, listComponents } from "@web-core/ui/component-info";
 
-export function tree(): readonly TreeItemData[] {
+export function componentsTree(): readonly TreeItemData[] {
   const components = listComponents();
 
   return Object.entries(GROUPS)

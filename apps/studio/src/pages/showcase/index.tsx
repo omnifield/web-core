@@ -7,7 +7,7 @@ import {
   WorkspaceSidebar,
 } from "@web-core/ui";
 import type { TreeItemData } from "@web-core/ui";
-import { tree } from "#/entities/component";
+import { componentsTree } from "#/entities/component";
 import { ComponentSettings } from "#/features/settings";
 import { CatalogTrees, useRouterCatalogSelection } from "#/widgets/catalogs";
 import { FeedPanel } from "#/widgets/feed";
@@ -43,7 +43,7 @@ export function ShowcasePage() {
             {
               value: "components",
               label: "Компоненты",
-              adapter: tree,
+              adapter: componentsTree,
               activeValue: selection.activeValue,
               onSelect: selection.onSelect,
             },
