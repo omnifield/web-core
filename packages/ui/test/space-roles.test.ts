@@ -29,7 +29,7 @@ const CONTROL: Readonly<Record<string, { readonly paddingInline: string; readonl
 const ROW = { paddingInline: "var(--space-2)", paddingBlock: "var(--space-1)" } as const;
 
 // НЕ `import.meta.glob` — этот приём уже роняло витрину зоны один раз (`PWEB-126`, разбор
-// «попытка import.meta.glob... провалена и откачена», Windshift): путь через кастомный алиас
+// «попытка import.meta.glob... провалена и откачена»): путь через кастомный алиас
 // дев-сервера (`packages/build/src/workspace-source.ts`) резолвил такой импорт иначе, чем
 // настоящий `vite build`, и `import.meta.glob` требует `vite/client` в `types` `tsconfig.json`
 // сверх того. Проба здесь читает файловую систему НАПРЯМУЮ (`readdirSync`) и импортирует

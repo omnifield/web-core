@@ -171,10 +171,10 @@ log:
     type: question
     date: 2026-09-06
     summary: >
-      `apps/skin/src/entities/component/ui/docs/index.tsx` (мёртвый WIP-код за `return "ef"`, но со
+      Приложение-потребитель держало старую форму API: мёртвый WIP-код за ранним `return`, но со
       статическим импортом `DialogTrigger`/`DialogTitle`/`DialogDescription`/`DialogCloseTrigger` —
-      этого хватило, чтобы Vite падал на статическом резолве ESM) держал старую форму API. Файл вне
-      зоны `packages/ui/` — не тронут, эскалировано user напрямую в чате, не через ADR.
+      этого хватило, чтобы Vite падал на статическом резолве ESM. Файл вне зоны кита — не тронут,
+      эскалировано user напрямую в чате, не через ADR.
 
   - id: full-surface-context-missing
     type: plan

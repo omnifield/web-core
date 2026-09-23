@@ -1,4 +1,4 @@
-// ПОРОЖДЁН СБОРКОЙ (`scripts/generate.mjs`, движок — `@web-core/generators/barrel`) — НЕ ПРАВИТЬ И НЕ КОММИТИТЬ.
+// ПОРОЖДЁН СБОРКОЙ (`pnpm run generate`, движок — `@web-core/generators/barrel`) — НЕ ПРАВИТЬ И НЕ КОММИТИТЬ.
 //
 // Поверхность зоны `ui` — примитивы поверх `@ark-ui/solid`/`@kobalte/core`.
 //
