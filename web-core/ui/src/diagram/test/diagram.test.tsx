@@ -1,6 +1,6 @@
 import { RenderTree } from "@web-core/assembly/render";
 import { scaleBand, scaleLinear } from "d3-scale";
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { kitComponentRenderer } from "../../component-registry.jsx";

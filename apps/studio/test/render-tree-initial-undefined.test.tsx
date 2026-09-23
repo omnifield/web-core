@@ -1,5 +1,5 @@
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 import { RenderTree } from "@web-core/assembly/render";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";

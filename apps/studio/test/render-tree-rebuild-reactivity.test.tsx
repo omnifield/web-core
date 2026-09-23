@@ -3,8 +3,8 @@
 // сборками вроде tree-view), теряло байндинг со второй пересборки. Тест написан ГОЛЫМ RenderTree,
 // без Renderer apps/skin — доказывает, что причина была в движке, не в обвязке.
 
-import { createMemo, createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createMemo, createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 import { RenderTree } from "@web-core/assembly/render";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";

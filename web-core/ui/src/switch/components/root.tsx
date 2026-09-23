@@ -3,7 +3,7 @@ import {
   SwitchRoot as ArkRoot,
   type SwitchRootProps as ArkRootProps,
 } from "@ark-ui/solid/switch";
-import { splitProps } from "solid-js";
+import { splitProps } from "@web-core/solid";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
 import { useKitLife } from "../../shared/utils/skin-life.js";

@@ -1,4 +1,4 @@
-import { createMemo, For, type JSX } from "solid-js";
+import { createMemo, For, type JSX } from "@web-core/solid";
 import {
   TabsContent,
   TabsList,

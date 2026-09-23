@@ -1,4 +1,4 @@
-import { createEffect, For, type JSX, onCleanup, Show } from "solid-js";
+import { createEffect, For, type JSX, onCleanup, Show } from "@web-core/solid";
 import type { NativeStyle } from "@web-core/skin";
 import { type PlanePosition, snapIndexAt, withinWindow } from "./lib/position";
 

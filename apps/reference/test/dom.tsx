@@ -5,8 +5,8 @@
 // `@solidjs/router`, а `render` у Solid есть свой. Приложению здесь важнее прямота: чем
 // меньше слоёв между тестом и документом, тем точнее видно, что именно сломалось в шве.
 
-import type { JSX } from "solid-js";
-import { render } from "solid-js/web";
+import type { JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 
 const mounted: Array<() => void> = [];
 

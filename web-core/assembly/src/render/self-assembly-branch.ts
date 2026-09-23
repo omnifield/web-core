@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 
 import { readAddress, type Registry } from "../engine/registry.js";
 import { growSelfAssembly } from "../engine/self-assembly.js";

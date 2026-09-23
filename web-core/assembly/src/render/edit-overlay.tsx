@@ -1,7 +1,7 @@
 // см. README.md / FAQ.md
 
-import { type Component, type JSX } from "solid-js";
-import { createComponent } from "solid-js/web";
+import { type Component, type JSX } from "@web-core/solid";
+import { createComponent } from "@web-core/solid/web";
 
 import type { AssemblyElement, AssemblyNode, AssemblyReference, NodeId } from "../engine/tree.js";
 import type { EditOverlayProps } from "./types.js";

@@ -6,7 +6,7 @@ import {
   type Accessor,
   type JSX,
   type ParentProps,
-} from "solid-js";
+} from "@web-core/solid";
 import { isContent, type AssemblyNode, type AssemblyTree } from "@web-core/assembly";
 import type { z } from "@web-core/io";
 

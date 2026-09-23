@@ -1,4 +1,4 @@
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "@web-core/solid";
 import { useChat } from "@web-core/neurobox/solid";
 import type { ConnectConnectionAdapter } from "@web-core/neurobox";
 

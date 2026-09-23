@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 import { layoutGroup } from "@web-core/skin";
 import { Flow, Typography } from "@web-core/ui";
 import type { SettingFacts, SettingValue } from "#/entities/settings";

@@ -1,7 +1,7 @@
 // см. README.md / FAQ.md
 
-import { type Component, createEffect, createMemo, Show, Suspense } from "solid-js";
-import { createComponent } from "solid-js/web";
+import { type Component, createEffect, createMemo, Show, Suspense } from "@web-core/solid";
+import { createComponent } from "@web-core/solid/web";
 
 import { checkTree } from "../engine/integrity.js";
 import { readAddress } from "../engine/registry.js";

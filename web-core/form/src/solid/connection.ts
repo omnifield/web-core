@@ -1,4 +1,4 @@
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, type Accessor } from "@web-core/solid";
 import type { AssemblyTree } from "@web-core/assembly";
 import type { z } from "@web-core/io";
 

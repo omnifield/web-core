@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js";
+import type { JSX } from "@web-core/solid";
 import { spaceVar } from "@web-core/skin";
 import {
   Flow,

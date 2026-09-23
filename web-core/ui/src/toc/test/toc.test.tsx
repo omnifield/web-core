@@ -3,8 +3,8 @@ import { RenderTree } from "@web-core/assembly/render";
 import { admits, baseAssemblyOf } from "@web-core/skin/editor";
 import type { PassportAssembly, PassportEditorInfo } from "@web-core/skin/editor";
 import type { ComponentPassport } from "@web-core/skin/model";
-import { For } from "solid-js";
-import { render } from "solid-js/web";
+import { For } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { kit as tocKit, Toc, TocItem, TocLink, TocList } from "../components/index.js";

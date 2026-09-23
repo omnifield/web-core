@@ -1,8 +1,8 @@
 import { passportLookup, skinGaps, withPassports } from "@web-core/skin";
 import type { PassportEditorInfo } from "@web-core/skin/editor";
 import type { Outfit, Palette } from "@web-core/skin/model";
-import { For } from "solid-js";
-import { render } from "solid-js/web";
+import { For } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { describe, expect, it } from "vitest";
 
 import {

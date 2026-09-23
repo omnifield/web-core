@@ -40,7 +40,7 @@ import {
   Textarea,
   Toggle,
 } from "@web-core/ui";
-import { createMemo, createSignal, Show } from "solid-js";
+import { createMemo, createSignal, Show } from "@web-core/solid";
 
 import { trace } from "./trace";
 

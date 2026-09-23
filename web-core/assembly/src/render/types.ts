@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import type { Component, JSX } from "solid-js";
+import type { Component, JSX } from "@web-core/solid";
 
 import type { Registry } from "../engine/registry.js";
 import type {

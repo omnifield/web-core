@@ -11,7 +11,7 @@ import {
   type JSX,
   type ParentProps,
   type Resource,
-} from "solid-js";
+} from "@web-core/solid";
 
 import { createSkinConnection, type SkinConnection } from "./connection.js";
 import type { ComponentPassport } from "../engine/passport/form/index.js";

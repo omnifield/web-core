@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 
 import { resolveComponent, type Registry } from "../engine/registry.js";
 import { isElement, type AssemblyNode } from "../engine/tree.js";

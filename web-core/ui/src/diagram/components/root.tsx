@@ -1,5 +1,5 @@
 import { scaleBand, scaleLinear, scaleLog, scaleTime } from "d3-scale";
-import { createMemo, createSignal, onCleanup, splitProps, type JSX } from "solid-js";
+import { createMemo, createSignal, onCleanup, splitProps, type JSX } from "@web-core/solid";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
 import { useKitLife } from "../../shared/utils/skin-life.js";

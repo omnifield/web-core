@@ -1,5 +1,5 @@
 import { NavigationMenuItem as ArkItem } from "@ark-ui/solid/navigation-menu";
-import type { JSX } from "solid-js";
+import type { JSX } from "@web-core/solid";
 
 import { dropAddress } from "../../../shared/utils/slot-chain";
 import { traceLife } from "../../../shared/utils/trace";

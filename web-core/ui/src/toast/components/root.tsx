@@ -5,7 +5,7 @@ import {
   ToastCloseTrigger as ArkCloseTrigger,
   Toaster as ArkToaster,
 } from "@ark-ui/solid/toast";
-import { Portal } from "solid-js/web";
+import { Portal } from "@web-core/solid/web";
 
 import { getToaster } from "../control.js";
 import { useKitLife } from "../../shared/utils/skin-life.js";

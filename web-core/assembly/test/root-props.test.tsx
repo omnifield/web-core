@@ -2,8 +2,8 @@
 // корня, не трогая дерево: иначе каждый клик пересобирал бы дерево целиком. Почему это состояние
 // показа, а не структура — FAQ.md.
 
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

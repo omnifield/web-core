@@ -111,6 +111,7 @@
     "@web-core/io": "workspace:*",
     "@web-core/neurobox": "workspace:*",
     "@web-core/query": "workspace:*",
+    "@web-core/solid": "workspace:*",
     "@web-core/trace": "workspace:*",
     "@zag-js/anatomy": "^1.43.1"
   },

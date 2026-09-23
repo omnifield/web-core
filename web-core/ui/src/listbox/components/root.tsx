@@ -2,7 +2,7 @@ import {
   ListboxRoot as ArkRoot,
   type ListboxRootProps as ArkRootProps,
 } from "@ark-ui/solid/listbox";
-import { createMemo, splitProps } from "solid-js";
+import { createMemo, splitProps } from "@web-core/solid";
 
 import {
   createListCollection,

@@ -1,4 +1,4 @@
-import { Match, Show, Switch } from "solid-js";
+import { Match, Show, Switch } from "@web-core/solid";
 import { useFeed } from "#/entities/feed";
 import type { Cell } from "../../lib/cell";
 import { usePreview } from "../../use";

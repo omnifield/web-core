@@ -1,7 +1,7 @@
 import type { AssemblyTree } from "@web-core/assembly";
 import { ValidationProvider } from "@web-core/form/solid";
 import { z } from "@web-core/io";
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { passport as fieldPassport } from "../src/field/entity/passport.js";

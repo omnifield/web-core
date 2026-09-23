@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 import type { TreeItemData } from "@web-core/ui";
 import { Renderer } from "#/shared/ui/renderer";
 import { createCatalogSelection } from "../lib/selection";

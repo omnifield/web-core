@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { createContext, createMemo, useContext } from "solid-js";
+import { createContext, createMemo, useContext } from "@web-core/solid";
 
 import type { Registry } from "../engine/registry.js";
 import { isReference, type AssemblyNode, type AssemblyTree } from "../engine/tree.js";

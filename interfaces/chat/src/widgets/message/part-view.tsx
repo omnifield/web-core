@@ -1,5 +1,5 @@
-import { Show } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { Show } from "@web-core/solid";
+import { Dynamic } from "@web-core/solid/web";
 
 import type { Part } from "../../entities/conversation/model";
 import { rendererOf } from "../../entities/conversation/part-registry";

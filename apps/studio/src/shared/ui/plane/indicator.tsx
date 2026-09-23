@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { layoutGroup, type NativeStyle, spaceVar } from "@web-core/skin";
 import { Flow } from "@web-core/ui";
 import { type PlanePlacement, placementStyle } from "./lib/placement";

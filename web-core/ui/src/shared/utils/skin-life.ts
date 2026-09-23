@@ -1,7 +1,7 @@
 import { useComponentValidation, type ComponentValidation } from "@web-core/form/solid";
 import { useComponentSkin } from "@web-core/skin/solid";
 import type { ComponentPassport } from "@web-core/skin/model";
-import type { Accessor } from "solid-js";
+import type { Accessor } from "@web-core/solid";
 
 import { traceLife } from "./trace.js";
 

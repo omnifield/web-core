@@ -2,8 +2,8 @@
 // зависит от data) — если баг («второй .set() не доезжает») повторяется и здесь, дело в
 // RenderTree/RenderNode (`@web-core/assembly/render`), не в том, как apps/skin строит дерево.
 
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 import { RenderTree } from "@web-core/assembly/render";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";

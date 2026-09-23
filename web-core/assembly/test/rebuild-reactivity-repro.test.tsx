@@ -2,8 +2,8 @@
 // те же id узлов — как делает материализация сборки у кита), теряло байндинг со ВТОРОЙ
 // пересборки. Голый `RenderTree`, без кита. Механизм самоубийства ленивого мемо — FAQ.md.
 
-import { createMemo, createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createMemo, createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

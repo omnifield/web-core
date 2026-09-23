@@ -4,7 +4,7 @@
 // Триггер двойной: не залогинен — обычный `DialogControl` (открывает модалку); залогинен — кнопка
 // "Logout" (разлогинивает, модалку вообще не трогает).
 
-import { createSignal, type JSX, Show } from "solid-js";
+import { createSignal, type JSX, Show } from "@web-core/solid";
 import {
   Button,
   Dialog,

@@ -4,7 +4,7 @@ import {
   splitProps,
   useContext,
   type Accessor,
-} from "solid-js";
+} from "@web-core/solid";
 import {
   TreeViewRoot as ArkRoot,
   TreeViewTree as ArkTree,

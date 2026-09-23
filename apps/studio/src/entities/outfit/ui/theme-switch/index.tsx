@@ -4,7 +4,7 @@
 // этот компонент только читает готовый контекст (`useSkin()`) и рисует UI поверх него, источником
 // сам не владеет.
 
-import { createEffect, createMemo, For, Show } from "solid-js";
+import { createEffect, createMemo, For, Show } from "@web-core/solid";
 import { useSkin } from "@web-core/skin/solid";
 import {
   Select,

@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 import { Typography } from "@web-core/ui";
 
 /** Показ содержимого объекта. Пока текстом — разбор по полям придёт позже. */

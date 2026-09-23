@@ -72,6 +72,7 @@
     "@tanstack/query-sync-storage-persister": "^5.102.8",
     "@tanstack/solid-query": "^5.102.8",
     "@tanstack/solid-query-devtools": "^5.102.8",
+    "@web-core/solid": "workspace:*",
     "graphql-request": "^7.4.0"
   },
   "peerDependencies": {

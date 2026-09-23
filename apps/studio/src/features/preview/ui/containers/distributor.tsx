@@ -1,4 +1,4 @@
-import { Match, Show, Switch } from "solid-js";
+import { Match, Show, Switch } from "@web-core/solid";
 import type { PassportAssembly } from "@web-core/skin/editor";
 import type { VariantSummary } from "@web-core/skin/presets";
 import { Typography } from "@web-core/ui";

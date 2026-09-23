@@ -5,8 +5,8 @@
 // путь из угла (0, 0), в котором плоскость не была, незачем. Здесь закреплено, что первый заход
 // встаёт без анимации, а последующие — плавно.
 
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Plane, type PlanePosition } from "#/shared/ui/plane";
 

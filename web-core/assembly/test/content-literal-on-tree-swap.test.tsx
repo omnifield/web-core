@@ -3,8 +3,8 @@
 // `updateNode`). Соседняя, но отдельная от `rebuild-reactivity-repro.test.tsx`: та про `bind`,
 // который резолвится из данных показа, эта — про литерал, который живёт в самом дереве.
 
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, updateNode, type AssemblyTree, type Registry } from "../src/index.js";

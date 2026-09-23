@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 import { AdapterMastering, API_USER } from "@web-core/feeder";
 import { describeSample, describeSchema } from "@web-core/io";
 import { Surface, Typography } from "@web-core/ui";

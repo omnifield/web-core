@@ -1,7 +1,7 @@
 // ШАПКА ВИТРИНЫ — переключатель экрана (showcase/lab/playground) и переключатель темы. Содержимое
 // `WorkspaceHeader`, не сам слот: раскладку (флекс, отступы) держит страница (`pages/index.tsx`).
 
-import { createMemo, For } from "solid-js";
+import { createMemo, For } from "@web-core/solid";
 import { useLocation, useNavigate, useParams } from "@web-core/router";
 import { layoutSelf } from "@web-core/skin";
 import {

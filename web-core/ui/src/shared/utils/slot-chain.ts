@@ -1,4 +1,4 @@
-import { splitProps } from "solid-js";
+import { splitProps } from "@web-core/solid";
 
 import { ADDRESS } from "./address.js";
 

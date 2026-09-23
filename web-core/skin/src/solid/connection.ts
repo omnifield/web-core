@@ -1,6 +1,6 @@
 // Реактивная обвязка над `SkinSwitch` для Solid. Разбор — FAQ.md.
 
-import { createSignal, onCleanup, type Accessor } from "solid-js";
+import { createSignal, onCleanup, type Accessor } from "@web-core/solid";
 
 import {
   makeSkinSwitch,

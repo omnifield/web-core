@@ -1,4 +1,4 @@
-import type { Accessor } from "solid-js";
+import type { Accessor } from "@web-core/solid";
 import { feedStoreOf } from "../model";
 
 /**

@@ -1,6 +1,6 @@
 import { createQuery } from "@tanstack/solid-query";
 import type { QueryClient, QueryExecuteOptions, QueryKey, QueryOptions } from "@tanstack/solid-query";
-import type { Accessor } from "solid-js";
+import type { Accessor } from "@web-core/solid";
 
 // Почему `initialData` не пробрасывается — FAQ.md, раздел defineQuery.
 type DefineOptions<TData> = Omit<QueryExecuteOptions<TData>, "queryKey" | "queryFn" | "initialData">;

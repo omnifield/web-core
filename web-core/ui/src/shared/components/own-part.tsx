@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js";
+import type { JSX } from "@web-core/solid";
 
 import { dropAddress } from "../utils/slot-chain.js";
 import { traceLife } from "../utils/trace.js";

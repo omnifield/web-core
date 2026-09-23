@@ -3,8 +3,8 @@ import { RenderTree } from "@web-core/assembly/render";
 import { admits, baseAssemblyOf } from "@web-core/skin/editor";
 import type { PassportAssembly, PassportEditorInfo } from "@web-core/skin/editor";
 import type { ComponentPassport } from "@web-core/skin/model";
-import { createContext, useContext } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, useContext } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Dialog, DialogContent, DialogControl, kit as dialogKit } from "../components/index.js";

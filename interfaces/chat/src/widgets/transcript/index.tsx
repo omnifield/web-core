@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, For, onCleanup, onMount, Show } from "@web-core/solid";
 import { ScrollArea, ScrollAreaContent, ScrollAreaViewport } from "@web-core/ui";
 
 import type { Message, Part } from "../../entities/conversation/model";

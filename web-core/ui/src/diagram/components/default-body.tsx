@@ -1,4 +1,4 @@
-import { For, Show, type JSX } from "solid-js";
+import { For, Show, type JSX } from "@web-core/solid";
 
 import type { DiagramRow, DiagramSeriesSpec } from "../entity/io.js";
 import { DiagramArea } from "./cartesian/area.js";

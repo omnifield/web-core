@@ -1,4 +1,4 @@
-import { Show, splitProps, type JSX } from "solid-js";
+import { Show, splitProps, type JSX } from "@web-core/solid";
 import {
   TreeViewBranchIndicator as ArkBranchIndicator,
   useTreeViewNodeContext,

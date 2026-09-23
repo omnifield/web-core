@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 import { Button, Field, FieldTextarea } from "@web-core/ui";
 import type { TextPart } from "../../entities/conversation/model";
 

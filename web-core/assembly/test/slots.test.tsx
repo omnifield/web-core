@@ -2,8 +2,8 @@
 // без слотов. Компоненты синтетические, дерево собрано литералом — предмет пробы вход
 // `RenderTree.slots`, а не разметка кита и не разворот шаблона.
 
-import { createContext, useContext } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, useContext } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

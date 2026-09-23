@@ -1,4 +1,4 @@
-import type { Accessor } from "solid-js";
+import type { Accessor } from "@web-core/solid";
 import type { ComponentDescriptor } from "@web-core/ui/component-info";
 import { contentOf, variantsOf } from "../api";
 import { componentStoreOf } from "../model";

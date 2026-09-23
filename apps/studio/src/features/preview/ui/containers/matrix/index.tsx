@@ -1,4 +1,4 @@
-import { batch, createSignal, For } from "solid-js";
+import { batch, createSignal, For } from "@web-core/solid";
 import { layoutSelf } from "@web-core/skin";
 import { Flow, FlowItem, Surface, Typography } from "@web-core/ui";
 import {

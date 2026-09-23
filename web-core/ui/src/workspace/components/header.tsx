@@ -1,5 +1,5 @@
 import { Polymorphic, type PolymorphicProps } from "@kobalte/core/polymorphic";
-import type { ValidComponent } from "solid-js";
+import type { ValidComponent } from "@web-core/solid";
 
 import { useAddress, slotAware } from "../../shared/utils/slot-chain.js";
 import { traceLife } from "../../shared/utils/trace.js";

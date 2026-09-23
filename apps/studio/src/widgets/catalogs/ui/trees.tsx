@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Surface,
   TabsContent,

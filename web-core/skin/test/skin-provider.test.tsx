@@ -1,4 +1,4 @@
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SkinProvider, useSkin } from "../src/solid/index.js";

@@ -1,4 +1,4 @@
-import { type Accessor, createMemo, splitProps } from "solid-js";
+import { type Accessor, createMemo, splitProps } from "@web-core/solid";
 
 import { cn } from "./cn.js";
 

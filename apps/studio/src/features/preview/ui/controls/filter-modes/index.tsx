@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
 import { FILTER_MODES, filterAppliesTo } from "../../../model";
 import { usePreview } from "../../../use";

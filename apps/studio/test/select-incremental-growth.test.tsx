@@ -3,8 +3,8 @@
 // реальными отдельными тиками (setTimeout, не один synchronous .set()), как клик «Добавить»
 // девять раз подряд, а не один set() с готовым массивом.
 
-import { createMemo, createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createMemo, createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 import { RenderTree } from "@web-core/assembly/render";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";

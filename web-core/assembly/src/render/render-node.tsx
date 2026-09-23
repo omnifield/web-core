@@ -9,8 +9,8 @@ import {
   type JSX,
   mergeProps,
   Show,
-} from "solid-js";
-import { createComponent } from "solid-js/web";
+} from "@web-core/solid";
+import { createComponent } from "@web-core/solid/web";
 
 import { isContent, isElement, isReference } from "../engine/tree.js";
 import { trace } from "../shared/trace.js";

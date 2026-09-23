@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, untrack } from "solid-js";
+import { createEffect, createSignal, For, untrack } from "@web-core/solid";
 import {
   Select,
   SelectContent,

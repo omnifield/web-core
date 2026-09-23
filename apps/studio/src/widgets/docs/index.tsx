@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 import { cardVar } from "@web-core/skin";
 import { Dialog, DialogContent, DialogControl } from "@web-core/ui";
 

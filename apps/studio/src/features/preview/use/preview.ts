@@ -1,4 +1,4 @@
-import { type Accessor, createMemo } from "solid-js";
+import { type Accessor, createMemo } from "@web-core/solid";
 import { useInfo } from "#/entities/component";
 import {
   type Axes,

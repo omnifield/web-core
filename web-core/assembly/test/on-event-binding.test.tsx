@@ -2,7 +2,7 @@
 // Первый блок — голый `dispatchHandlersFor` с поддельным событием: три источника бок о бок.
 // Второй — настоящий `<input>` через `RenderTree`: набор текста и живое `input`-событие, не мок.
 
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

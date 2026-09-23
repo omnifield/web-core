@@ -1,5 +1,5 @@
 import type { RowData } from "@tanstack/solid-table";
-import { For, Show, type JSX } from "solid-js";
+import { For, Show, type JSX } from "@web-core/solid";
 
 import { TableBody } from "./body.js";
 import { TableCell } from "./cell.js";

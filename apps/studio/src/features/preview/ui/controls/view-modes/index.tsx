@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
 import type { Cell } from "../../../lib/cell";
 import { ALL_CELLS, VIEW_MODES } from "../../../model";

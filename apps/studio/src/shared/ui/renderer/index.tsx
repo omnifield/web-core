@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js";
+import { createMemo } from "@web-core/solid";
 import {
   type CompositionElement,
   composeTree,

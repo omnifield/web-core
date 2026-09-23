@@ -1,4 +1,4 @@
-import { createSignal, For, type JSX } from "solid-js";
+import { createSignal, For, type JSX } from "@web-core/solid";
 import { layoutSelf } from "@web-core/skin";
 import {
   Carousel,

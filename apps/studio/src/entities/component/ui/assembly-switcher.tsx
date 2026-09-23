@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { layoutGroup, layoutSelf } from "@web-core/skin";
 import type { PassportAssembly } from "@web-core/skin/editor";
 import {

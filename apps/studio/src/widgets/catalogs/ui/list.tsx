@@ -1,5 +1,5 @@
-import type { JSX } from "solid-js";
-import { For } from "solid-js";
+import type { JSX } from "@web-core/solid";
+import { For } from "@web-core/solid";
 import { layoutSelf } from "@web-core/skin";
 import { Flow, FlowItem } from "@web-core/ui";
 

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createSignal, onCleanup, type Accessor } from "@web-core/solid";
 
 /** RAF-буферизация: `source` может обновляться чаще раза за кадр (быстрый стриминг токенов), но
  *  DOM пишем не чаще раза в кадр — «буферизация вместо релейаута на каждый чанк» из рыночной

@@ -2,8 +2,8 @@
 // веткой — обёрткой со своим провайдером. Контент, смонтированный ДО провайдера, обязан увидеть
 // его ПОСЛЕ (FAQ.md). Одна живая сборка, не два отдельных `render()` — дерево правится сигналом.
 
-import { createContext, createSignal, Show, useContext, type JSX } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, createSignal, Show, useContext, type JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

@@ -2,8 +2,8 @@
 // барьер через `createResource` ровно в тот тик, когда содержимое растит первого `recur`-ребёнка
 // — контекст доезжает и после резюме. Зачем такие пробы живут в репозитории — FAQ.md.
 
-import { createContext, createResource, createSignal, Show, useContext, type JSX } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, createResource, createSignal, Show, useContext, type JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

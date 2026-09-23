@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js";
+import type { JSX } from "@web-core/solid";
 import { QueryClientProvider as QueryClientProviderBase } from "@web-core/query";
 import { queryClient } from "#/shared/api/clients";
 

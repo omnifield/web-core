@@ -5,7 +5,7 @@
 // Сам кэш замокан: поведение `enabled` — забота `@web-core/query`, у него свой прогон. Здесь
 // ловится наше: с каким `enabled` запрос зовут.
 
-import { createRoot } from "solid-js";
+import { createRoot } from "@web-core/solid";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { componentStoreOf, useInfo } from "#/entities/component";
 

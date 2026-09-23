@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { createRoot, createSignal } from "solid-js";
+import { createRoot, createSignal } from "@web-core/solid";
 import { describe, expect, it } from "vitest";
 
 import { createStyle } from "../../src/solid/create-style.js";

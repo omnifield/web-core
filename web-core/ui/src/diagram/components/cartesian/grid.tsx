@@ -1,4 +1,4 @@
-import { For, Show, splitProps, type JSX } from "solid-js";
+import { For, Show, splitProps, type JSX } from "@web-core/solid";
 
 import { dropAddress } from "../../../shared/utils/slot-chain.js";
 import { traceLife } from "../../../shared/utils/trace.js";

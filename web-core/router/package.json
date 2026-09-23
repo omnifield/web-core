@@ -61,7 +61,8 @@
   "dependencies": {
     "@tanstack/router-plugin": "^1.168.35",
     "@tanstack/solid-router-devtools": "^1.167.1",
-    "@tanstack/virtual-file-routes": "^1.162.0"
+    "@tanstack/virtual-file-routes": "^1.162.0",
+    "@web-core/solid": "workspace:*"
   },
   "peerDependencies": {
     "@tanstack/solid-router": "^1.170.30",

@@ -152,6 +152,7 @@
     "@web-core/form": "workspace:*",
     "@web-core/io": "workspace:*",
     "@web-core/skin": "workspace:*",
+    "@web-core/solid": "workspace:*",
     "@web-core/trace": "workspace:*",
     "@zag-js/accordion": "^1.43.1",
     "@zag-js/avatar": "^1.43.1",

@@ -1,8 +1,8 @@
 // Регрессия на голом реестре: переход 0 items → N items ПОСЛЕ монтирования и часть, остающаяся
 // без детей навсегда. Держит оба критерия `contentOf()` сразу — структурный (`takesContent`) и
 // реактивный (`children.length`), по одному тесту на каждый случай. Разбор обоих — FAQ.md.
-import { createMemo, createSignal } from "solid-js";
-import { Portal, render } from "solid-js/web";
+import { createMemo, createSignal } from "@web-core/solid";
+import { Portal, render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

@@ -5,7 +5,7 @@
 //
 // Сеть здесь ни при чём, поэтому `entities/component/api` замокан целиком.
 
-import { render } from "solid-js/web";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { componentStoreOf, useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";

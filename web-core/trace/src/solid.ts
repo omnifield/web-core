@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { createUniqueId, onCleanup, onMount, type JSX } from "solid-js";
+import { createUniqueId, onCleanup, onMount, type JSX } from "@web-core/solid";
 
 import { isEnabled, setEnabled } from "./engine.js";
 

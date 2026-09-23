@@ -2,8 +2,8 @@
 // `baseAssemblyOf`, `recur` стоит на корневом узле паспорта (узел рекурсирует сам в себя через
 // своё содержимое) — контекст доезжает. Зачем такие пробы живут в репозитории — FAQ.md.
 
-import { createContext, createMemo, createSignal, useContext, type JSX } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, createMemo, createSignal, useContext, type JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { baseAssemblyOf, createRegistry, type GrowablePassport, type Registry } from "../src/index.js";

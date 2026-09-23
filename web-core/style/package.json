@@ -52,6 +52,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@web-core/solid": "workspace:*",
     "@web-core/trace": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

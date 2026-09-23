@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show } from "@web-core/solid";
 import { TreeForm } from "@web-core/feeder";
 import { useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";

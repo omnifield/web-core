@@ -2,8 +2,8 @@
 // круга. Компоненты синтетические — предмет пробы механика, а не разметка кита; источник модулей
 // читает сигнал, откуда и берётся живость (FAQ.md).
 
-import { createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

@@ -1,4 +1,4 @@
-import type { Component } from "solid-js";
+import type { Component } from "@web-core/solid";
 import type { Part } from "./model";
 
 export type PartRenderer<TPart extends Part = Part> = Component<{ readonly part: TPart }>;

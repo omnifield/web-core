@@ -4,7 +4,7 @@
 // Форма — обычный Solid-компонент, принимающий атрибуты `<svg>`: наружу кита едет настоящий
 // `<svg>`, а не обёртка конкретной библиотеки, поэтому и тип здесь свой, не импортированный
 // из `lucide-solid`.
-import type { Component, JSX } from "solid-js";
+import type { Component, JSX } from "@web-core/solid";
 
 export type ResolvedIcon = Component<JSX.SvgSVGAttributes<SVGSVGElement>>;
 

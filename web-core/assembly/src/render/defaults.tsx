@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { type Component, createEffect } from "solid-js";
+import { type Component, createEffect } from "@web-core/solid";
 
 import { note } from "../shared/trace.js";
 import type { ErrorFallbackProps, FallbackProps } from "./types.js";

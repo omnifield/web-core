@@ -1,6 +1,6 @@
 // см. README.md / FAQ.md
 
-import { type Component, createMemo, createRoot, For, getOwner, onCleanup, runWithOwner, untrack, type JSX } from "solid-js";
+import { type Component, createMemo, createRoot, For, getOwner, onCleanup, runWithOwner, untrack, type JSX } from "@web-core/solid";
 
 import { isElement, type AssemblyNode, type NodeId } from "../engine/tree.js";
 import { takesContent } from "./takes-content.js";

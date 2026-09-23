@@ -4,7 +4,7 @@ import {
   type RadioGroupItemProps as ArkItemProps,
 } from "@ark-ui/solid/radio-group";
 
-import { splitProps } from "solid-js";
+import { splitProps } from "@web-core/solid";
 
 import { dropAddress } from "../../../shared/utils/slot-chain.js";
 import { traceLife } from "../../../shared/utils/trace.js";

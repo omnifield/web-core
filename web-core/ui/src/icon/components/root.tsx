@@ -1,5 +1,5 @@
-import { createResource, Show, Suspense, splitProps, untrack } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { createResource, Show, Suspense, splitProps, untrack } from "@web-core/solid";
+import { Dynamic } from "@web-core/solid/web";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
 import { useKitLife } from "../../shared/utils/skin-life.js";

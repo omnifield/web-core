@@ -2,7 +2,7 @@ import {
   SelectRoot as ArkRoot,
   type SelectRootProps as ArkRootProps,
 } from "@ark-ui/solid/select";
-import { createMemo, splitProps } from "solid-js";
+import { createMemo, splitProps } from "@web-core/solid";
 
 import {
   createListCollection,

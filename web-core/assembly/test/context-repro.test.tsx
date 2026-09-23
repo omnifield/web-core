@@ -1,9 +1,9 @@
 // Отклонённые подозреваемые в разрыве Solid-контекста: изолированы по одному и ни один не
 // подтвердился. Зачем такие пробы живут в репозитории — FAQ.md.
 
-import { createComponent, Dynamic } from "solid-js/web";
-import { createContext, createEffect, ErrorBoundary, For, useContext, type JSX } from "solid-js";
-import { render } from "solid-js/web";
+import { createComponent, Dynamic } from "@web-core/solid/web";
+import { createContext, createEffect, ErrorBoundary, For, useContext, type JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { createRegistry, type AssemblyTree, type Registry } from "../src/index.js";

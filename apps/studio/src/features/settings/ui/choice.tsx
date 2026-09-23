@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import type { PassportSettingOptionEditorInfo } from "@web-core/skin/editor";
 import type { PassportSettingOption } from "@web-core/skin/model";
 import {

@@ -1,5 +1,5 @@
 import { NavigationMenuRoot as ArkRoot } from "@ark-ui/solid/navigation-menu";
-import { splitProps, type JSX } from "solid-js";
+import { splitProps, type JSX } from "@web-core/solid";
 
 import { dropAddress } from "../../shared/utils/slot-chain";
 import { useKitLife } from "../../shared/utils/skin-life";

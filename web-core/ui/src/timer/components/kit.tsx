@@ -13,7 +13,7 @@ import {
   type TimerRootProps as ArkRootProps,
   type TimerSeparatorProps as ArkSeparatorProps,
 } from "@ark-ui/solid/timer";
-import { splitProps } from "solid-js";
+import { splitProps } from "@web-core/solid";
 
 import { dropAddress } from "../../shared/utils/slot-chain.js";
 import { traceLife } from "../../shared/utils/trace.js";

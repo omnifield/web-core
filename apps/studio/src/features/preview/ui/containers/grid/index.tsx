@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { Flow, GridCell, Typography, Grid as UiGrid } from "@web-core/ui";
 import type { Cell } from "../../../lib/cell";
 import type { Group } from "../../../lib/group";

@@ -2,8 +2,8 @@
 // нужен через `SkinProvider`/`makeSkinSwitch` (document.head), поэтому проект "kit".
 
 import { createAnatomy } from "@zag-js/anatomy";
-import { render } from "solid-js/web";
-import { createEffect, createSignal } from "solid-js";
+import { render } from "@web-core/solid/web";
+import { createEffect, createSignal } from "@web-core/solid";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { definePassport } from "../src/engine/passport/form/index.js";

@@ -19,8 +19,8 @@
 // `apps/skin`) замирал НАВСЕГДА на первом непустом состоянии. `test/select-incremental-growth.
 // test.tsx` доказывает голый движок на этом кейсе отдельно.
 
-import { createMemo, createSignal } from "solid-js";
-import { render } from "solid-js/web";
+import { createMemo, createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 import { RenderTree } from "@web-core/assembly/render";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";

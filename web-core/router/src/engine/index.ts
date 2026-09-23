@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "@tanstack/solid-router";
-import { createEffect } from "solid-js";
+import { createEffect } from "@web-core/solid";
 
 export * from "@tanstack/solid-router";
 

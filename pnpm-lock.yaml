@@ -194,6 +194,9 @@ importers:
       '@web-core/neurobox':
         specifier: ^0.4.0
         version: link:../../web-core/neurobox
+      '@web-core/solid':
+        specifier: ^0.4.0
+        version: link:../../web-core/solid
       '@web-core/ui':
         specifier: ^0.4.0
         version: link:../../web-core/ui
@@ -281,6 +284,28 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
+  scripts:
+    dependencies:
+      '@web-core/cli':
+        specifier: workspace:*
+        version: link:../web-core/cli
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.13.3
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../web-core/build
+      '@web-core/lint':
+        specifier: workspace:*
+        version: link:../web-core/lint
+      eslint:
+        specifier: ^10.8.1
+        version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+
   web-core/.release:
     dependencies:
       '@web-core/cli':
@@ -305,6 +330,9 @@ importers:
 
   web-core/assembly:
     dependencies:
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       '@web-core/trace':
         specifier: workspace:*
         version: link:../trace
@@ -428,6 +456,9 @@ importers:
       '@web-core/io':
         specifier: workspace:*
         version: link:../io
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       json-logic-js:
         specifier: ^2.0.5
         version: 2.0.5
@@ -663,6 +694,9 @@ importers:
       '@tanstack/solid-query-devtools':
         specifier: ^5.102.8
         version: 5.102.8(@tanstack/solid-query@5.102.8(solid-js@1.9.14))(solid-js@1.9.14)
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       graphql-request:
         specifier: ^7.4.0
         version: 7.4.0(graphql@16.14.2)
@@ -712,6 +746,9 @@ importers:
       '@tanstack/virtual-file-routes':
         specifier: ^1.162.0
         version: 1.162.0
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
     devDependencies:
       '@tanstack/solid-router':
         specifier: ^1.170.30
@@ -764,6 +801,9 @@ importers:
       '@web-core/query':
         specifier: workspace:*
         version: link:../query
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       '@web-core/trace':
         specifier: workspace:*
         version: link:../trace
@@ -905,6 +945,9 @@ importers:
 
   web-core/style:
     dependencies:
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       '@web-core/trace':
         specifier: workspace:*
         version: link:../trace
@@ -947,6 +990,10 @@ importers:
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
 
   web-core/trace:
+    dependencies:
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
@@ -978,6 +1025,9 @@ importers:
       '@web-core/skin':
         specifier: workspace:*
         version: link:../skin
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../solid
       '@web-core/trace':
         specifier: workspace:*
         version: link:../trace
@@ -1114,28 +1164,6 @@ importers:
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
-
-  scripts:
-    dependencies:
-      '@web-core/cli':
-        specifier: workspace:*
-        version: link:../web-core/cli
-    devDependencies:
-      '@types/node':
-        specifier: ^24.10.1
-        version: 24.13.3
-      '@web-core/build':
-        specifier: workspace:*
-        version: link:../web-core/build
-      '@web-core/lint':
-        specifier: workspace:*
-        version: link:../web-core/lint
-      eslint:
-        specifier: ^10.8.1
-        version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
 
 packages:
 

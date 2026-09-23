@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 // Просто localStorage, без стора/бэка (пока).
 const STORAGE_KEY = "user";

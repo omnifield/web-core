@@ -1,5 +1,5 @@
-import { createContext, createSignal, Show, useContext, type Accessor, type JSX } from "solid-js";
-import { render } from "solid-js/web";
+import { createContext, createSignal, Show, useContext, type Accessor, type JSX } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
 import { describe, expect, it } from "vitest";
 
 // Фиксирует ЧУЖОЙ паттерн, не механику этой зоны — см. ROADMAP.yaml,

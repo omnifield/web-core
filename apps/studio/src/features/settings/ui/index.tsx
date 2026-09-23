@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { Flow } from "@web-core/ui";
 import { useInfo } from "#/entities/component";
 import { useSettings } from "#/entities/settings";
