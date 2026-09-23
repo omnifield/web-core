@@ -9,7 +9,11 @@
     "typecheck": "FORCE_COLOR=0 nx run-many -t typecheck -p '@web-core/*'",
     "dev": "nx run-many -t dev -p '@web-core/*' --parallel=10",
     "graph": "nx graph",
-    "nx": "nx"
+    "nx": "nx",
+    "sync": "pnpm --filter @web-core/scripts sync",
+    "sync:targets": "pnpm --filter @web-core/scripts sync targets",
+    "sync:webcore": "pnpm --filter @web-core/scripts sync send work-webcore",
+    "sync:webcore:dry": "pnpm --filter @web-core/scripts sync send work-webcore --dry-run"
   },
   "devDependencies": {
     "nx": "23.1.1"
