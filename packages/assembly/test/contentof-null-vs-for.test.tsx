@@ -1,30 +1,6 @@
-// Регрессия — заявка owner-skin-app (2026-09-10, `apps/skin/test/render-tree-repeat-reactivity.test.tsx`,
-// `apps/skin/ROADMAP.yaml`'s `repeat-items-empty-on-embed`): переход 0 items → N items ПОСЛЕ
-// монтирования подхватывался у `radio-group` (`item` — прямой потомок `root`), но НЕ у `select`
-// (`item` — потомок `content`, вложенного в `positioner`).
-//
-// Причина — `RenderNode`'s `contentOf()` (`src/render/index.tsx`): решение null-vs-`<For>`
-// принималось ОДИН РАЗ, на первом чтении, по `current.children.length === 0` — ДАННОМУ, не
-// СТРУКТУРЕ. Если узел монтируется раньше, чем `repeat` успевает развернуть детей (данные ещё не
-// приехали), `children.length` на этот момент — 0, решение «null» кэшируется НАВСЕГДА (кэш —
-// ленивый синглтон, `if (!contentCache.memo)`), и `<For>` — единственный, кто мог бы подхватить
-// детей позже, — просто никогда не создаётся.
-//
-// ПЕРВАЯ версия фикса (коммит 4b5ce9a) заменила критерий целиком на `takesContent(registry,
-// type)` — СТРУКТУРНОЕ свойство (может ли часть вообще принимать контент). Чинила select, но
-// ломала реальный кит: `field`'s `requiredIndicator`/`table`'s заголовки — части, которые ПО
-// РЕЕСТРУ принимают контент, но у конкретного узла нет ни одного ребёнка НИКОГДА (не `repeat`,
-// просто по условию — необязательное поле, невключённая сортировка), раньше получали `null`
-// (Ark-паттерн `props.children ?? "*"` срабатывал), стали получать пустой truthy `<For>` (дефолт
-// молча не срабатывает). Найдено architect'ом ревью (`pnpm --filter @web-core/ui test`,
-// 270/275) — см. `content-of-null-vs-for-breaks-ark-native-defaults` в ROADMAP.yaml.
-//
-// ИТОГОВЫЙ фикс — ДВА критерия разом, не один: `takesContent` решает, строить ли `<For>` ВООБЩЕ
-// (закрытые по реестру части как получали `null`, так и получают); `children.length === 0`,
-// проверяемый РЕАКТИВНО (внутри тела `createMemo`, не при первом чтении снаружи) — решает,
-// отдавать ли его на ЭТОМ проходе. Часть, всегда пустая, — стабильный `null`. Часть, пустая
-// СЕЙЧАС но получающая детей позже (`repeat`), — `null`→`<For>` по мере прихода данных, не
-// кэшируется навсегда. Разбор — `src/render/index.tsx`'s докблок над `contentOf`, FAQ.md.
+// Регрессия на голом реестре: переход 0 items → N items ПОСЛЕ монтирования и часть, остающаяся
+// без детей навсегда. Держит оба критерия `contentOf()` сразу — структурный (`takesContent`) и
+// реактивный (`children.length`), по одному тесту на каждый случай. Разбор обоих — FAQ.md.
 import { createMemo, createSignal } from "solid-js";
 import { Portal, render } from "solid-js/web";
 import { afterEach, describe, expect, it } from "vitest";

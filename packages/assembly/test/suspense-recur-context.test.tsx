@@ -1,10 +1,6 @@
-// Проверка гипотезы из ROADMAP.yaml (composite-context-lost-for-label-control-positioner-recurrence,
-// обновление 2026-09-15): `RenderTree` оборачивает ВСЁ дерево в ОДИН общий `<Suspense>`. Живой баг
-// tree-view — переход лист→ветка ОДНОВРЕМЕННО (а) впервые показывает индикатор ветки (тянет
-// настоящую `Icon`, суспенс) И (б) впервые растит recur-ребёнка у content — оба события бьют по
-// ОДНОМУ и тому же барьеру в ОДИН и тот же момент. Здесь — голый аналог: сиблинг-индикатор,
-// подвешивающий `<Suspense>` через `createResource` РОВНО в тот же тик, когда content получает
-// первого recur-ребёнка.
+// Отклонённая гипотеза «виноват общий `<Suspense>` вокруг всего дерева»: сиблинг подвешивает
+// барьер через `createResource` ровно в тот тик, когда содержимое растит первого `recur`-ребёнка
+// — контекст доезжает и после резюме. Зачем такие пробы живут в репозитории — FAQ.md.
 
 import { createContext, createResource, createSignal, Show, useContext, type JSX } from "solid-js";
 import { render } from "solid-js/web";
@@ -15,9 +11,8 @@ import { RenderTree } from "../src/render/index.jsx";
 
 const Ctx = createContext<string>();
 
-/** Провайдер ВСЕГДА (не только для ветки) — изолирует ИМЕННО suspense-переменную, не смешивает её
- * с уже проверенной и отдельно починенной "провайдер только для ветки" (content-of-context-
- * invalidation-on-wrapper-swap). */
+/** Провайдер ВСЕГДА, не только у ветки — так проба изолирует suspense и не смешивает его со
+ * сменой обёртки, которую держит отдельная проба (`nested-provider-lazy-open.test.tsx`). */
 function LevelItem(props: { children?: JSX.Element; [key: string]: unknown }) {
   const id = () => String(props["data-node"] ?? "?");
   return (

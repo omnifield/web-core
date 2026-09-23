@@ -5,11 +5,7 @@ import type { Genus } from "./passport-read.js";
 import { readAddress, type Registry } from "./registry.js";
 import type { AssemblyElement, AssemblyTree, DispatchAction, NodeId } from "./tree.js";
 
-/**
- * Первый узел дерева — родителя у него нет, вкладывать не во что, проверять нечего, кроме того,
- * что адрес вообще существует в реестре (`insertNode` этот случай не покрывает: ему всегда
- * нужен существующий `parentId`, для корня его по определению нет).
- */
+/** Первый узел дерева: родителя нет, проверяется только то, что адрес есть в реестре (FAQ.md). */
 export function rootNode(registry: Registry, address: string, id?: NodeId): AssemblyTree | undefined {
   const read = readAddress(registry, address);
   if (!read) return undefined;
@@ -96,12 +92,9 @@ function withRootExtras(tree: AssemblyTree, spec: CompositionElement): AssemblyT
 }
 
 /**
- * Композиция ЦЕЛЫХ компонентов одним вызовом — модуль собирается тем же приёмом, что и один
- * компонент из своих частей, только уровнем выше: каждый узел спеки кладётся тем же `insertNode`,
- * что и ручная правка, никакой отдельной копии правила вложенности здесь нет. Узел, которому
- * отказано, не останавливает всю сборку — отказы собираются ВСЕ сразу (тем же приёмом, что
- * `checkTree`), просто его собственная ветка дальше не растится (дети отказавшего узла всё равно
- * получили бы `parent-unknown` — это был бы шум, не новая информация).
+ * Композиция ЦЕЛЫХ компонентов одним вызовом: каждый узел спеки кладётся тем же `insertNode`, что
+ * и ручная правка; отказавший узел не растится дальше, но соседние ветки обходятся, и отказы
+ * отдаются все разом. Почему не своя проверка вложенности и почему не первая ошибка — FAQ.md.
  */
 export function composeTree(registry: Registry, spec: CompositionElement, rootId?: NodeId): CompositionResult {
   const wantedRootId = rootId ?? spec.id;

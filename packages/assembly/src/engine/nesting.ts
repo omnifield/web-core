@@ -87,11 +87,8 @@ export function canContain(registry: Registry, parent: string, child: string): N
   return canAdmit(registry, parent, { kind: "component", genus: guest.passport.genus, name: guest.component });
 }
 
-/**
- * Пускает ли часть внутрь себя ССЫЛКУ на модуль. Своего правила здесь нет и не заводится: у
- * модуля нет паспорта, зато есть корень его дерева — он и отвечает адресом, дальше решает тот же
- * `canContain`, что и для обычного компонента.
- */
+/** Пускает ли часть внутрь себя ССЫЛКУ на модуль — отвечает корень его дерева, решает тот же
+ * `canContain`, что и для обычного компонента (FAQ.md). */
 export function canHoldModule(registry: Registry, parent: string, module: string): NestingVerdict {
   const root = moduleRootOf(registry, module);
 

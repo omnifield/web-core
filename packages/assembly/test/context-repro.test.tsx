@@ -1,8 +1,5 @@
-// Проба PWEB-214: точка разрыва Solid-контекста в RenderNode. Диагностический инструмент —
-// изолирует подозреваемых по одному: голая вложенность, <For>, <ErrorBoundary>, <Dynamic>
-// (форма ark.div), и наконец РЕАЛЬНЫЙ RenderTree/RenderNode/registry с настоящим
-// createContext/useContext на двух уровнях дерева (root -> child), тем же способом, каким
-// заявка PWEB-214 предлагала репро с самого начала.
+// Отклонённые подозреваемые в разрыве Solid-контекста: изолированы по одному и ни один не
+// подтвердился. Зачем такие пробы живут в репозитории — FAQ.md.
 
 import { createComponent, Dynamic } from "solid-js/web";
 import { createContext, createEffect, ErrorBoundary, For, useContext, type JSX } from "solid-js";
@@ -43,7 +40,7 @@ const mount = (ui: () => JSX.Element) => {
   return host;
 };
 
-describe("PWEB-214 — где рвётся owner-цепочка", () => {
+describe("где рвётся owner-цепочка — подозреваемые по одному", () => {
   it("A: голый createComponent + get children — контрольная группа, должно работать", () => {
     const host = mount(() =>
       createComponent(Provider, {

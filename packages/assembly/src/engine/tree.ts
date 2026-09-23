@@ -57,12 +57,9 @@ export function resolveDataBinding(data: unknown, path: string): unknown {
   }
 }
 
-/** Третий источник контекста `on`, рядом с литералом и `DataBinding` — путь не в данные показа
- * (`data`), а в само живое DOM-событие, дошедшее до обработчика В МОМЕНТ вызова. Разное поле
- * (`event`, не `path`) — не то же самое, что `DataBinding` с другим источником: `DataBinding`
- * читает то, что УЖЕ лежит в данных показа, `EventBinding` — то, что родилось только что (текст
- * инпута, позиция слайдера) и в `data` никогда не попадёт. Точечный путь (`"currentTarget.value"`),
- * не JSON Pointer — событие не JSON-документ, а живой объект. */
+/** Третий источник контекста `on`, рядом с литералом и `DataBinding`: путь в само живое
+ * DOM-событие (`"currentTarget.value"` — точечный путь, не JSON Pointer). Чем отличается от
+ * `DataBinding` и почему заведён отдельным полем — FAQ.md. */
 export interface EventBinding {
   readonly event: string;
 }

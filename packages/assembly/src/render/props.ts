@@ -33,11 +33,9 @@ export function resolveBind(
     : undefined;
 }
 
-/** `on` узла в DOM-обработчики — только известные `DOM_EVENT_PROP`, остальные молча пропускаются
- * (не ошибка: адресат неизвестного домового события просто не назначается). Каждый обработчик
- * принимает живое DOM-событие и резолвит свой `context` — литерал как есть, `DataBinding` из
- * данных показа, `EventBinding` с самого этого события — ПЕРЕД тем, как уйти наружу через
- * `dispatch`: тот, кто слушает `DispatchedEvent`, получает готовый JSON, не сырой DOM `Event`. */
+/** `on` узла в DOM-обработчики — только известные `DOM_EVENT_PROP`, остальные молча пропускаются.
+ * Контекст резолвится ДО выхода наружу: слушатель `DispatchedEvent` получает готовый JSON, не
+ * сырой DOM `Event` (FAQ.md). */
 export function dispatchHandlersFor(
   current: AssemblyNode | undefined,
   data: unknown,

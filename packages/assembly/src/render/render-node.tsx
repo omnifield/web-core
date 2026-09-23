@@ -68,11 +68,7 @@ export const RenderNode: Component<RenderNodeProps> = (props) => {
     if (isContent(current)) {
       const closeContent = trace(`содержимое ${current.id} (${current.genus})`);
       try {
-        // `node()`, а не захваченный снимок `current`: значение содержимого живёт в САМОМ дереве,
-        // и правка дерева обязана доезжать до DOM так же, как доезжает правка данных показа.
-        // Снимок замораживал литерал на первом отрисованном значении (`updateNode` значения не
-        // было видно вовсе) — подписка тут своя, узла содержимого, детей у него нет и диспоузить
-        // ею нечего.
+        // `node()`, а не снимок `current`: иначе литерал замирает на первом значении (FAQ.md).
         return <>{valueOf(node(), props.data)}</>;
       } finally {
         closeContent();

@@ -296,8 +296,8 @@ const slots: Record<string, SlotEntry> = {
 ✅ Живая проверка на настоящем ките — транзитивно, через тесты пакетов, что реально зовут
 `RenderTree`/`baseAssemblyOf`: `packages/ui/src/button/test/button.test.tsx`,
 `packages/ui/src/accordion/test/accordion.test.tsx`,
-`packages/ui/src/tree-view/test/tree-view.test.tsx` и ещё 27 компонентов кита,
-`apps/skin/src/entities/component/model/registry.test.tsx`.
+`packages/ui/src/tree-view/test/tree-view.test.tsx` и ещё 27 компонентов кита; плюс проба
+приложения-витрины, что собирает реестр из настоящих паспортов кита и рисует им дерево.
 
 <h2 id="рецепт">🎨 Рецепт</h2>
 

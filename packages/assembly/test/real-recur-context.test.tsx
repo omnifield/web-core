@@ -1,10 +1,6 @@
-// Третья попытка поймать живой tree-view баг (ROADMAP.yaml,
-// composite-context-lost-for-label-control-positioner-recurrence) — двум предыдущим синтетическим
-// репро (nested-provider-lazy-open, suspense-recur-context) это не удалось. Разница здесь: дерево
-// растёт ЧЕРЕЗ РЕАЛЬНЫЙ `baseAssemblyOf`/`expand.ts` (recur на самом `root`-узле паспорта, как у
-// tree-view — `item` рекурсирует сам в себя через `content`), а не через вручную собранный
-// `AssemblyTree`-литерал по кускам. Проверяет: не в СПОСОБЕ роста ли (`nameFor()`'s счётчик имён,
-// полная пересборка дерева иммутабельно на каждое изменение данных) дело.
+// Отклонённая гипотеза «дело в СПОСОБЕ роста дерева»: здесь дерево растит настоящий
+// `baseAssemblyOf`, `recur` стоит на корневом узле паспорта (узел рекурсирует сам в себя через
+// своё содержимое) — контекст доезжает. Зачем такие пробы живут в репозитории — FAQ.md.
 
 import { createContext, createMemo, createSignal, useContext, type JSX } from "solid-js";
 import { render } from "solid-js/web";
@@ -95,7 +91,7 @@ describe("recur через РЕАЛЬНЫЙ expand.ts — item рекурсир�
     expect(errors).toEqual([]);
 
     // Реальный recur-рост: 0 → 1 → 2 детей, каждый раз ПОЛНАЯ иммутабельная пересборка дерева —
-    // тем же способом, каким редактор в apps/skin меняет `items` и заново зовёт `baseAssemblyOf`.
+    // тем же способом, каким редактор дерева меняет `items` и заново зовёт `baseAssemblyOf`.
     setData({ children: [{}] });
     await Promise.resolve();
     expect(errors).toEqual([]);

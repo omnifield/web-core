@@ -5,11 +5,8 @@ import { createMemo } from "solid-js";
 import { resolveComponent, type Registry } from "../engine/registry.js";
 import { isElement, type AssemblyNode } from "../engine/tree.js";
 
-/** Часть кита, которой рисуется узел по его собственному `type` — `undefined` у content-узла
- * (те не резолвятся, печатаются значением) и у адреса, которого нет в реестре. `registry` —
- * аксессор, не значение: читается ВНУТРИ тела мемо, тем же приёмом, каким весь этот файл читает
- * `node()` — реактивная зависимость обязана жить в трекнутом контексте, не быть аргументом,
- * захваченным на момент вызова фабрики. */
+/** Часть кита, которой рисуется узел по его собственному `type` — `undefined` у content-узла и у
+ * адреса, которого нет в реестре. Почему `registry` аксессором, а не значением — FAQ.md. */
 export function createResolvedComponent(registry: () => Registry, node: () => AssemblyNode | undefined) {
   const resolvedComponent = createMemo(() => {
     const current = node();

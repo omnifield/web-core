@@ -7,11 +7,8 @@ export type ModuleRoot =
   | { readonly ok: true; readonly type: string }
   | { readonly ok: false; readonly reason: "unknown" | "rootless" };
 
-/**
- * Чем модуль отвечает за свою вложенность — адресом корневого узла своего дерева: паспорта у
- * модуля нет, а у корня есть. Корень сам оказался ссылкой — идём по цепочке до настоящего адреса;
- * `seen` держит цепочку конечной, если граф модулей уже зациклен.
- */
+/** Адрес корневого узла дерева модуля — им модуль и отвечает за свою вложенность (FAQ.md).
+ * Корень сам оказался ссылкой — идём по цепочке; `seen` держит её конечной на зацикленном графе. */
 export function moduleRootOf(registry: Registry, module: string): ModuleRoot {
   const seen = new Set<string>();
   let name = module;
@@ -51,10 +48,8 @@ export function modulesReferencedBy(tree: AssemblyTree): string[] {
 }
 
 /**
- * Дойдёт ли цепочка ссылок из `entry` обратно до `host` — то есть станет ли вставка `entry` внутрь
- * `host` циклом. Отдаёт сам путь (`[entry, …, host]`), чтобы редактору было что показать человеку,
- * а не голое «нельзя». Рынок ловит цикл так же — запретом на вставку, а не попыткой нарисовать
- * (сверка 2026-09-23, FAQ.md).
+ * Дойдёт ли цепочка ссылок из `entry` обратно до `host` — станет ли вставка циклом. Отдаёт сам
+ * путь (`[entry, …, host]`): редактору есть что показать человеку, а не голое «нельзя» (FAQ.md).
  */
 export function moduleCycleOf(registry: Registry, host: string, entry: string): string[] | undefined {
   const seen = new Set<string>();

@@ -18,7 +18,7 @@ import { defineConfig } from "vitest/config";
 // Пресет `@web-core/build/vitest` сюда НЕ подключается: он собран под ОДИН проект,
 // а у зоны их три с разными окружениями и конвейерами (см. выше) — пресет решал бы не ту
 // задачу. Зона `assembly` вполне зависит от `build` для сборки (`vite.config.ts`,
-// `defineLibraryConfig`) — это уже не табу (`PROBEWEB-4`).
+// `defineLibraryConfig`) — это уже не табу.
 
 /** Общее для обоих браузерных проектов. */
 const browser = {

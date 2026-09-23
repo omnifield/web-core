@@ -1,9 +1,6 @@
-// Проба узла-ссылки на модуль со стороны движка (`model`-проект, node-окружение): за что
-// отвечает корень чужого дерева, как ловится цикл между деревьями и что дерево, у которого
-// правили узлы, не теряет своего имени. Отрисовка — отдельной пробой (`module-ref.test.tsx`).
-//
-// `admits` — та же маленькая копия реальной семантики, что и в `compose.test.ts`: правило
-// вложенности этот пакет не хранит, оно приходит третьим входом `createRegistry`.
+// Узел-ссылка на модуль со стороны движка: за что отвечает корень чужого дерева, как ловится
+// цикл между деревьями, не теряет ли правка имени дерева. Отрисовка — `module-ref.test.tsx`.
+// `admits` — та же копия семантики допуска, что и в `compose.test.ts`.
 
 import { describe, expect, it } from "vitest";
 
@@ -21,6 +18,7 @@ import {
   updateNode,
   type Admission,
   type AssemblyTree,
+  type ReadableComponent,
   type ReadablePart,
   type Registry,
 } from "../src/index.js";
@@ -41,16 +39,19 @@ function admits(part: ReadablePart, candidate: Admission): boolean {
   });
 }
 
-const COMPONENTS = {
+// Тип объявлен на самой фикстуре, а не подпёрт `as const` на каждом литерале: расхождение с
+// формой реестра тогда видно здесь, на месте объявления, а не каскадом из глубины типа у вызова
+// `createRegistry`.
+const COMPONENTS: Readonly<Record<string, ReadableComponent>> = {
   grid: {
     passport: {
       component: "grid",
-      genus: "component" as const,
+      genus: "component",
       anatomy: { keys: () => ["root", "cell"] },
       root: "root",
       parts: [
-        { name: "root", accepts: [{ kind: "component" as const, name: "cell" }] },
-        { name: "cell", accepts: [{ kind: "component" as const }, { kind: "content" as const, genus: "text" }] },
+        { name: "root", accepts: [{ kind: "component", name: "cell" }] },
+        { name: "cell", accepts: [{ kind: "component" }, { kind: "content", genus: "text" }] },
       ],
     },
     parts: {},
@@ -58,7 +59,7 @@ const COMPONENTS = {
   card: {
     passport: {
       component: "card",
-      genus: "component" as const,
+      genus: "component",
       anatomy: { keys: () => ["root"] },
       root: "root",
       parts: [{ name: "root" }],
@@ -68,7 +69,7 @@ const COMPONENTS = {
   button: {
     passport: {
       component: "button",
-      genus: "component" as const,
+      genus: "component",
       anatomy: { keys: () => ["root"] },
       root: "root",
       parts: [{ name: "root" }],

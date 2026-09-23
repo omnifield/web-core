@@ -4,16 +4,8 @@ import type { Genus, GrowablePassport } from "./passport-read.js";
 import { isDataBinding, isElement, resolveDataBinding } from "./tree.js";
 import type { AssemblyElement, AssemblyNode, AssemblyTree, DispatchAction, DynamicValue, NodeId } from "./tree.js";
 
-// Форма шаблона у автора компонента (`@web-core/skin/editor`'s `PassportAssembly*`) несёт
-// дженерики `Part`/`Registry`/`Data`/`AtRoot`, типизирующие путь `bind`/`repeat.path`/`value` по
-// реальной io-схеме, — добавленная ценность типизированного авторского слоя, которая РАНТАЙМУ не
-// нужна: он ничего не проверяет по схеме, только читает уже готовую строку. С дефолтными
-// параметрами (`Data = unknown`) та форма структурно стирается ровно до этой — здесь она
-// объявлена своя, не импортирована (тем же приёмом, каким `passport-read.ts` уже узко читает
-// паспорт вместо импорта целого `ComponentPassport`; ROADMAP.yaml,
-// `assembly-drop-skin-devdependency` — цикл `assembly ⇄ skin` подтверждён прогоном, эта форма
-// снимает СВОЮ половину). Отсюда и имя `AssemblyTemplate*`, не `PassportAssembly*`: здесь это
-// просто форма шаблона, не типизированный авторский контракт.
+// Своя структурная форма шаблона, не импортированная из типизированного авторского слоя —
+// почему так, а не импортом, разобрано в FAQ.md.
 export interface AssemblyTemplateContent {
   readonly genus: Genus;
   readonly value: DynamicValue;
@@ -59,26 +51,15 @@ function isTemplateRepeat(node: AssemblyTemplateNode): node is AssemblyTemplateR
 }
 
 /**
- * Абсолютит путь узла относительно текущего масштаба (`base`) — тот же приём, каким
- * `resolveDataBinding` (`tree.ts`) в итоге ждёт путь: `""` значит «весь текущий узел данных»,
- * ведущий `/` — уже абсолютный (от корня данных), иначе — относительный от `base`.
- *
- * @param base текущий масштаб — `""` на корне, `"/sections/0"` внутри первого `repeat`-элемента
- * @param path путь узла, как он написан в шаблоне — `""`, относительный или абсолютный
+ * Абсолютит путь узла относительно текущего масштаба: `""` — весь текущий узел данных, ведущий
+ * `/` — уже абсолютный путь, иначе — относительный от `base` (`""` на корне, `"/sections/0"`
+ * внутри первого `repeat`-элемента).
  */
 export function scopedPath(base: string, path: string): string {
   return path === "" ? base : path.startsWith("/") ? path : `${base}/${path}`;
 }
 
-/**
- * Guards `grow`/`growAll`'s mutual recursion against an unbounded chain — a self-recursing
- * `recur` with no exit in its own data, or `repeat`-wrapped data that happens to cycle (a node's
- * own descendant array circling back to an ancestor), both recurse with no other exit condition.
- * 300 comfortably exceeds any real assembly's structural depth while staying well short of a
- * native stack overflow — `recur` chains more real call frames per logical level than a flat
- * `repeat` does (`grow` → its own children → the `recur` re-entry → `growAll` again), so this sits
- * lower than a naive per-frame budget would suggest.
- */
+/** Предел взаимной рекурсии `grow`/`growAll` — почему он нужен и почему 300, см. FAQ.md. */
 const MAX_ASSEMBLY_DEPTH = 300;
 
 export function baseAssemblyOf(
@@ -114,11 +95,8 @@ export function baseAssemblyOf(
     }
 
     if ("repeat" in node && node.repeat) {
-      // A nested repeat found while walking an OUTER template's own children (see the generic
-      // branch below) — only its `repeat.path` needs fixing up here, so a LATER pass (when
-      // `growAll` actually unwraps THIS repeat) resolves the right array. `bind`/`children`/
-      // `recur` on this same node get their real scoping on that later pass, once `repeat` is
-      // stripped and this same function runs again through the generic branch.
+      // Вложенный `repeat`: здесь правится только его `repeat.path`, остальное скоупится позже,
+      // когда очередь дойдёт до разворота уже его самого (FAQ.md).
       return { ...node, repeat: { path: scopedPath(base, node.repeat.path) } };
     }
 
@@ -159,19 +137,13 @@ export function baseAssemblyOf(
     };
   };
 
-  // Props a node's OWN `props` plus, when it named `indexPathBind`, the accumulated repeat index
-  // under that key — a literal `number[]`, never a `bind` path.
+  // Свои `props` узла плюс, если он назвал `indexPathBind`, накопленный индекс повтора под этим
+  // ключом — литеральный `number[]`, не путь `bind`.
   const propsOf = (node: { props?: Readonly<Record<string, unknown>>; indexPathBind?: string }, indexPath: readonly number[]) =>
     node.props || node.indexPathBind ? { props: { ...node.props, ...(node.indexPathBind ? { [node.indexPathBind]: indexPath } : {}) } } : {};
 
-  // `pristine` — the never-yet-scoped literal a `recur` on THIS node would need to reuse. A
-  // repeat's own `template` (both forms) is already kept around unscoped for exactly this reason
-  // (re-applied fresh on every index); `recur` needs the same discipline for the same reason —
-  // re-scoping an ALREADY-scoped node is a no-op on every path that already starts with "/"
-  // (`scopedPath`'s own absolute-path short-circuit), so reusing the post-scope `node` itself
-  // would freeze every recursive level at the FIRST level's bindings. Defaults to `node`: a plain
-  // child reached by ordinary nesting (not through a `repeat`) is never scoped away from how its
-  // author wrote it, so it already IS its own pristine form.
+  // `pristine` — ещё ни разу не скоупленная форма узла, которую переиспользует `recur` на нём
+  // самом; по умолчанию это сам узел. Почему нельзя брать уже скоупленный — FAQ.md.
   const grow = (
     node: AssemblyTemplateElement | AssemblyTemplateContent,
     parentId: NodeId | null,

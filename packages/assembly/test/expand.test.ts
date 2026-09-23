@@ -1,10 +1,7 @@
-// Проба expand.ts (baseAssemblyOf/scopedPath) — переезд из packages/skin (см. лог
-// packages/assembly/ROADMAP.yaml, "repeat-grow-lives-in-wrong-package"): та же механика, тот же
-// набор сценариев, но `GrowablePassport` вместо полного `ComponentPassport` — этой функции
-// никогда не был нужен весь паспорт, только `component`/`root`/`anatomy.keys()`
-// (`baseAssemblyOf-passport-type-too-wide` сузил тип с `ReadablePassport` до этого среза —
-// фикстура ниже нарочно НЕ несёт `genus`/`parts`, чтобы сужение проверялось не только типом, но и
-// тем, что тест реально собирается без них).
+// Проба разворота шаблона по данным (`baseAssemblyOf`/`scopedPath`): `repeat` полем и старой
+// обёрткой, вложенный повтор, `recur`, гвард глубины. Фикстура нарочно несёт только три поля
+// `GrowablePassport` — сужение типа проверяется не объявлением, а тем, что проба без остальных
+// полей собирается (FAQ.md).
 
 import { describe, expect, it } from "vitest";
 
