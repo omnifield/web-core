@@ -14,8 +14,8 @@
 🧭 Клиент web-core для бокса нейробокс — менеджера рантаймов агентов (Claude Code, локальная
 модель, чужая по ключу), говорящего открытым протоколом **AG-UI** (`RunAgentInput` на входе,
 поток событий `RUN_STARTED`/`TEXT_MESSAGE_CHUNK`/`TOOL_CALL_*`/`RUN_FINISHED` на выходе). Полное
-описание протокола бокса, заголовков доступа, потоков/прогонов, отказов — корневой
-[`NEUROBOX_CLIENT.md`](../../NEUROBOX_CLIENT.md), это не пересказывается здесь.
+описание — в документации самого бокса: заголовки доступа, потоки и прогоны, кадры ответа, коды
+отказов; здесь это не пересказывается.
 
 Пакет — единственная точка резолва `@tanstack/ai-client`/`@tanstack/ai-solid` (TanStack AI,
 полностью совместим с AG-UI в обе стороны) вместо вендора, тем же приёмом, что
@@ -34,7 +34,7 @@
 | MCP-клиент (Node-only) | `@web-core/neurobox/mcp` | `httpPeer`/`stdioPeer` поверх `@tanstack/ai-mcp` + `createBrowser` — замена `@web-core/mcp/peer`+`/browser` |
 | MCP-сервер (Node-only) | `@web-core/neurobox/server` | `registerTool`/`ok`/`err` + `createServer`/`ZoneServer` — перенос `@web-core/mcp` (корень+`/transport`) |
 | Пагинация | `@web-core/neurobox/pagination` | `paginate`/`limitSchema` — перенос `@web-core/mcp/pagination` |
-| Фидбэк зоны (Node/browser) | `@web-core/neurobox/zone-feedback` | `reportFeedback`/`listFeedback`/`resolveFeedback` (GraphQL к `backend/presets`) — перенос `@web-core/mcp/feedback`. НЕ то же, что `sendNeuroboxFeedback` выше (тот — фидбэк о боксе, этот — о тулах зоны) |
+| Фидбэк зоны (Node/browser) | `@web-core/neurobox/zone-feedback` | `reportFeedback`/`listFeedback`/`resolveFeedback` (GraphQL к службе хранения пресетов) — перенос `@web-core/mcp/feedback`. НЕ то же, что `sendNeuroboxFeedback` выше (тот — фидбэк о боксе, этот — о тулах зоны) |
 | Механика тулов | `@web-core/neurobox/tool` | `toolDefinition`/`accessOf` поверх `@tanstack/ai` — тот же `access`, что был у `registerTool`, но на уровне определения тула, не только его MCP-регистрации |
 
 <h2 id="использование">🚀 Использование</h2>
@@ -52,8 +52,8 @@ const connection = createNeuroboxConnection({
 const chat = useChat({
   connection,
   forwardedProps: { recipe: "сборка-скинов", passport: "опус-5", agent: "claude-code" },
-  // TOOL_CALL_RESULT — что ручка реально ответила, ДО конца прогона (NEUROBOX_CLIENT.md, раздел
-  // «Ответ»). Своей обвязки под это в пакете нет и не будет — onChunk зовётся на каждый кадр сам.
+  // TOOL_CALL_RESULT — что ручка реально ответила, ДО конца прогона. Своей обвязки под это в
+  // пакете нет и не будет — onChunk зовётся на каждый кадр сам.
   onChunk(chunk) {
     if (chunk.type !== "TOOL_CALL_RESULT") return;
     // chunk.toolCallId — тот же, что был у TOOL_CALL_START/ARGS этого вызова;
@@ -61,8 +61,8 @@ const chat = useChat({
   },
 });
 
-// context — что апп знает о месте, едет отдельно от forwardedProps (см. NEUROBOX_CLIENT.md,
-// раздел «Прогон») — кладётся в per-сообщение body/data под ключом `context`:
+// context — что апп знает о месте, едет отдельно от forwardedProps (разные поля конверта у
+// самого бокса) — кладётся в per-сообщение body/data под ключом `context`:
 chat.sendMessage("сделай кнопку пошире", {
   body: { context: [{ description: "component", value: "button" }] },
 });
@@ -75,7 +75,7 @@ chat.sendMessage("сделай кнопку пошире", {
 поток на каждый ход). Через `useChat` он всегда есть сам по себе; ошибка возможна только при
 прямом вызове `connect()` в обход `ChatClient`.
 
-Свои ручки бокса ("Свои ручки в браузере", `NEUROBOX_CLIENT.md`) — `localStorage`, состояние
+Свои ручки бокса (его протокол зовёт это «своими ручками в браузере») — `localStorage`, состояние
 экрана, что угодно, чего нет на сервере. **НЕ регистрируй их тем же тулом в `useChat({ tools:
 [...] })`** — штатный путь `ChatClient` не совпадает с протоколом бокса (см. `FAQ.md`), `connect()`
 доставляет результат сам:
@@ -166,7 +166,7 @@ await browser.navigate(pageId, "https://example.com");
 const shot = await browser.screenshot(pageId);
 ```
 
-MCP-сервер — построение своих MCP-серверов зон (`apps/skin/.mcp` и подобные), перенос
+MCP-сервер — построение своих MCP-серверов зон, перенос
 `@web-core/mcp` (корень + `/transport`) без изменений в логике:
 
 ```ts
@@ -174,7 +174,7 @@ import { createServer, ok, registerTool } from "@web-core/neurobox/server";
 import { z } from "@web-core/io";
 
 const server = createServer({
-  name: "skin-mcp",
+  name: "zone-mcp",
   version: "0.0.0",
   transport: "http",
   registerTools: (mcp) =>

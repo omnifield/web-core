@@ -4,7 +4,7 @@ export type NeuroboxAccessValue = string | (() => string | Promise<string>);
 export interface NeuroboxAccessOptions {
   /** `Authorization: Bearer <token>` — общий токен на приложение, не на человека. */
   token: NeuroboxAccessValue;
-  /** `X-User-Login` — логин, которым приложение представляется. Только латиница (см. NEUROBOX_CLIENT.md). */
+  /** `X-User-Login` — логин, которым приложение представляется. Только латиница, так требует бокс. */
   userLogin: NeuroboxAccessValue;
 }
 
@@ -22,8 +22,8 @@ export async function resolveAccessHeaders(options: NeuroboxAccessOptions): Prom
 
 /**
  * Строит адрес бокса из сегментов пути, кодируя каждый через `encodeURIComponent`. `threadId`
- * приходит от потребителя пакета (имя придумывает он, см. NEUROBOX_CLIENT.md, раздел «Поток и
- * прогон») — без кодирования пробел/`/`/кириллица в нём ломает путь или подмешивает лишний сегмент.
+ * приходит от потребителя пакета (имя потока придумывает он) — без кодирования пробел/`/`/кириллица
+ * в нём ломает путь или подмешивает лишний сегмент.
  * Один хелпер на все места, что раньше собирали `${baseUrl}/api/...` руками (connect(), /cancel,
  * /spent, /feedback) — так дыра, однажды найденная в одном месте, не может тихо повториться в
  * следующем.

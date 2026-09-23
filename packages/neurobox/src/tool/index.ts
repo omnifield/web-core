@@ -4,7 +4,7 @@ import type { SchemaInput, ToolDefinition, ToolDefinitionConfig } from "@tanstac
 export type Access = "read" | "write" | "destructive";
 
 /**
- * Слой «меха» из трёхслойного деления (architect+user, 2026-09-13): как вообще устроен тул, не
+ * Слой «меха» из трёхслойного деления (решение 2026-09-13): как вообще устроен тул, не
  * привязана ни к одному продуктовому пакету. `access` — та же дисциплина, что была у `registerTool`
  * (`@web-core/neurobox/server`) до переезда на `@tanstack/ai` как фундамент под тулы — не даём ей
  * потеряться. Approval-поля (`needsApproval`/`approvalSchema`) вендора здесь намеренно не

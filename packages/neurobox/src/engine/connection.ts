@@ -6,12 +6,12 @@ import type { NeuroboxAccessOptions } from "./access.js";
 /** AG-UI `context`-запись — что апп знает о месте (страница/компонент/вариант), не о том, чем думать. */
 export interface NeuroboxContextEntry {
   description: string;
-  /** Протокол несёт строку (`NEUROBOX_CLIENT.md`'s пример — `"value": "button"`), не что угодно. */
+  /** Протокол несёт строку (его пример — `"value": "button"`), не что угодно. */
   value: string;
 }
 
 /**
- * Своя ручка бокса ("Свои ручки в браузере", `NEUROBOX_CLIENT.md`) — действие, которого на сервере
+ * Своя ручка бокса (его протокол зовёт это «своими ручками в браузере») — действие, которого на сервере
  * нет (localStorage, состояние экрана). НЕ регистрировать тем же тулом в `useChat({ tools: [...] })`
  * — штатный `ChatClient` пойдёт СВОИМ путём доставки результата (новый `connect()`), а бокс ждёт
  * `POST /agent/{threadId}/tool/{toolCallId}` на ТОМ ЖЕ соединении; `connect()` ниже уже собирает и
@@ -53,15 +53,14 @@ function generateId(prefix: string): string {
 function requireThreadId(runContext: RunAgentInputContext | undefined): string {
   if (runContext?.threadId) return runContext.threadId;
   throw new Error(
-    "@web-core/neurobox: threadId не передан. Поток — на сеанс работы, не на сообщение " +
-      "(NEUROBOX_CLIENT.md, «Поток и прогон») — без него каждый ход тихо заводит новый холодный " +
-      "поток, теряя состояние MCP-зон.",
+    "@web-core/neurobox: threadId не передан. Поток — на сеанс работы, не на сообщение: " +
+      "без него каждый ход тихо заводит новый холодный поток, теряя состояние MCP-зон.",
   );
 }
 
 /**
  * Не-текстовые части (картинка, вложение, результат тула) намеренно отбрасываются молча — бокс
- * текстовый, мультимодальность в NEUROBOX_CLIENT.md не описана и не читает их. Если это когда-нибудь
+ * текстовый, мультимодальность его протоколом не описана и таких полей он не читает. Если это когда-нибудь
  * изменится, здесь нужно решать заново, не расширять склейку тихо.
  */
 function toWireContent(content: unknown): string {
@@ -155,15 +154,15 @@ async function runClientTool(tool: NeuroboxClientTool, argsJson: string): Promis
     const result = await tool.execute(args);
     return { content: typeof result === "string" ? result : JSON.stringify(result), failed: false };
   } catch (error) {
-    // failed: true — «агент скажет человеку, что действие не сделано, а не соврёт об успехе»
-    // (NEUROBOX_CLIENT.md). Ошибка в execute() — не повод ронять весь connect(), только этот вызов.
+    // failed: true — «агент скажет человеку, что действие не сделано, а не соврёт об успехе», как
+    // и просит бокс. Ошибка в execute() — не повод ронять весь connect(), только этот вызов.
     return { content: error instanceof Error ? error.message : String(error), failed: true };
   }
 }
 
 /**
- * Своя ручка бокса замирает поток до этого запроса (`NEUROBOX_CLIENT.md`: «поток замирает…
- * оживает на том же соединении») — свой `AbortController`/таймаут, та же ловушка и то же решение,
+ * Своя ручка бокса замирает поток до этого запроса («поток замирает… оживает на том же
+ * соединении») — свой `AbortController`/таймаут, та же ловушка и то же решение,
  * что у `sendCancel`: входной `abortSignal` уже мог сработать к этому моменту, реюзать нельзя.
  * В отличие от `sendCancel` — ошибку НЕ глотает: недоставленный результат оставляет бокс ждать до
  * `tool-abandoned`, это стоит того, чтобы `connect()` завершился с ошибкой, а не тихо.

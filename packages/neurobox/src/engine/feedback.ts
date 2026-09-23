@@ -4,7 +4,7 @@ import type { NeuroboxAccessOptions } from "./access.js";
 export type NeuroboxFeedbackKind = "friction" | "praise";
 
 /**
- * `POST /api/feedback/{threadId}` (`NEUROBOX_CLIENT.md`, раздел «Отзывы о боксе»): хорошее
+ * `POST /api/feedback/{threadId}` — отзыв о самом боксе: хорошее
  * записывают наравне с плохим — по одним жалобам не видно, что работает. Про чужие зоны сюда не
  * пишут, у них свои ручки отзывов. `workaround` — как обошли затык; осмыслен для `friction`, для
  * `praise` обычно нет, поэтому необязателен.
