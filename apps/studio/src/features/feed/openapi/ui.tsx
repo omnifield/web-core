@@ -1,5 +1,5 @@
 import { ApiProbe } from "@web-core/feeder";
-import { COMPONENT_USER, useComponent } from "#/entities/component";
+import { COMPONENT_USER, useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";
 
 /**
@@ -18,8 +18,8 @@ import { useFeed } from "#/entities/feed";
  * чем компонент уже накормлен. Прежняя еда остаётся, пока не приедет настоящая.
  */
 export function FeedOpenapi() {
-  const component = useComponent();
-  const feed = useFeed();
+  const component = useInfo();
+  const feed = useFeed(component.name);
 
   return (
     <ApiProbe

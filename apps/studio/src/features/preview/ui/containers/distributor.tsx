@@ -5,7 +5,7 @@ import { Typography } from "@web-core/ui";
 import { Loader } from "#/entities/component";
 import type { Cell } from "../../lib/cell";
 import { groupByTags, noGroup } from "../../lib/group";
-import { usePreview } from "../../model";
+import { usePreview } from "../../use";
 import { Grid } from "./grid";
 import { Matrix } from "./matrix";
 
@@ -45,9 +45,9 @@ export function Distributor() {
   // называется словами, а не остаётся в консоли отклонённым промисом.
   return (
     <Show
-      when={component.error()}
+      when={component.variants.error()}
       fallback={
-        <Show when={!component.isPending()} fallback={<Loader />}>
+        <Show when={!component.variants.isPending()} fallback={<Loader />}>
           <Switch>
             <Match when={layoutMode() === "grid"}>
               <Grid groups={groups()} secondaryItems={secondaryItems()} />

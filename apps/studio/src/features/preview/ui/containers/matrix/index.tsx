@@ -10,7 +10,7 @@ import {
 } from "#/shared/ui/plane";
 import { type Cell, cellSize } from "../../../lib/cell";
 import type { Group } from "../../../lib/group";
-import { usePreview } from "../../../model";
+import { usePreview } from "../../../use";
 import { Switcher } from "../../views";
 
 type SecondaryItem = { readonly name: string };

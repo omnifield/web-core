@@ -1,5 +1,6 @@
 import { Icon, type IconProps, Toggle, ToggleIndicator } from "@web-core/ui";
-import { AXIS_MODES, usePreviewStore } from "../../../model";
+import { AXIS_MODES } from "../../../model";
+import { usePreview } from "../../../use";
 
 type IconName = IconProps["name"];
 
@@ -11,7 +12,7 @@ function iconOf<Value extends string>(
 }
 
 export function SwitchAxisMode() {
-  const store = usePreviewStore();
+  const { store } = usePreview();
   const axisMode = store.use((state) => state.axisMode);
 
   return (

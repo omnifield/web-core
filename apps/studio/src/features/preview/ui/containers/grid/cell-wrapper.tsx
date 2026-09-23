@@ -1,7 +1,7 @@
 import { layoutGroup, layoutSelf } from "@web-core/skin";
 import { Flow, FlowItem, Surface } from "@web-core/ui";
 import { type Cell, cellSize } from "../../../lib/cell";
-import { usePreview } from "../../../model";
+import { usePreview } from "../../../use";
 import { SwitchSecondaryIndex } from "../../controls";
 import { Switcher } from "../../views";
 

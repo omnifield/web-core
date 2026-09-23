@@ -1,14 +1,13 @@
-// Провайдер компонента (`entities/component/model/context.tsx`) держит имя АКСЕССОРОМ и поддерево
-// на смене имени не пересоздаёт. Раньше стоял `<Show keyed>`, и вместе с поддеревом умирало всё
-// состояние внутри — в том числе раскрытие секций рейла, которое живёт в машине аккордеона.
+// Компонент адресуется активной ячейкой семьи (`entities/component/model/store.ts`), провайдера
+// в приложении больше нет. Проверяются два свойства, ради которых он снимался: смена компонента
+// не пересоздаёт поддерево читателя (имя приезжает новое, узел тот же) и доски компонентов при
+// этом не путаются — еда соседа ждёт возврата.
 //
-// Сеть здесь не при чём, поэтому `entities/component/api` замокан целиком: проверяется реактивность
-// провайдера, а не данные службы пресетов.
+// Сеть здесь ни при чём, поэтому `entities/component/api` замокан целиком.
 
-import { createSignal } from "solid-js";
 import { render } from "solid-js/web";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ComponentProvider, useComponent } from "#/entities/component";
+import { componentStoreOf, useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";
 
 vi.mock("#/entities/component/api", () => {
@@ -32,8 +31,8 @@ let feed: ReturnType<typeof useFeed> | undefined;
 
 function Probe() {
   mounts += 1;
-  const { name } = useComponent();
-  feed = useFeed();
+  const { name } = useInfo();
+  feed = useFeed(name);
 
   return (
     <>
@@ -44,34 +43,27 @@ function Probe() {
 }
 
 function mount() {
-  const [name, setName] = createSignal("button");
   const host = document.createElement("div");
   document.body.append(host);
 
   mounts = 0;
-  dispose = render(
-    () => (
-      <ComponentProvider name={name()}>
-        <Probe />
-      </ComponentProvider>
-    ),
-    host,
-  );
+  componentStoreOf.activate("button");
+  dispose = render(() => <Probe />, host);
 
   const textOf = (testid: string) =>
     host.querySelector<HTMLElement>(`[data-testid="${testid}"]`);
 
-  return { host, setName, textOf };
+  return { host, textOf };
 }
 
-describe("смена компонента не пересоздаёт поддерево провайдера", () => {
-  it("узел переживает переход, а имя приезжает новое", () => {
-    const { setName, textOf } = mount();
+describe("активная ячейка вместо провайдера", () => {
+  it("узел переживает смену компонента, а имя приезжает новое", () => {
+    const { textOf } = mount();
     const node = textOf("name");
 
     expect(node?.textContent).toBe("button");
 
-    setName("accordion");
+    componentStoreOf.activate("accordion");
 
     expect(textOf("name")).toBe(node);
     expect(node?.textContent).toBe("accordion");
@@ -79,18 +71,18 @@ describe("смена компонента не пересоздаёт подде
   });
 
   it("доски компонентов не путаются: еда соседа ждёт возврата", () => {
-    const { setName, textOf } = mount();
+    const { textOf } = mount();
 
     feed?.serve("manual", "еда кнопки");
     expect(textOf("feed")?.textContent).toBe("еда кнопки");
 
-    setName("accordion");
+    componentStoreOf.activate("accordion");
     expect(textOf("feed")?.textContent).toBe("пусто");
 
     feed?.serve("manual", "еда аккордеона");
     expect(textOf("feed")?.textContent).toBe("еда аккордеона");
 
-    setName("button");
+    componentStoreOf.activate("button");
     expect(textOf("feed")?.textContent).toBe("еда кнопки");
   });
 });

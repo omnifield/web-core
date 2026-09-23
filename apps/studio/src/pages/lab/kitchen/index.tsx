@@ -2,7 +2,7 @@ import { Show } from "solid-js";
 import { AdapterMastering, API_USER } from "@web-core/feeder";
 import { describeSample, describeSchema } from "@web-core/io";
 import { Surface, Typography } from "@web-core/ui";
-import { COMPONENT_USER, useComponent } from "#/entities/component";
+import { COMPONENT_USER, useInfo } from "#/entities/component";
 import { useEndpoint } from "#/entities/endpoint";
 
 /** Сведение полей: слева поля выбранного компонента, справа — поля ответа дёрнутой ручки.
@@ -11,7 +11,7 @@ import { useEndpoint } from "#/entities/endpoint";
  *  несёт — ни в дескрипторе, ни в `OpenapiEndpoint` (там схема запроса). Поэтому пока ручку не
  *  дёрнули, сводить не с чем, и экран говорит это словом. */
 export function KitchenPage() {
-  const component = useComponent();
+  const component = useInfo();
   const endpoint = useEndpoint();
 
   const output = () => {

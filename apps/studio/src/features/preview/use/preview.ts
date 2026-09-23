@@ -1,5 +1,5 @@
 import { type Accessor, createMemo } from "solid-js";
-import { useComponent } from "#/entities/component";
+import { useInfo } from "#/entities/component";
 import {
   type Axes,
   assemblyIn,
@@ -7,7 +7,7 @@ import {
   variantIn,
 } from "../lib/axes";
 import type { Cell } from "../lib/cell";
-import { previewStoreOf } from "./store";
+import { previewStoreOf } from "../model";
 
 /**
  * Единственное место, где состояние показа (стор фичи) встречается с данными компонента
@@ -18,16 +18,12 @@ import { previewStoreOf } from "./store";
  * на соседний компонент не должно тащить за собой чужие режимы. Семья зовётся аксессором имени —
  * подписка сама переезжает на стор нового ключа, состояние прежнего остаётся в семье.
  */
-export function usePreviewStore() {
-  return previewStoreOf(useComponent().name);
-}
-
 export function usePreview() {
-  const component = useComponent();
+  const component = useInfo();
   const store = previewStoreOf(component.name);
 
   const axes: Accessor<Axes> = createMemo(() => ({
-    variants: component.variants(),
+    variants: component.variants.data(),
     assemblies: component.editorInfo()?.assemblies ?? [],
   }));
 

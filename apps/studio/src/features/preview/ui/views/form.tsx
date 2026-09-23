@@ -5,7 +5,7 @@ import { useFeed } from "#/entities/feed";
 import { useSettings } from "#/entities/settings";
 import { Renderer } from "#/shared/ui/renderer";
 import type { Cell } from "../../lib/cell";
-import { usePreview } from "../../model";
+import { usePreview } from "../../use";
 
 export function Form(props: {
   cell: Cell;
@@ -13,7 +13,7 @@ export function Form(props: {
   assembly: PassportAssembly;
 }) {
   const { component } = usePreview();
-  const feed = useFeed();
+  const feed = useFeed(component.name);
   const settings = useSettings();
 
   function dispatch(event: DispatchedEvent) {

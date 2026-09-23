@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValueText,
 } from "@web-core/ui";
-import { useComponent } from "#/entities/component";
+import { useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";
 import { presetPickStoreOf } from "./model";
 
@@ -25,12 +25,12 @@ import { presetPickStoreOf } from "./model";
  * кэш обновился). Подача из эффекта доносит до доски и такое обновление тоже.
  */
 export function FeedPreset() {
-  const component = useComponent();
-  const feed = useFeed();
+  const component = useInfo();
+  const feed = useFeed(component.name);
   const store = presetPickStoreOf(component.name);
 
   const items = () =>
-    component.content().map((preset) => ({
+    component.content.data().map((preset) => ({
       value: preset.name,
       label: preset.label,
     }));
@@ -53,7 +53,7 @@ export function FeedPreset() {
   });
 
   function serveByName(name: string | undefined) {
-    const record = component.content().find((preset) => preset.name === name);
+    const record = component.content.data().find((preset) => preset.name === name);
     if (record === undefined) return;
 
     feed.serve("preset", record.state.data);

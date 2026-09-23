@@ -6,7 +6,7 @@ import {
   WorkspaceRightbar,
   WorkspaceSidebar,
 } from "@web-core/ui";
-import { ComponentProvider, tree } from "#/entities/component";
+import { tree } from "#/entities/component";
 import { ComponentSettings } from "#/features/settings";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
 import { FeedPanel } from "#/widgets/feed";
@@ -21,7 +21,6 @@ export function ShowcasePage() {
       <WorkspaceSidebar style={{ width: railVar("rail-md") }}>
         <CatalogTree adapter={tree} {...selection} />
       </WorkspaceSidebar>
-      <ComponentProvider name={selection.activeValue}>
         <WorkspaceMain style={{ padding: 0 }}>
           <Outlet />
         </WorkspaceMain>
@@ -50,7 +49,6 @@ export function ShowcasePage() {
             />
           </RailPanel>
         </WorkspaceRightbar>
-      </ComponentProvider>
     </Workspace>
   );
 }

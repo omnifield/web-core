@@ -1,5 +1,6 @@
 import { Icon, type IconProps, Toggle, ToggleIndicator } from "@web-core/ui";
-import { LAYOUT_MODES, usePreviewStore } from "../../../model";
+import { LAYOUT_MODES } from "../../../model";
+import { usePreview } from "../../../use";
 
 type IconName = IconProps["name"];
 
@@ -11,7 +12,7 @@ function iconOf<Value extends string>(
 }
 
 export function SwitchLayoutMode() {
-  const store = usePreviewStore();
+  const { store } = usePreview();
   const layoutMode = store.use((state) => state.layoutMode);
 
   return (

@@ -1,4 +1,4 @@
-import { endpointStore } from "./store";
+import { endpointStore } from "../model";
 
 /**
  * Какую ручку дёрнули последней и чем она ответила.

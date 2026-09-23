@@ -1,6 +1,6 @@
 import { Show } from "solid-js";
 import { TreeForm } from "@web-core/feeder";
-import { useComponent } from "#/entities/component";
+import { useInfo } from "#/entities/component";
 import { useFeed } from "#/entities/feed";
 
 /**
@@ -11,8 +11,8 @@ import { useFeed } from "#/entities/feed";
  * дальше это уже своя еда, и метка на доске меняется на эту панель.
  */
 export function FeedManual() {
-  const component = useComponent();
-  const feed = useFeed();
+  const component = useInfo();
+  const feed = useFeed(component.name);
   const schema = () => component.io()?.schema;
 
   return (

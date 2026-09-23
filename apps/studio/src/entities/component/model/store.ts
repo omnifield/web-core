@@ -46,3 +46,11 @@ export const componentStoreOf = createActionStoreFamily<
   }),
   { empty: NO_COMPONENT },
 );
+
+/** Сперва собрать ячейку, потом активировать: читатели берут активную и имени не знают. */
+export function selectComponent(name: string | undefined): void {
+  if (name === undefined) return;
+
+  componentStoreOf.create(name);
+  componentStoreOf.activate(name);
+}

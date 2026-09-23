@@ -7,7 +7,7 @@ import {
   WorkspaceSidebar,
 } from "@web-core/ui";
 
-import { ComponentProvider, tree } from "#/entities/component";
+import { tree } from "#/entities/component";
 import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
 import { ApiSetup } from "#/features/api-setup";
 import { RailPanel } from "#/widgets/rail";
@@ -30,7 +30,6 @@ export function LabPage() {
       <WorkspaceSidebar style={{ width: railVar("rail-md") }}>
         <CatalogTree adapter={tree} {...selection} />
       </WorkspaceSidebar>
-      <ComponentProvider name={selection.activeValue}>
         <WorkspaceMain style={{ padding: 0 }}>
           <Outlet />
         </WorkspaceMain>
@@ -47,7 +46,6 @@ export function LabPage() {
             onValueChange={feature.onValueChange}
           />
         </WorkspaceRightbar>
-      </ComponentProvider>
     </Workspace>
   );
 }

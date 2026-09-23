@@ -9,5 +9,4 @@ export {
   LAYOUT_MODES,
   VIEW_MODES,
 } from "./modes";
-export { usePreview, usePreviewStore } from "./preview";
 export { ALL_CELLS, previewStoreOf } from "./store";

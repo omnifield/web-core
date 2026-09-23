@@ -1,5 +1,5 @@
 import { type Accessor, createMemo } from "solid-js";
-import { useComponent } from "#/entities/component";
+import { useInfo } from "#/entities/component";
 import { rootPropsOf, type SettingFacts, settingsOf } from "../lib";
 import { type SettingValue, settingsStoreOf } from "./store";
 
@@ -15,7 +15,7 @@ export function useSettings(): {
   choose: (name: string, value: SettingValue) => void;
   values: Accessor<Readonly<Record<string, SettingValue>>>;
 } {
-  const component = useComponent();
+  const component = useInfo();
   const store = settingsStoreOf(component.name);
   const chosen = store.use((state) => state.chosen);
 

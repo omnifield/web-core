@@ -1,13 +1,10 @@
 import { For } from "solid-js";
 import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
-import {
-  FILTER_MODES,
-  filterAppliesTo,
-  usePreviewStore,
-} from "../../../model";
+import { FILTER_MODES, filterAppliesTo } from "../../../model";
+import { usePreview } from "../../../use";
 
 export function SwitchFilterMode() {
-  const store = usePreviewStore();
+  const { store } = usePreview();
   const filterMode = store.use((state) => state.filterMode);
   const axisMode = store.use((state) => state.axisMode);
 

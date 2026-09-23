@@ -1,5 +1,3 @@
-export { Assembly } from "./assembly";
-export { Feed } from "./feed";
+export { Data } from "./data";
 export { Form } from "./form";
-export { Style } from "./style";
 export { Switcher } from "./switcher";

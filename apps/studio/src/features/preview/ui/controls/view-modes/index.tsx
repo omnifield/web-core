@@ -1,7 +1,8 @@
 import { For } from "solid-js";
 import { Icon, ToggleGroup, ToggleGroupItem } from "@web-core/ui";
 import type { Cell } from "../../../lib/cell";
-import { ALL_CELLS, usePreviewStore, VIEW_MODES } from "../../../model";
+import { ALL_CELLS, VIEW_MODES } from "../../../model";
+import { usePreview } from "../../../use";
 
 /** Адрес вида — размеченный союз, а не необязательная ячейка: «локальный без ячейки» — состояние,
  *  которого не бывает, и запретить его типом дешевле, чем ловить в рантайме. */
@@ -19,7 +20,7 @@ export type SwitchViewModeProps =
  * последнего нажатого гасится ниже.
  */
 export function SwitchViewMode(props: SwitchViewModeProps) {
-  const store = usePreviewStore();
+  const { store } = usePreview();
   const previewViewMode = store.use(
     (state) => state.viewMode[ALL_CELLS] ?? "form",
   );
