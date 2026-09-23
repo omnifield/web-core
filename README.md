@@ -238,6 +238,7 @@
 | `backend/` | 🗄️ службы со своим процессом, портом и сетевым контрактом | [README](./backend/README.md) · [FAQ](./backend/FAQ.md) · [ROADMAP](./backend/ROADMAP.yaml) |
 | `products/` | 🚀 то, что фреймворк обслуживает; временно здесь, уедет своими репозиториями | [README](./products/README.md) · [FAQ](./products/FAQ.md) · [ROADMAP](./products/ROADMAP.yaml) |
 | `canons/` | 📚 фонд рыночных канонов: чужие решения с адресом и датой сверки, без кода | [README](./canons/README.md) · [FAQ](./canons/FAQ.md) · [ROADMAP](./canons/ROADMAP.yaml) |
+| `statboard/` | 📊 не каталог, а самостоятельный репозиторий-потребитель: демка статбордов и стартовая площадка коллег на наших инструментах | [README](./statboard/README.md) · [ROADMAP](./statboard/ROADMAP.yaml) |
 
 🔐 Кто владеет какой папкой — `.claude/harness.yaml`, секция `zones`: одна папка — один владелец.
 Путь, не попавший ни в одну зону (корневые конфиги, `scripts/`, `.claude/`, `.devcontainer/`),
