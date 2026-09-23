@@ -18,19 +18,19 @@ importers:
         specifier: ^0.13.12
         version: 0.13.13(solid-js@1.9.14)
       '@web-core/skin':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/skin
       '@web-core/solid':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/solid
       '@web-core/style':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/style
       '@web-core/trace':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/trace
       '@web-core/ui':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/ui
       solid-js:
         specifier: ^1.9.14
@@ -43,10 +43,10 @@ importers:
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/build
       '@web-core/lint':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/lint
       eslint:
         specifier: ^10.8.1
@@ -70,43 +70,43 @@ importers:
         specifier: ^1.170.30
         version: 1.170.30(solid-js@1.9.14)
       '@web-core/assembly':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/assembly
       '@web-core/chat':
-        specifier: workspace:*
+        specifier: ^0.3.0
         version: link:../../interfaces/chat
       '@web-core/feeder':
-        specifier: workspace:*
+        specifier: ^0.3.0
         version: link:../../interfaces/feeder
       '@web-core/generators':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/generators
       '@web-core/io':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/io
       '@web-core/neurobox':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/neurobox
       '@web-core/query':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/query
       '@web-core/router':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/router
       '@web-core/skin':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/skin
       '@web-core/solid':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/solid
       '@web-core/store':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/store
       '@web-core/style':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/style
       '@web-core/ui':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/ui
       partial-json:
         specifier: ^0.1.7
@@ -125,10 +125,10 @@ importers:
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/build
       '@web-core/lint':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/lint
       eslint:
         specifier: ^10.8.1
@@ -152,16 +152,16 @@ importers:
         specifier: ^1.30.0
         version: 1.30.0(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/io':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/io
       '@web-core/neurobox':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/neurobox
       '@web-core/skin':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/skin
       '@web-core/ui':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/ui
       zocker:
         specifier: ^3.0.0
@@ -174,10 +174,10 @@ importers:
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/build
       '@web-core/lint':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../../packages/lint
       eslint:
         specifier: ^10.8.1
@@ -192,20 +192,20 @@ importers:
   interfaces/chat:
     dependencies:
       '@web-core/neurobox':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/neurobox
       '@web-core/ui':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/ui
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/build
       '@web-core/lint':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/lint
       eslint:
         specifier: ^10.8.1
@@ -229,25 +229,25 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0
       '@web-core/generators':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/generators
       '@web-core/io':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/io
       '@web-core/query':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/query
       '@web-core/skin':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/skin
       '@web-core/solid':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/solid
       '@web-core/store':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/store
       '@web-core/ui':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/ui
       yaml:
         specifier: ^2.8.1
@@ -257,10 +257,10 @@ importers:
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/build
       '@web-core/lint':
-        specifier: workspace:*
+        specifier: ^0.4.0
         version: link:../../packages/lint
       eslint:
         specifier: ^10.8.1

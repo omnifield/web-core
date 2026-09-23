@@ -44,16 +44,16 @@
     "lint": "eslint . && pnpm run typecheck"
   },
   "dependencies": {
-    "@web-core/neurobox": "workspace:*",
-    "@web-core/ui": "workspace:*"
+    "@web-core/neurobox": "^0.4.0",
+    "@web-core/ui": "^0.4.0"
   },
   "peerDependencies": {
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "@web-core/build": "workspace:*",
-    "@web-core/lint": "workspace:*",
+    "@web-core/build": "^0.4.0",
+    "@web-core/lint": "^0.4.0",
     "eslint": "^10.8.1",
     "solid-js": "^1.9.14",
     "typescript": "^7.0.2",

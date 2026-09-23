@@ -35,13 +35,13 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^3.1.0",
-    "@web-core/generators": "workspace:*",
-    "@web-core/io": "workspace:*",
-    "@web-core/query": "workspace:*",
-    "@web-core/skin": "workspace:*",
-    "@web-core/solid": "workspace:*",
-    "@web-core/store": "workspace:*",
-    "@web-core/ui": "workspace:*",
+    "@web-core/generators": "^0.4.0",
+    "@web-core/io": "^0.4.0",
+    "@web-core/query": "^0.4.0",
+    "@web-core/skin": "^0.4.0",
+    "@web-core/solid": "^0.4.0",
+    "@web-core/store": "^0.4.0",
+    "@web-core/ui": "^0.4.0",
     "yaml": "^2.8.1"
   },
   "peerDependencies": {
@@ -49,8 +49,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "@web-core/build": "workspace:*",
-    "@web-core/lint": "workspace:*",
+    "@web-core/build": "^0.4.0",
+    "@web-core/lint": "^0.4.0",
     "eslint": "^10.8.1",
     "jsdom": "^30.0.1",
     "solid-js": "^1.9.14",
