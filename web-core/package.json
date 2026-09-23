@@ -2,6 +2,10 @@
   "name": "web-core",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "FORCE_COLOR=0 nx run-many -t build -p '@web-core/*'",
     "test": "FORCE_COLOR=0 nx run-many -t test -p '@web-core/*'",
