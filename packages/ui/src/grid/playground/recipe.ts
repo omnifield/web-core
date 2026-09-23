@@ -6,7 +6,7 @@ export const recipe: SlotRecipe = {
       props: {
         display: "grid",
         gap: "var(--space-1)",
-        gridTemplateColumns: "repeat(auto-fill, minmax(var(--space-32), 1fr))",
+        gridTemplateColumns: "repeat(auto-fill, minmax(var(--card-sm), 1fr))",
       },
     },
     cell: { props: { display: "block", minWidth: "0" } },
@@ -14,12 +14,12 @@ export const recipe: SlotRecipe = {
   variants: {
     gallery: {
       root: {
-        props: { gridTemplateColumns: "repeat(auto-fill, minmax(var(--space-32), 1fr))" },
+        props: { gridTemplateColumns: "repeat(auto-fill, minmax(var(--card-sm), 1fr))" },
       },
     },
     sidebar: {
       root: {
-        props: { gridTemplateColumns: "minmax(var(--space-32), var(--column-24)) 1fr" },
+        props: { gridTemplateColumns: "minmax(var(--rail-sm), var(--rail-lg)) 1fr" },
       },
     },
     stack: {
