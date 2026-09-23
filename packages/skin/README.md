@@ -32,7 +32,7 @@
 | Часть | Адрес | Экспортирует |
 |---|---|---|
 | Модель (срез рантайма) | `@web-core/skin/model` | `ComponentPassport`, `PassportAnatomy`, `PassportPart`, `PassportSetting*`, `PassportVariantAxis`, `definePassport`, `createAnatomy`, `defineSettings`, `SETTINGS`, `settingApplies`, `addressesView`, `PassportLookup`, `passportLookup`, `coordinateOf`, `partOf`, `SkinAncestor`, `SkinCoordinate`, `BoundModel`, `withPassports`, `SkinGap(Kind)`, `skinGaps`, `GROW_SHRINK_BLOCK/INLINE`, `DARK_CLASS`/`FORCE_ATTRIBUTE`/`LAYER_ORDER`/`NODE_ATTRIBUTE`/`SKETCH_LAYER`/`SKIN_LAYER`, `Form`/`Outfit`/`Palette`, `OutfitRefused`, `Role`/`RoleKind`, `knownRole`, `ROLE_NAMES`, `SCALE_ROLES`, `VOCABULARY`, типы рецепта (`Skin`, `SlotRecipe`, …) |
-| Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategories`, `CategoryClash`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
+| Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategories`, `CategoryClash`, `checkCalibration`, `SeedOffset`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
 | Плоский CSS | `@web-core/skin/flat` | `flattenCss` |
 | Срез редактора | `@web-core/skin/editor` | `admits`, `defineEditorInfo`, `checkAssembly`, `checkAssemblyData`, `footprintOf`, `GROUPS`, `groupOf`, `baseAssemblyOf`, `isAssemblyContent`, `isAssemblyRepeat`, `isContentNode`, `isDataBinding`, `resolveDataBinding`, `PassportAssembly`, `PassportEditorInfo` и её срез-типы |
 | Служба раздачи | `@web-core/skin/presets` | `createPresetsClient`, `createPresetsSkinSource`, `PRESET_KIND`, `PresetsDown`, `PresetsRefused`, `PresetRecord`, `PresetHeader`, `PresetsCatalog` |
@@ -89,6 +89,17 @@ const palette = {
 };
 
 const clashes = checkCategories(palette); // пусто — категории различимы между собой
+```
+
+📏 **Размерное семя вправе уйти от рыночной опоры — но не молча.** У каждой оси зоны значений
+(`AXES`, `@web-core/style`) рядом с полом и потолком объявлена опора: значение семени, при котором
+ступени дают сверенные с рынком числа. Пол и потолок отвечают на вопрос «законно ли значение»,
+опора — на другой: «на месте ли калибровка». `checkCalibration` называет уход и число, во сколько
+раз он сдвинет КАЖДУЮ ступень оси, и ничего не запрещает:
+
+```ts
+const offsets = checkCalibration(palette);
+// [{ seed: "space", pole: "wide", value: 0.5, reference: 0.25, times: 2, market: "… (сверено …)" }]
 ```
 
 **Надеть скин (без Solid) и проверить порядок подключения:**
@@ -194,6 +205,7 @@ import { layoutGroup, layoutSelf, railVar } from "@web-core/skin";
 | `skinGaps` | перечень непокрытых координат |
 | `skinContrast` | перечень пар, не прошедших норму читаемости, и пар, которые посчитать нечем |
 | `checkCategories` | перечень пар категорий палитры, которые не расходятся на ступенях, где различимость обещана |
+| `checkCalibration` | перечень размерных семян, ушедших от рыночной опоры оси, с числом «во сколько раз» |
 | `PresetsClient.list/get` | `PresetRecord<T>` — запись целиком, с содержимым |
 
 `author?: string` — сквозной атрибут владения на КАЖДОМ виде (`Palette`/`Form`/`Outfit`/
