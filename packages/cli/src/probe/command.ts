@@ -1,5 +1,6 @@
 import { defineCommand } from "../command/index";
-import { probeDelivery, type Installer } from "./delivery";
+import type { Installer } from "./contract";
+import { probeDelivery } from "./delivery";
 
 export function probeCommand(name = "probe") {
   return defineCommand({
@@ -40,6 +41,10 @@ export function probeCommand(name = "probe") {
         flags: "--no-types",
         summary: "не проверять типы установленного пакета",
       },
+      peers: {
+        flags: "--no-peers",
+        summary: "не ставить объявленные пакетом peer-зависимости",
+      },
       typescript: {
         flags: "--typescript <range>",
         summary: "версия TypeScript для проверки типов",
@@ -62,6 +67,7 @@ export function probeCommand(name = "probe") {
         ...(options.entry ? { entries: options.entry } : {}),
         ...(options.projectDir ? { projectDir: options.projectDir } : {}),
         types: options.types,
+        peers: options.peers,
         typescript: options.typescript,
         ...(options.timeout === undefined ? {} : { timeoutMs: options.timeout }),
       });

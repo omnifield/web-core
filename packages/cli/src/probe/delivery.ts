@@ -1,48 +1,24 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 
 import { done, failed, type Answer } from "../answer/index";
+import {
+  isBlocking,
+  isLimited,
+  type EntryReport,
+  type InstalledPackage,
+  type ProbeReport,
+  type ProbeRequest,
+  type ProbeStep,
+} from "./contract";
+import { peerSpecs, readInstalled } from "./installed";
+import { parseRecords, runnerScript } from "./runner";
+import { reportFor } from "./verdict";
 
 const run = promisify(execFile);
-
-export type Installer = "npm" | "pnpm" | "yarn";
-
-export interface ProbeRequest {
-  /** Что ставим: имя пакета, путь к тарболу — всё, что понимает установщик. Наш список пакетов тулзе неизвестен. */
-  readonly name: string;
-  readonly version?: string;
-  readonly registry?: string;
-  readonly installer?: Installer;
-  /** Подпути для проверки; по умолчанию — всё, что установленный пакет объявил в `exports`. */
-  readonly entries?: readonly string[];
-  /** Куда развернуть чистый проект; по умолчанию — свежая временная папка. */
-  readonly projectDir?: string;
-  /** Проверять ли типы (`tsc --noEmit` в чистом проекте). */
-  readonly types?: boolean;
-  readonly typescript?: string;
-  readonly timeoutMs?: number;
-}
-
-export interface ProbeStep {
-  readonly name: string;
-  readonly ok: boolean;
-  readonly command: string;
-  readonly durationMs: number;
-  readonly output?: string;
-}
-
-export interface ProbeReport {
-  /** Спецификатор, который реально ушёл установщику. */
-  readonly spec: string;
-  readonly installed?: { readonly name: string; readonly version: string };
-  readonly registry?: string;
-  readonly projectDir: string;
-  readonly entries: readonly string[];
-  readonly steps: readonly ProbeStep[];
-}
 
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -67,8 +43,11 @@ export async function probeDelivery(request: ProbeRequest): Promise<Answer<Probe
   const installer = request.installer ?? "npm";
   const timeout = request.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const withTypes = request.types !== false;
+  const withPeers = request.peers !== false;
   const projectDir = request.projectDir ?? (await mkdtemp(join(tmpdir(), "delivery-probe-")));
   const steps: ProbeStep[] = [];
+  const answer = (summary: string, entries: readonly EntryReport[], installed?: InstalledPackage) =>
+    report(steps, summary, spec, request, projectDir, entries, installed);
 
   await mkdir(projectDir, { recursive: true });
   await writeFile(
@@ -77,33 +56,44 @@ export async function probeDelivery(request: ProbeRequest): Promise<Answer<Probe
     "utf8",
   );
 
-  const installArgs = [
+  const install = (names: readonly string[]) => [
     "install",
-    spec,
-    ...(withTypes ? [`typescript@${request.typescript ?? "latest"}`] : []),
+    ...names,
     ...(request.registry ? ["--registry", request.registry] : []),
     ...(installer === "npm" ? ["--no-audit", "--no-fund"] : []),
   ];
 
-  if (!(await step(steps, "install", installer, installArgs, projectDir, timeout))) {
-    return report(steps, "пакет не встал в чистый проект", spec, request, projectDir, []);
-  }
+  const installed = await step(
+    steps,
+    "install",
+    installer,
+    install([spec, ...(withTypes ? [`typescript@${request.typescript ?? "latest"}`] : [])]),
+    projectDir,
+    timeout,
+  );
+  if (!installed.ok) return answer("пакет не встал в чистый проект", []);
 
-  const installed = await installedPackage(projectDir);
-  const entries = request.entries ?? (await declaredEntries(projectDir, installed?.name));
-
+  const delivery = await readInstalled(projectDir);
+  const entries = request.entries ?? delivery?.entries ?? [];
   if (entries.length === 0) {
-    return report(steps, "проверять нечего: у поставки не нашлось ни одного подпути", spec, request, projectDir, entries, installed);
+    return answer("проверять нечего: у поставки не нашлось ни одного подпути", [], delivery);
   }
 
-  await writeFile(join(projectDir, "probe.mjs"), importScript(entries), "utf8");
-  const imported = await step(steps, "import", process.execPath, ["probe.mjs"], projectDir, timeout);
+  if (withPeers && delivery) {
+    const peers = peerSpecs(delivery);
+    if (peers.length > 0) await step(steps, "install-peers", installer, install(peers), projectDir, timeout);
+  }
 
-  let typed = true;
-  if (withTypes) {
-    await writeFile(join(projectDir, "probe.ts"), importScript(entries), "utf8");
+  await writeFile(join(projectDir, "probe.mjs"), runnerScript(entries), "utf8");
+  const imported = await step(steps, "import", process.execPath, ["probe.mjs"], projectDir, timeout);
+  const reports = entryReports(entries, imported, delivery);
+  steps[steps.length - 1] = { ...imported, output: withoutRecords(imported.output ?? "") };
+
+  const typed = reports.filter((entry) => entry.checkedBy === "import").map((entry) => entry.entry);
+  if (withTypes && typed.length > 0) {
+    await writeFile(join(projectDir, "probe.ts"), typeScript(typed), "utf8");
     await writeFile(join(projectDir, "tsconfig.json"), TSCONFIG, "utf8");
-    typed = await step(
+    await step(
       steps,
       "typecheck",
       join(projectDir, "node_modules", ".bin", "tsc"),
@@ -113,44 +103,56 @@ export async function probeDelivery(request: ProbeRequest): Promise<Answer<Probe
     );
   }
 
-  const summary = imported && typed ? "поставка встала и собралась в чистом проекте" : "поставка не прошла приёмку";
-  return report(steps, summary, spec, request, projectDir, entries, installed);
+  return answer(summaryOf(reports, steps), reports, delivery);
 }
 
-function importScript(entries: readonly string[]): string {
+function entryReports(
+  entries: readonly string[],
+  imported: ProbeStep,
+  delivery?: InstalledPackage,
+): readonly EntryReport[] {
+  const records = parseRecords(imported.output ?? "");
+
+  return entries.map((entry) => {
+    const record = records.find((current) => current.entry === entry);
+    if (record) return reportFor(record, delivery);
+
+    return {
+      entry,
+      verdict: "delivery-broken",
+      checkedBy: "import",
+      durationMs: 0,
+      blocker: { message: "проверка оборвалась раньше этого подпути — смотрите вывод шага «import»" },
+    };
+  });
+}
+
+/** Разобранные записи уже лежат в `entries` отчёта — в выводе шага они были бы второй копией. */
+function withoutRecords(output: string): string {
+  return output
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("{"))
+    .join("\n")
+    .trim();
+}
+
+function typeScript(entries: readonly string[]): string {
   const lines = entries.map((entry, index) => `import * as entry${index} from ${JSON.stringify(entry)};`);
   const names = entries.map((_, index) => `entry${index}`).join(", ");
+
   return `${lines.join("\n")}\nconsole.log("подпутей:", [${names}].length);\n`;
 }
 
-async function installedPackage(projectDir: string): Promise<ProbeReport["installed"]> {
-  const manifest = JSON.parse(await readFile(join(projectDir, "package.json"), "utf8")) as {
-    dependencies?: Record<string, string>;
-  };
-  const name = Object.keys(manifest.dependencies ?? {}).find((key) => key !== "typescript");
-  if (!name) return undefined;
+function summaryOf(entries: readonly EntryReport[], steps: readonly ProbeStep[]): string {
+  const broken = entries.filter(isBlocking).length;
+  const limited = entries.filter(isLimited).length;
+  const brokenStep = steps.find((step) => !step.ok && step.name !== "install-peers");
+  const tail = limited > 0 ? `, проверено не до конца: ${limited}` : "";
 
-  const installed = JSON.parse(
-    await readFile(join(projectDir, "node_modules", ...name.split("/"), "package.json"), "utf8"),
-  ) as { version?: string };
+  if (broken > 0) return `поставка не прошла приёмку: подпутей с дефектом ${broken} из ${entries.length}${tail}`;
+  if (brokenStep) return `поставка не прошла приёмку: шаг «${brokenStep.name}»${tail}`;
 
-  return { name, version: installed.version ?? "неизвестна" };
-}
-
-async function declaredEntries(projectDir: string, name: string | undefined): Promise<readonly string[]> {
-  if (!name) return [];
-
-  const manifest = JSON.parse(
-    await readFile(join(projectDir, "node_modules", ...name.split("/"), "package.json"), "utf8"),
-  ) as { exports?: unknown };
-  const exported = manifest.exports;
-
-  if (typeof exported !== "object" || exported === null) return [name];
-
-  const subpaths = Object.keys(exported).filter((key) => key.startsWith(".") && !key.includes("*"));
-  if (subpaths.length === 0) return [name];
-
-  return subpaths.map((subpath) => (subpath === "." ? name : `${name}/${subpath.slice(2)}`));
+  return `поставка встала и собралась в чистом проекте: подпутей ${entries.length}${tail}`;
 }
 
 async function step(
@@ -160,18 +162,21 @@ async function step(
   args: readonly string[],
   cwd: string,
   timeout: number,
-): Promise<boolean> {
+): Promise<ProbeStep> {
   const command = `${file} ${args.join(" ")}`;
   const started = performance.now();
   const elapsed = () => Math.round(performance.now() - started);
+  const record = (ok: boolean, output: string): ProbeStep => {
+    const current = { name: stepName, ok, command, durationMs: elapsed(), output: tail(output) };
+    steps.push(current);
+    return current;
+  };
 
   try {
-    const { stdout, stderr } = await run(file, [...args], { cwd, timeout });
-    steps.push({ name: stepName, ok: true, command, durationMs: elapsed(), output: tail(`${stdout}${stderr}`) });
-    return true;
+    const { stdout, stderr } = await run(file, [...args], { cwd, timeout, maxBuffer: 32 * 1024 * 1024 });
+    return record(true, `${stdout}${stderr}`);
   } catch (error) {
-    steps.push({ name: stepName, ok: false, command, durationMs: elapsed(), output: tail(outputOf(error)) });
-    return false;
+    return record(false, outputOf(error));
   }
 }
 
@@ -181,34 +186,40 @@ function report(
   spec: string,
   request: ProbeRequest,
   projectDir: string,
-  entries: readonly string[],
-  installed?: ProbeReport["installed"],
+  entries: readonly EntryReport[],
+  installed?: InstalledPackage,
 ): Answer<ProbeReport> {
+  const broken = entries.filter(isBlocking);
+  const brokenStep = steps.find((step) => !step.ok && step.name !== "install-peers");
   const data: ProbeReport = {
     spec,
-    ...(installed ? { installed } : {}),
+    ...(installed ? { installed: { name: installed.name, version: installed.version } } : {}),
     ...(request.registry ? { registry: request.registry } : {}),
     projectDir,
     entries,
+    broken: broken.map((entry) => entry.entry),
+    limited: entries.filter(isLimited).map((entry) => entry.entry),
     steps,
   };
-  const broken = steps.find((current) => !current.ok);
 
-  if (!broken) return done(summary, data);
+  if (broken.length === 0 && !brokenStep) return done(summary, data);
 
-  return failed(`${summary}: шаг «${broken.name}»`, {
-    remedy: `повторите руками в ${projectDir}: ${broken.command}`,
-    details: data,
-  });
+  const remedy = broken[0]
+    ? `повторите руками в ${projectDir}: ${process.execPath} probe.mjs`
+    : `повторите руками в ${projectDir}: ${brokenStep?.command ?? ""}`;
+
+  return failed(summary, { remedy, details: data });
 }
 
 function outputOf(error: unknown): string {
   if (typeof error !== "object" || error === null) return String(error);
   const shaped = error as { stdout?: string; stderr?: string; message?: string };
+
   return `${shaped.stdout ?? ""}${shaped.stderr ?? ""}` || (shaped.message ?? String(error));
 }
 
-function tail(output: string, limit = 4000): string {
+function tail(output: string, limit = 16_000): string {
   const text = output.trim();
+
   return text.length > limit ? `…${text.slice(-limit)}` : text;
 }
