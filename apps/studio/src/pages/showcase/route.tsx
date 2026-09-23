@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { ShowcasePage } from "./index";
 
-export const Route = createFileRoute("/_workspace/showcase/{-$component}")({
+export const Route = createFileRoute("/_workspace/showcase")({
   component: ShowcasePage,
 });
