@@ -70,7 +70,7 @@ export default defineConfig();
 ```
 
 **Конфиг библиотеки** (`ui`, `skin`, `assembly` и подобные зоны — вместо собственного
-`scripts/build.mjs` поверх esbuild):
+сборочного скрипта поверх esbuild):
 
 ```ts
 // vite.config.ts потребителя-библиотеки
@@ -132,7 +132,7 @@ export default defineTestConfig();
 ```ts
 import { fromEnv } from "@web-core/build/env";
 
-const DOCS_URL = fromEnv("VITE_DOCS_URL") ?? "http://localhost:7777/workspaces/UI/pages";
+const DOCS_URL = fromEnv("VITE_DOCS_URL") ?? "http://localhost:3000/docs";
 ```
 
 <h2 id="настройки">🎚️ Настройки</h2>
@@ -198,13 +198,13 @@ tsconfig-профили и раннер настроек не принимают
 
 | Проверено | Как | Результат |
 |---|---|---|
-| `defineConfig` в реальном приложении | `apps/reference`, настоящий дев-сервер, HTTP-запрос к `/` и `/src/main.tsx` | `200`, без ошибок в консоли |
-| Соседи по воркспейсу видны исходником | тот же прогон `apps/reference` (пакеты кита — соседи) | дев-сервер поднимается, HMR не падает |
-| Соседи по воркспейсу видны исходником и тестам | `apps/reference`, временный экспорт в `packages/trace/src/` (нет в `dist`), тест через `@web-core/build/vitest` | тест увидел экспорт без пересборки соседа |
+| `defineConfig` в реальном приложении | настоящее приложение, собранное этой оснасткой: дев-сервер, HTTP-запрос к корню и к `/src/main.tsx` | `200`, без ошибок в консоли |
+| Соседи по воркспейсу видны исходником | тот же прогон того же приложения (пакеты воркспейса — его соседи) | дев-сервер поднимается, HMR не падает |
+| Соседи по воркспейсу видны исходником и тестам | то же приложение, временный экспорт в `packages/trace/src/` (нет в `dist`), тест через `@web-core/build/vitest` | тест увидел экспорт без пересборки соседа |
 | `defineConfig`/`defineTestConfig` экспортируются | `import()` собранного `dist/vite/index.js` и `dist/vitest/index.js` | обе функции — `function` |
 | `web-core-node` исполняет `.ts` | ручной прогон на тестовом файле | вывод программы, без ошибок загрузчика |
 | `/tsconfig`, `/tsconfig-node` резолвят `extends` | `tsc --noEmit` на файле, наследующем каждый профиль из `dist/` | оба прохода зелёные |
-| `customConditions` не ломает потребителя без условия `development` в `exports` | `pnpm run typecheck` в `apps/skin` (сосед `@web-core/skin` условие ещё не публикует) до и после правки | тот же набор ошибок, регрессии нет |
+| `customConditions` не ломает потребителя без условия `development` в `exports` | `pnpm run typecheck` в приложении-потребителе (сосед `@web-core/skin` условие ещё не публикует) до и после правки | тот же набор ошибок, регрессии нет |
 | Тарбол не тащит лишнего | `pnpm pack`, разбор содержимого архива | только `dist` + корневой `README.md` |
 | `fromEnv` резолвит по префиксу, с запасным именем и обрезкой пробелов | временная проба `test/env.smoke.test.ts` (убрана после проверки) под `vitest run`, `process.env.VITE_SMOKE_KEY*` | все три случая (найден, не найден, обрезка пробелов) прошли |
 
