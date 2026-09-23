@@ -25,7 +25,18 @@
       }
     },
     "changelog": {
-      "projectChangelogs": true
+      "workspaceChangelog": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": false
+        }
+      },
+      "projectChangelogs": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": false
+        }
+      }
     }
   },
   "targetDefaults": {

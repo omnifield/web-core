@@ -17,18 +17,11 @@ import { Auth } from "#/entities/user";
 import { ThemeSwitch } from "#/entities/outfit";
 
 const SCREENS = [
-  {
-    value: "lab",
-    label: "Lab",
-    to: "/lab/{-$component}",
-    param: "component",
-    prefix: "/lab",
-  },
+  { value: "lab", label: "Lab", to: "/lab/{-$component}", prefix: "/lab" },
   {
     value: "showcase",
     label: "Showcase",
-    to: "/showcase/component/{-$name}",
-    param: "name",
+    to: "/showcase/{-$component}",
     prefix: "/showcase",
   },
   {
@@ -41,11 +34,11 @@ const SCREENS = [
 
 export function Header() {
   const pathname = useLocation({ select: (location) => location.pathname });
-  // `strict: false` — тот же приём, что у `CatalogTree`'s `activeValue`: имя выбранного лежит под
-  // `$name` у showcase и под `$component` у lab, читаем его независимо от того, где сейчас.
+  // `strict: false` — тот же приём, что у `CatalogTree`'s `activeValue`: `$component` объявлен то у
+  // showcase, то у lab, читаем его независимо от того, в каком из двух сейчас находимся.
   const component = useParams({
     strict: false,
-    select: (params) => params.name ?? params.component,
+    select: (params) => params.component,
   });
   const navigate = useNavigate();
 
@@ -63,8 +56,11 @@ export function Header() {
     if (!target) return;
 
     const active = component();
-    if (active !== undefined && "param" in target) {
-      void navigate({ to: target.to, params: { [target.param]: active } });
+    if (
+      active !== undefined &&
+      (target.value === "lab" || target.value === "showcase")
+    ) {
+      void navigate({ to: target.to, params: { component: active } });
       return;
     }
 

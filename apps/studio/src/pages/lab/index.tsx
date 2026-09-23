@@ -19,10 +19,7 @@ import {
 const KITCHEN_ROUTE = "/lab/{-$component}/{-$feature}";
 
 export function LabPage() {
-  const selection = useRouterCatalogSelection({
-    param: "component",
-    to: KITCHEN_ROUTE,
-  });
+  const selection = useRouterCatalogSelection(KITCHEN_ROUTE);
   const feature = useRouterNavigationSelection({
     param: "feature",
     to: KITCHEN_ROUTE,
