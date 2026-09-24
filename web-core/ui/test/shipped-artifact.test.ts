@@ -41,6 +41,14 @@ function filesUnder(dir: string, match: RegExp): string[] {
   return found;
 }
 
+/** Куски подпутя `./docs` — проза компонентов, и она законно называет и макрос, и чужую раскладку. */
+function docsChunks(): Set<string> {
+  const entry = join(DIST_DIR, "docs.js");
+  if (!existsSync(entry)) return new Set();
+  const loaders = readFileSync(entry, "utf8").matchAll(/import\("\.\/([^"]+)"\)/g);
+  return new Set([...loaders].map((loader) => join(DIST_DIR, loader[1]!)));
+}
+
 function guilty(files: readonly string[], needle: string): string[] {
   return files
     .filter((file) => readFileSync(file, "utf8").includes(needle))
@@ -62,7 +70,8 @@ describe("исходники кита не зовут макросов сбор�
 describe("собранный dist не несёт ни макроса, ни чужой раскладки", () => {
   // Гоняется ПОСЛЕ сборки: `nx` держит `test.dependsOn: ["build"]` (`package.json`). Голый
   // `vitest run` на несобранном дереве честно падает здесь, а не молча пропускает гейт.
-  const built = existsSync(DIST_DIR) ? filesUnder(DIST_DIR, /\.[mc]?jsx?$/) : [];
+  const docs = docsChunks();
+  const built = existsSync(DIST_DIR) ? filesUnder(DIST_DIR, /\.[mc]?jsx?$/).filter((file) => !docs.has(file)) : [];
 
   it("dist/ собран — иначе проверять нечего", () => {
     expect(built.length).toBeGreaterThan(0);

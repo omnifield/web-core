@@ -9,14 +9,23 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, hasFile } from "@web-core/generators/engine";
 import { kitBarrelPlugins } from "@web-core/generators/plugins/kit";
 
+import { kitDocsPlugins } from "./plugins/docs";
+
 const thisDir = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(thisDir, "..", "src");
 
 export default defineConfig({
   rootDir: srcDir,
   isEntry: hasFile("entity/passport.ts"),
-  plugins: kitBarrelPlugins({
-    outputDir: srcDir,
-    templatesDir: join(thisDir, "templates", "barrel"),
-  }),
+  plugins: [
+    ...kitBarrelPlugins({
+      outputDir: srcDir,
+      templatesDir: join(thisDir, "templates", "barrel"),
+    }),
+    // Документы компонентов — тот же обход, свой текст и свои шаблоны (`plugins/docs.ts`).
+    ...kitDocsPlugins({
+      outputDir: srcDir,
+      templatesDir: join(thisDir, "templates", "docs"),
+    }),
+  ],
 });

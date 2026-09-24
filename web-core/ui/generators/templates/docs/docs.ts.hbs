@@ -1,0 +1,33 @@
+// ПОРОЖДЁН СБОРКОЙ (`pnpm run generate`, движок — `@web-core/generators/engine`) — НЕ ПРАВИТЬ И НЕ КОММИТИТЬ.
+//
+// Перечень собирается тем же обходом папок `src/*`, что паспорт и кит: компонент попадает сюда
+// самим фактом объявления. Разбор, почему загрузчик, а не текст, — `FAQ.md` зоны.
+
+/** Документы одного компонента. `roadmap` — текст ямла, разбор формата за потребителем. */
+export interface ComponentDocs {
+  readonly readme?: string;
+  readonly faq?: string;
+  readonly examples?: string;
+  readonly roadmap?: string;
+}
+
+/**
+ * Загрузчики документов по имени компонента — тот же ключ, что у `PASSPORTS` и `KIT`.
+ *
+ * Компонент без единого документа честно отдаёт пустую запись: документов у него пока нет, а
+ * молчаливая заглушка читалась бы как написанная страница.
+ */
+export const DOCS: Readonly<Record<string, () => Promise<ComponentDocs>>> = {
+{{#each items}}
+  "{{name}}": () => import("./docs/{{name}}.js"),
+{{/each}}
+};
+
+/**
+ * Документы по имени компонента, либо `undefined` — если такого кит не отдаёт.
+ *
+ * @param component имя компонента, оно же `data-scope` на каждом его узле
+ */
+export function docsOf(component: string): Promise<ComponentDocs> | undefined {
+  return DOCS[component]?.();
+}

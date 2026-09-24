@@ -15,7 +15,8 @@
 
 | файл | что производит | команда |
 |---|---|---|
-| [`generate.config.ts`](generate.config.ts) | агрегирующие входы кита — один файл на ВСЕ компоненты сразу (`passport.ts`, `kit.ts`, `io.ts`, `index.ts`), четыре `AggregatePlugin` на одном скане | `pnpm run generate` |
+| [`generate.config.ts`](generate.config.ts) | агрегирующие входы кита — один файл на ВСЕ компоненты сразу (`passport.ts`, `kit.ts`, `io.ts`, `index.ts`), четыре `AggregatePlugin` на одном скане, плюс документы компонентов (ниже) | `pnpm run generate` |
+| [`plugins/docs.ts`](plugins/docs.ts) | вход подпутя `./docs` (`src/docs.ts` — карта загрузчиков) и модуль текста на каждый компонент (`src/docs/<компонент>.ts`); тот же скан, свои шаблоны | `pnpm run generate` |
 
 Механическая документация (`README.md` на каждый компонент) и черновик-промпт для агента,
 дописывающего прозу, — на очереди, следующей итерацией (`GEN-9`).

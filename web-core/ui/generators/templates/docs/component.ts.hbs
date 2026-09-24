@@ -1,0 +1,10 @@
+// ПОРОЖДЁН СБОРКОЙ (`pnpm run generate`, движок — `@web-core/generators/engine`) — НЕ ПРАВИТЬ И НЕ КОММИТИТЬ.
+//
+// Документы компонента `{{name}}` — текст файлов его папки как есть. Модуль свой на компонент:
+// карта (`../docs.js`) грузит его по требованию, а не несёт прозу кита целиком.
+{{#each documents}}
+export const {{id}} = {{literal}};
+{{/each}}
+{{#unless documents}}
+export {};
+{{/unless}}
