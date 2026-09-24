@@ -41,6 +41,8 @@
 | Точка монтирования | `@web-core/solid/mount` | `mountApp(root)` — СОБСТВЕННОЕ добавление, не из вендора |
 | Поток по ключу | `@web-core/solid/keyed` | весь `@solid-primitives/keyed` (`Key`, `Entries`, `MapEntries`, `SetValues`, `Rerun`, `keyArray`) |
 | Корни и их уничтожение | `@web-core/solid/rootless` | весь `@solid-primitives/rootless` (`createSingletonRoot`, `createSubRoot`, `createRootPool`, `createDisposable`, `createCallback`, `createHydratableSingletonRoot`) |
+| JSX-рантайм | `@web-core/solid/jsx-runtime` | весь `solid-js/jsx-runtime` — адрес для `jsxImportSource`, руками не импортируется |
+| JSX-рантайм, отладочная ветка | `@web-core/solid/jsx-dev-runtime` | весь `solid-js/jsx-dev-runtime` — та же роль, дев-режим |
 
 📦 Внутри пакета: `src/index.ts` — единственный файл в корне `src/`, тонкая поверхность (один
 реэкспорт `engine/`). Каждый подпуть — своя папка: `src/engine/index.ts`

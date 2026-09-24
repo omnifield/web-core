@@ -30,6 +30,16 @@
       "development": "./src/rootless/index.ts",
       "types": "./dist/rootless/index.d.ts",
       "default": "./dist/rootless/index.js"
+    },
+    "./jsx-runtime": {
+      "development": "./src/jsx-runtime/index.ts",
+      "types": "./dist/jsx-runtime/index.d.ts",
+      "default": "./dist/jsx-runtime/index.js"
+    },
+    "./jsx-dev-runtime": {
+      "development": "./src/jsx-dev-runtime/index.ts",
+      "types": "./dist/jsx-dev-runtime/index.d.ts",
+      "default": "./dist/jsx-dev-runtime/index.js"
     }
   },
   "files": [
@@ -58,6 +68,14 @@
       "./rootless": {
         "types": "./dist/rootless/index.d.ts",
         "default": "./dist/rootless/index.js"
+      },
+      "./jsx-runtime": {
+        "types": "./dist/jsx-runtime/index.d.ts",
+        "default": "./dist/jsx-runtime/index.js"
+      },
+      "./jsx-dev-runtime": {
+        "types": "./dist/jsx-dev-runtime/index.d.ts",
+        "default": "./dist/jsx-dev-runtime/index.js"
       }
     }
   },
@@ -70,15 +88,12 @@
   },
   "dependencies": {
     "@solid-primitives/keyed": "1.5.3",
-    "@solid-primitives/rootless": "1.5.4"
-  },
-  "peerDependencies": {
-    "solid-js": "^1.9.14"
+    "@solid-primitives/rootless": "1.5.4",
+    "solid-js": "1.9.14"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "jsdom": "30.0.1",
-    "solid-js": "1.9.14",
     "typescript": "7.0.2",
     "vite": "8.2.1",
     "vite-plugin-solid": "2.11.14",

@@ -4,7 +4,7 @@
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "types": ["vite/client"]
+    "jsxImportSource": "@web-core/solid",
+    "types": ["@web-core/build/client"]
   }
 }

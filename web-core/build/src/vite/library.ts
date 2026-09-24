@@ -63,7 +63,7 @@ export function defineLibraryConfig(options: DefineLibraryConfigOptions): UserCo
 
   return {
     plugins: [
-      solid(),
+      solid({ solid: { moduleName: "@web-core/solid/web" } }),
       solidEntries.length > 0
         ? {
             name: "web-core-build:library-raw-jsx",

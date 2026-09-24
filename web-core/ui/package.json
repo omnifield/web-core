@@ -147,6 +147,8 @@
     }
   },
   "dependencies": {
+    "@ark-ui/solid": "5.39.1",
+    "@kobalte/core": "0.13.13",
     "@tanstack/solid-table": "9.1.2",
     "@web-core/assembly": "workspace:*",
     "@web-core/form": "workspace:*",
@@ -183,14 +185,7 @@
     "d3-shape": "3.2.0",
     "lucide-solid": "1.41.0"
   },
-  "peerDependencies": {
-    "@ark-ui/solid": "^5.39.1",
-    "@kobalte/core": "^0.13.12",
-    "solid-js": "^1.9.14"
-  },
   "devDependencies": {
-    "@ark-ui/solid": "5.39.1",
-    "@kobalte/core": "0.13.13",
     "@types/d3-scale": "4.0.9",
     "@types/d3-shape": "3.2.0",
     "@types/node": "24.13.3",

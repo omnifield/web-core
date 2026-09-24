@@ -48,9 +48,6 @@
     "@web-core/solid": "workspace:*",
     "json-logic-js": "2.0.5"
   },
-  "peerDependencies": {
-    "solid-js": "^1.9.14"
-  },
   "devDependencies": {
     "@types/json-logic-js": "2.0.8",
     "@types/node": "24.13.3",

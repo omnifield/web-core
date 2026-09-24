@@ -112,14 +112,11 @@
     "@web-core/neurobox": "workspace:*",
     "@web-core/query": "workspace:*",
     "@web-core/solid": "workspace:*",
+    "@web-core/style": "workspace:*",
     "@web-core/trace": "workspace:*",
-    "@zag-js/anatomy": "1.43.1"
-  },
-  "peerDependencies": {
-    "@web-core/style": "workspace:^",
-    "postcss": "^8.5.14",
-    "postcss-nested": "^7.0.2",
-    "solid-js": "^1.9.14"
+    "@zag-js/anatomy": "1.43.1",
+    "postcss": "8.5.26",
+    "postcss-nested": "7.0.2"
   },
   "devDependencies": {
     "@csstools/postcss-cascade-layers": "5.0.2",
@@ -128,26 +125,12 @@
     "@types/node": "24.13.3",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
-    "@web-core/style": "workspace:*",
     "eslint": "10.8.1",
     "jsdom": "30.0.1",
-    "postcss": "8.5.26",
-    "postcss-nested": "7.0.2",
     "solid-js": "1.9.14",
     "typescript": "7.0.2",
     "vite": "8.2.1",
     "vite-plugin-solid": "2.11.14",
     "vitest": "4.1.10"
-  },
-  "peerDependenciesMeta": {
-    "postcss": {
-      "optional": true
-    },
-    "postcss-nested": {
-      "optional": true
-    },
-    "solid-js": {
-      "optional": true
-    }
   }
 }

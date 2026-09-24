@@ -73,18 +73,14 @@
     "@tanstack/solid-query": "5.102.8",
     "@tanstack/solid-query-devtools": "5.102.8",
     "@web-core/solid": "workspace:*",
+    "graphql": "16.14.2",
     "graphql-request": "7.4.0"
-  },
-  "peerDependencies": {
-    "graphql": "14 - 16",
-    "solid-js": "^1.9.14"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",
     "eslint": "10.8.1",
-    "graphql": "16.14.2",
     "jsdom": "30.0.1",
     "solid-js": "1.9.14",
     "typescript": "7.0.2",

@@ -9,7 +9,7 @@
 Самый простой путь: JSX-композиция, без схемы и движка. Три карточки, стрелки и точки.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Carousel,
   CarouselControl,
@@ -51,7 +51,7 @@ export function BasicCarouselDemo() {
 содержимым.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Carousel,
   CarouselControl,
@@ -95,7 +95,7 @@ export function AutoplayCarouselDemo() {
 `api.getProgressText()`, чтобы его туда положить.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Carousel,
   CarouselControl,
@@ -150,7 +150,7 @@ export function SlidesPerPageDemo() {
 `orientation="vertical"` — та же композиция, стрелки сами разворачиваются вверх/вниз.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Carousel,
   CarouselControl,
@@ -197,7 +197,7 @@ export function VerticalCarouselDemo() {
 физически где угодно, не только внутри `CarouselControl`.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import { CarouselRootProvider, CarouselItemGroup, CarouselItem, useCarousel } from "@web-core/ui";
 
 const slides = ["Первый слайд", "Второй слайд", "Третий слайд"];
@@ -235,7 +235,7 @@ export function ExternalControlDemo() {
 — не своей собственной.
 
 ```tsx
-import { createMemo, For } from "solid-js";
+import { createMemo, For } from "@web-core/solid";
 import {
   CarouselItemGroup,
   CarouselItem,
@@ -315,7 +315,7 @@ routing'а «активного» инстанса, что и в примере 
 пересчитается.
 
 ```tsx
-import { createMemo, For } from "solid-js";
+import { createMemo, For } from "@web-core/solid";
 import {
   CarouselItemGroup,
   CarouselItem,

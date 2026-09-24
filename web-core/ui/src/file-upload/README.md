@@ -155,7 +155,7 @@ root
 `<input type="file">` класть не нужно — корень несёт его сам.
 
 ```tsx
-import { createSignal, For } from "solid-js";
+import { createSignal, For } from "@web-core/solid";
 
 const [files, setFiles] = createSignal<File[]>([]);
 
@@ -188,7 +188,7 @@ const tree = instanceOf("file-upload", {}, "basic", data);
 **Ограничение по типу и размеру, отклонённые — отдельным списком.**
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 const [accepted, setAccepted] = createSignal<File[]>([]);
 const [rejected, setRejected] = createSignal<{ file: File; errors: string[] }[]>([]);

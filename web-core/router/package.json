@@ -60,16 +60,12 @@
   },
   "dependencies": {
     "@tanstack/router-plugin": "1.168.35",
+    "@tanstack/solid-router": "1.170.30",
     "@tanstack/solid-router-devtools": "1.167.1",
     "@tanstack/virtual-file-routes": "1.162.0",
     "@web-core/solid": "workspace:*"
   },
-  "peerDependencies": {
-    "@tanstack/solid-router": "^1.170.30",
-    "solid-js": "^1.9.14"
-  },
   "devDependencies": {
-    "@tanstack/solid-router": "1.170.30",
     "@types/node": "24.13.3",
     "@web-core/build": "workspace:*",
     "@web-core/lint": "workspace:*",

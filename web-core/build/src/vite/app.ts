@@ -53,7 +53,13 @@ export function defineConfig(options: DefineConfigOptions = {}): UserConfig {
     // Префикс, а не одно имя: список опасно расширять поштучно, но и пускать всё подряд нельзя —
     // в корневом `.env` рядом однажды окажется токен.
     envPrefix: ["VITE_", "PRESETS_", "NEUROBOX_"],
-    plugins: [solid(), workspaceSourcePlugin(state), generatedCssPlugin(state), ...(options.plugins ?? [])],
+    // `moduleName` — чтобы трансформ вписывал в файлы потребителя фасад, а не вендора: см. FAQ.md.
+    plugins: [
+      solid({ solid: { moduleName: "@web-core/solid/web" } }),
+      workspaceSourcePlugin(state),
+      generatedCssPlugin(state),
+      ...(options.plugins ?? []),
+    ],
     server: {
       host: true, // не "localhost" — см. FAQ.md
       ...(options.proxy ? { proxy: options.proxy } : {}),

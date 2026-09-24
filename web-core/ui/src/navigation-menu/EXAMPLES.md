@@ -15,7 +15,7 @@
 сразу ссылка, и скользящий указатель под раскрытым.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   Icon,
   NavigationMenu,
@@ -91,7 +91,7 @@ export function BasicNavigationMenuDemo() {
 внутри указателя и едет вместе с ним.
 
 ```tsx
-import { For } from "solid-js";
+import { For } from "@web-core/solid";
 import {
   NavigationMenu,
   NavigationMenuArrow,
@@ -233,7 +233,7 @@ export function CurrentLinkDemo(props: { path: string; navigate: (to: string) =>
 закрыто всё. Наружу меню отдаёт обычную строку, а не объект подробностей.
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 import {
   NavigationMenu,
   NavigationMenuContent,

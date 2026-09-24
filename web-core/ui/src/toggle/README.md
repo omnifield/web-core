@@ -49,7 +49,7 @@ const tree = instanceOf("toggle", {}, "basic", data);
 НЕнажатого состояния, дети — для нажатого; переключать `data-state` руками не нужно.
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 const [pressed, setPressed] = createSignal(false);
 

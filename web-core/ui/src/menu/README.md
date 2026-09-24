@@ -234,7 +234,7 @@ const tree = instanceOf("menu", { defaultOpen: true }, "list", data);
 **Чекбоксные пункты.**
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 import { MenuCheckboxItem } from "@web-core/ui";
 
 const [showToolbar, setShowToolbar] = createSignal(true);
@@ -255,7 +255,7 @@ const [showToolbar, setShowToolbar] = createSignal(true);
 **Радио-пункты.**
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 import { MenuRadioItemGroup, MenuRadioItem } from "@web-core/ui";
 
 const [sortBy, setSortBy] = createSignal("date");

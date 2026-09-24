@@ -30,7 +30,7 @@ export default defineConfig({
   test: {
     projects: [
       {
-        plugins: [solid()],
+        plugins: [solid({ solid: { moduleName: "@web-core/solid/web" } })],
         resolve: { conditions: ["development", "browser"] },
         test: {
           name: "dom",

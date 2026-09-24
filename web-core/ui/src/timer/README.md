@@ -179,7 +179,7 @@ import { TimerItemLabel, TimerItemValue } from "@web-core/ui";
 ### Observing ticks and completion
 
 ```tsx
-import { createSignal } from "solid-js";
+import { createSignal } from "@web-core/solid";
 
 const [ticks, setTicks] = createSignal(0);
 

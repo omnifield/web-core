@@ -20,7 +20,8 @@ export function defineTestConfig(): UserConfig {
   const { aliases } = findWorkspaceSources(resolve(process.cwd()));
 
   const config: UserConfig = {
-    plugins: [solid()],
+    // Тот же `moduleName`, что у дев-сервера — иначе проба и сборка резолвят разное.
+    plugins: [solid({ solid: { moduleName: "@web-core/solid/web" } })],
     resolve: {
       conditions: ["development", "browser"],
       alias: aliases,
