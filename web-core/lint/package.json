@@ -1,6 +1,6 @@
 {
   "name": "@web-core/lint",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Машинный контроль кода двумя канонами, независимо от движка проверки: Solid-реактивность (`./eslint`, поверх eslint-plugin-solid) и кодстиль/импорты (`./biome`, поверх Biome).",
   "license": "UNLICENSED",
   "type": "module",
