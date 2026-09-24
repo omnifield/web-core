@@ -1,0 +1,39 @@
+{
+  "columns": [
+    {
+      "accessorKey": "name",
+      "header": "Имя"
+    },
+    {
+      "accessorKey": "role",
+      "header": "Роль"
+    },
+    {
+      "accessorKey": "age",
+      "header": "Возраст"
+    }
+  ],
+  "data": [
+    {
+      "age": 29,
+      "name": "Аня",
+      "role": "Дизайнер"
+    },
+    {
+      "age": 34,
+      "name": "Борис",
+      "role": "Инженер"
+    },
+    {
+      "age": 41,
+      "name": "Вера",
+      "role": "Менеджер"
+    }
+  ],
+  "defaultSorting": [
+    {
+      "columnId": "name",
+      "desc": false
+    }
+  ]
+}

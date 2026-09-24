@@ -1,0 +1,62 @@
+{
+  "axes": [
+    {
+      "orientation": "x",
+      "ticks": 9
+    },
+    {
+      "domain": [
+        0,
+        6
+      ],
+      "orientation": "y",
+      "ticks": 3
+    }
+  ],
+  "data": [
+    {
+      "month": 1,
+      "rate": 2.1
+    },
+    {
+      "month": 2,
+      "rate": 2.4
+    },
+    {
+      "month": 3,
+      "rate": 2.2
+    },
+    {
+      "month": 4,
+      "rate": 3.1
+    },
+    {
+      "month": 5,
+      "rate": 3.6
+    },
+    {
+      "month": 6,
+      "rate": 3.4
+    },
+    {
+      "month": 7,
+      "rate": 4.2
+    },
+    {
+      "month": 8,
+      "rate": 4.9
+    },
+    {
+      "month": 9,
+      "rate": 5.3
+    }
+  ],
+  "series": [
+    {
+      "color": "var(--success-9)",
+      "label": "Конверсия, %",
+      "x": "month",
+      "y": "rate"
+    }
+  ]
+}

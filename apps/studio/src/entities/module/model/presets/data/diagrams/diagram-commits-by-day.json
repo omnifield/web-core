@@ -1,0 +1,142 @@
+{
+  "axes": [
+    {
+      "orientation": "x",
+      "ticks": 6
+    },
+    {
+      "orientation": "y",
+      "ticks": 4
+    }
+  ],
+  "data": [
+    {
+      "commits": 8,
+      "day": 1
+    },
+    {
+      "commits": 14,
+      "day": 2
+    },
+    {
+      "commits": 3,
+      "day": 3
+    },
+    {
+      "commits": 0,
+      "day": 4
+    },
+    {
+      "commits": 21,
+      "day": 5
+    },
+    {
+      "commits": 17,
+      "day": 6
+    },
+    {
+      "commits": 11,
+      "day": 7
+    },
+    {
+      "commits": 6,
+      "day": 8
+    },
+    {
+      "commits": 2,
+      "day": 9
+    },
+    {
+      "commits": 19,
+      "day": 10
+    },
+    {
+      "commits": 24,
+      "day": 11
+    },
+    {
+      "commits": 16,
+      "day": 12
+    },
+    {
+      "commits": 9,
+      "day": 13
+    },
+    {
+      "commits": 4,
+      "day": 14
+    },
+    {
+      "commits": 1,
+      "day": 15
+    },
+    {
+      "commits": 13,
+      "day": 16
+    },
+    {
+      "commits": 22,
+      "day": 17
+    },
+    {
+      "commits": 27,
+      "day": 18
+    },
+    {
+      "commits": 18,
+      "day": 19
+    },
+    {
+      "commits": 12,
+      "day": 20
+    },
+    {
+      "commits": 5,
+      "day": 21
+    },
+    {
+      "commits": 0,
+      "day": 22
+    },
+    {
+      "commits": 15,
+      "day": 23
+    },
+    {
+      "commits": 23,
+      "day": 24
+    },
+    {
+      "commits": 31,
+      "day": 25
+    },
+    {
+      "commits": 20,
+      "day": 26
+    },
+    {
+      "commits": 14,
+      "day": 27
+    },
+    {
+      "commits": 7,
+      "day": 28
+    },
+    {
+      "commits": 2,
+      "day": 29
+    },
+    {
+      "commits": 11,
+      "day": 30
+    }
+  ],
+  "series": [
+    {
+      "color": "var(--accent-11)",
+      "label": "Коммиты",
+      "x": "day",
+      "y": "commits"
+    }
+  ]
+}

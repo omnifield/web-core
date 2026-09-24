@@ -1,0 +1,58 @@
+{
+  "columns": [
+    {
+      "accessorKey": "id",
+      "header": "№ заказа"
+    },
+    {
+      "accessorKey": "customer",
+      "header": "Клиент"
+    },
+    {
+      "accessorKey": "status",
+      "header": "Статус"
+    },
+    {
+      "accessorKey": "total",
+      "header": "Сумма"
+    }
+  ],
+  "data": [
+    {
+      "customer": "ООО Ромашка",
+      "id": "ORD-1001",
+      "status": "paid",
+      "total": 15990
+    },
+    {
+      "customer": "Иванов И.И.",
+      "id": "ORD-1002",
+      "status": "pending",
+      "total": 2490
+    },
+    {
+      "customer": "ЗАО Вектор",
+      "id": "ORD-1003",
+      "status": "cancelled",
+      "total": 0
+    },
+    {
+      "customer": "Петрова А.С.",
+      "id": "ORD-1004",
+      "status": "paid",
+      "total": 8990
+    },
+    {
+      "customer": "ИП Сидоров",
+      "id": "ORD-1005",
+      "status": "shipped",
+      "total": 12300
+    }
+  ],
+  "defaultSorting": [
+    {
+      "columnId": "total",
+      "desc": true
+    }
+  ]
+}

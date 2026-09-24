@@ -54,6 +54,7 @@ export function Renderer(props: {
       tree={tree()}
       registry={registry}
       data={props.data}
+      rootProps={props.rootProps}
       dispatch={props.dispatch}
     />
   );

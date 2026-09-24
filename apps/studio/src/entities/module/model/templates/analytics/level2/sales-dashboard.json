@@ -1,0 +1,133 @@
+{
+  "type": "grid",
+  "children": [
+    {
+      "type": "grid.cell",
+      "children": [
+        {
+          "type": "surface",
+          "props": { "data-variant": "filled" },
+          "children": [
+            {
+              "type": "flow",
+              "props": { "data-variant": "column" },
+              "children": [
+                {
+                  "type": "typography",
+                  "props": { "data-variant": "heading" },
+                  "children": [
+                    { "genus": "text", "value": "Выручка по месяцам" }
+                  ]
+                },
+                {
+                  "type": "diagram",
+                  "props": { "shape": "bar", "height": 220 },
+                  "bind": {
+                    "data": "/diagram-quarter-revenue/data",
+                    "series": "/diagram-quarter-revenue/series",
+                    "axes": "/diagram-quarter-revenue/axes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "grid.cell",
+      "children": [
+        {
+          "type": "surface",
+          "props": { "data-variant": "filled" },
+          "children": [
+            {
+              "type": "flow",
+              "props": { "data-variant": "column" },
+              "children": [
+                {
+                  "type": "typography",
+                  "props": { "data-variant": "heading" },
+                  "children": [
+                    { "genus": "text", "value": "План и факт по кварталам" }
+                  ]
+                },
+                {
+                  "type": "diagram",
+                  "props": { "shape": "line", "height": 220 },
+                  "bind": {
+                    "data": "/diagram-budget-plan-fact/data",
+                    "series": "/diagram-budget-plan-fact/series"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "grid.cell",
+      "children": [
+        {
+          "type": "surface",
+          "props": { "data-variant": "filled" },
+          "children": [
+            {
+              "type": "flow",
+              "props": { "data-variant": "column" },
+              "children": [
+                {
+                  "type": "typography",
+                  "props": { "data-variant": "heading" },
+                  "children": [
+                    { "genus": "text", "value": "Продажи по регионам" }
+                  ]
+                },
+                {
+                  "type": "diagram",
+                  "props": { "shape": "bar-horizontal", "height": 220 },
+                  "bind": {
+                    "data": "/diagram-sales-by-region/data",
+                    "series": "/diagram-sales-by-region/series",
+                    "axes": "/diagram-sales-by-region/axes"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "grid.cell",
+      "children": [
+        {
+          "type": "surface",
+          "props": { "data-variant": "filled" },
+          "children": [
+            {
+              "type": "flow",
+              "props": { "data-variant": "column" },
+              "children": [
+                {
+                  "type": "typography",
+                  "props": { "data-variant": "heading" },
+                  "children": [{ "genus": "text", "value": "Заказы" }]
+                },
+                {
+                  "type": "table",
+                  "bind": {
+                    "data": "/orders/data",
+                    "columns": "/orders/columns",
+                    "defaultSorting": "/orders/defaultSorting"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

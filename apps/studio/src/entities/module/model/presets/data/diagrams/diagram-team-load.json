@@ -1,0 +1,45 @@
+{
+  "data": [
+    {
+      "owner": "owner-ui",
+      "tasks": 14,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "owner": "owner-skin",
+      "tasks": 9,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "owner": "owner-studio-app",
+      "tasks": 21,
+      "tone": "var(--warning-9)"
+    },
+    {
+      "owner": "owner-feeder",
+      "tasks": 6,
+      "tone": "var(--success-9)"
+    },
+    {
+      "owner": "owner-presets",
+      "tasks": 4,
+      "tone": "var(--success-9)"
+    },
+    {
+      "owner": "architect",
+      "tasks": 17,
+      "tone": "var(--warning-9)"
+    }
+  ],
+  "insets": {
+    "left": 150
+  },
+  "series": [
+    {
+      "colorField": "tone",
+      "label": "Задачи в работе",
+      "x": "owner",
+      "y": "tasks"
+    }
+  ]
+}

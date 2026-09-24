@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "browser": "Chrome",
+      "share": 63.4,
+      "tone": "var(--type-string-9)"
+    },
+    {
+      "browser": "Safari",
+      "share": 19.2,
+      "tone": "var(--type-number-9)"
+    },
+    {
+      "browser": "Firefox",
+      "share": 6.1,
+      "tone": "var(--type-enum-9)"
+    },
+    {
+      "browser": "Edge",
+      "share": 5.3,
+      "tone": "var(--type-boolean-9)"
+    },
+    {
+      "browser": "Прочие",
+      "share": 6,
+      "tone": "var(--type-unknown-9)"
+    }
+  ],
+  "series": [
+    {
+      "colorField": "tone",
+      "label": "Доля, %",
+      "x": "browser",
+      "y": "share"
+    }
+  ]
+}

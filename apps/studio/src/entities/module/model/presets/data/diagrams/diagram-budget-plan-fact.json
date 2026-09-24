@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "fact": 10.4,
+      "plan": 12,
+      "quarter": "I кв"
+    },
+    {
+      "fact": 15.1,
+      "plan": 14,
+      "quarter": "II кв"
+    },
+    {
+      "fact": 13.8,
+      "plan": 16,
+      "quarter": "III кв"
+    },
+    {
+      "fact": 19.6,
+      "plan": 18,
+      "quarter": "IV кв"
+    }
+  ],
+  "series": [
+    {
+      "color": "var(--neutral-9)",
+      "label": "План",
+      "x": "quarter",
+      "y": "plan"
+    },
+    {
+      "color": "var(--accent-9)",
+      "label": "Факт",
+      "x": "quarter",
+      "y": "fact"
+    }
+  ]
+}

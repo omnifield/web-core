@@ -5,7 +5,7 @@ import { ComponentPage } from "./index";
 // Не `loader`: при `defaultPreload: "intent"` тот срабатывает на наведение, и витрина
 // переключалась бы до клика. `onEnter` — первый заход, `onStay` — смена параметра на том же
 // маршруте; оба зовутся только когда переход действительно случился.
-export const Route = createFileRoute("/_workspace/showcase/{-$component}/")({
+export const Route = createFileRoute("/_workspace/showcase/component/{-$component}")({
   loader: ({ params }) => {
     if (params.component === undefined) throw notFound();
   },

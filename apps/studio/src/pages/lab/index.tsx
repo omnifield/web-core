@@ -1,3 +1,4 @@
+import { Show } from "@web-core/solid";
 import { Outlet } from "@web-core/router";
 import { railVar } from "@web-core/skin";
 import {
@@ -7,8 +8,8 @@ import {
   WorkspaceSidebar,
 } from "@web-core/ui";
 
-import { componentsTree } from "#/entities/component";
-import { CatalogTree, useRouterCatalogSelection } from "#/widgets/catalogs";
+import { UI_CATALOGS } from "#/features/catalogs";
+import { CatalogTree, useRouterCatalogTabs } from "#/widgets/catalogs";
 import { ApiSetup } from "#/features/api-setup";
 import { RailPanel } from "#/widgets/rail";
 import {
@@ -19,7 +20,10 @@ import {
 const KITCHEN_ROUTE = "/lab/{-$component}/{-$feature}";
 
 export function LabPage() {
-  const selection = useRouterCatalogSelection(KITCHEN_ROUTE);
+  // Лаборатория показывает один каталог — компоненты, — поэтому маршрут назван только ему.
+  const catalog = useRouterCatalogTabs(UI_CATALOGS, {
+    components: KITCHEN_ROUTE,
+  });
   const feature = useRouterNavigationSelection({
     param: "feature",
     to: KITCHEN_ROUTE,
@@ -28,7 +32,15 @@ export function LabPage() {
   return (
     <Workspace data-variant="multi-column" outlined>
       <WorkspaceSidebar style={{ width: railVar("rail-md") }}>
-        <CatalogTree adapter={componentsTree} {...selection} />
+        <Show when={catalog.groups[0]}>
+          {(group) => (
+            <CatalogTree
+              adapter={group().adapter}
+              activeValue={group().activeValue}
+              onSelect={group().onSelect}
+            />
+          )}
+        </Show>
       </WorkspaceSidebar>
         <WorkspaceMain style={{ padding: 0 }}>
           <Outlet />

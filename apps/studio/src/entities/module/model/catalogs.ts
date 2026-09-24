@@ -1,12 +1,17 @@
 import type { TreeItemData } from "@web-core/ui";
+import { MODULE_GROUPS, type ModuleGroup } from "./templates";
 
-/** Моки: своего склада у модулей пока нет. */
-const SAVED: readonly TreeItemData[] = [
-  { value: "login-form", label: "Форма входа" },
-  { value: "user-card", label: "Карточка пользователя" },
-  { value: "orders-board", label: "Доска заказов" },
-];
+function itemOf(group: ModuleGroup): TreeItemData {
+  return {
+    value: group.value,
+    label: group.label,
+    children: [
+      ...group.groups.map(itemOf),
+      ...group.templates.map(({ value, label }) => ({ value, label })),
+    ],
+  };
+}
 
 export function modulesTree(): readonly TreeItemData[] {
-  return SAVED;
+  return MODULE_GROUPS.map(itemOf);
 }

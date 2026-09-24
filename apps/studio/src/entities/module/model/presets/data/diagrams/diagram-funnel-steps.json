@@ -1,0 +1,40 @@
+{
+  "data": [
+    {
+      "step": "Зашли на сайт",
+      "tone": "var(--accent-9)",
+      "users": 12400
+    },
+    {
+      "step": "Открыли форму",
+      "tone": "var(--accent-9)",
+      "users": 5230
+    },
+    {
+      "step": "Заполнили почту",
+      "tone": "var(--warning-9)",
+      "users": 3110
+    },
+    {
+      "step": "Подтвердили почту",
+      "tone": "var(--warning-9)",
+      "users": 2040
+    },
+    {
+      "step": "Завершили регистрацию",
+      "tone": "var(--success-9)",
+      "users": 1780
+    }
+  ],
+  "insets": {
+    "left": 170
+  },
+  "series": [
+    {
+      "colorField": "tone",
+      "label": "Пользователи",
+      "x": "step",
+      "y": "users"
+    }
+  ]
+}

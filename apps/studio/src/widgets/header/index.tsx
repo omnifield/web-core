@@ -21,7 +21,7 @@ const SCREENS = [
   {
     value: "showcase",
     label: "Showcase",
-    to: "/showcase/{-$component}",
+    to: "/showcase/component/{-$component}",
     prefix: "/showcase",
   },
   {

@@ -1,0 +1,43 @@
+{
+  "axes": [
+    {
+      "orientation": "y",
+      "ticks": 4
+    }
+  ],
+  "data": [
+    {
+      "region": "Север",
+      "sales": 4.8,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "region": "Юг",
+      "sales": 6.2,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "region": "Запад",
+      "sales": 3.1,
+      "tone": "var(--neutral-9)"
+    },
+    {
+      "region": "Восток",
+      "sales": 7.4,
+      "tone": "var(--success-9)"
+    },
+    {
+      "region": "Центр",
+      "sales": 5.5,
+      "tone": "var(--accent-9)"
+    }
+  ],
+  "series": [
+    {
+      "colorField": "tone",
+      "label": "Продажи, млн",
+      "x": "region",
+      "y": "sales"
+    }
+  ]
+}

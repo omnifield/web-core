@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "count": 184,
+      "status": "Закрыты",
+      "tone": "var(--success-9)"
+    },
+    {
+      "count": 57,
+      "status": "В работе",
+      "tone": "var(--accent-9)"
+    },
+    {
+      "count": 23,
+      "status": "Ждут ответа",
+      "tone": "var(--warning-9)"
+    },
+    {
+      "count": 11,
+      "status": "Просрочены",
+      "tone": "var(--danger-9)"
+    }
+  ],
+  "series": [
+    {
+      "colorField": "tone",
+      "label": "Заявки",
+      "x": "status",
+      "y": "count"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "axes": [
+    {
+      "orientation": "x",
+      "ticks": 7
+    },
+    {
+      "orientation": "y",
+      "ticks": 5
+    }
+  ],
+  "data": [
+    {
+      "day": 0,
+      "temperature": 12,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "day": 1,
+      "temperature": 15,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "day": 2,
+      "temperature": 14,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "day": 3,
+      "temperature": 18,
+      "tone": "var(--accent-9)"
+    },
+    {
+      "day": 4,
+      "temperature": 22,
+      "tone": "var(--danger-9)"
+    },
+    {
+      "day": 5,
+      "temperature": 20,
+      "tone": "var(--danger-9)"
+    },
+    {
+      "day": 6,
+      "temperature": 17,
+      "tone": "var(--accent-9)"
+    }
+  ],
+  "series": [
+    {
+      "color": "var(--accent-11)",
+      "colorField": "tone",
+      "label": "Температура",
+      "x": "day",
+      "y": "temperature"
+    }
+  ]
+}

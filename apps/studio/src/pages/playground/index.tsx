@@ -6,31 +6,30 @@ import {
   WorkspaceRightbar,
   WorkspaceSidebar,
 } from "@web-core/ui";
-import { uiCatalog } from "#/features/catalogs";
-import { CatalogTrees, useRouterCatalogSelection } from "#/widgets/catalogs";
+import { UI_CATALOGS } from "#/features/catalogs";
+import { CatalogTrees, useRouterCatalogTabs } from "#/widgets/catalogs";
 
 export function PlaygroundPage() {
-  const selection = useRouterCatalogSelection("/showcase/{-$component}");
+  // Своих веток у песочницы нет — выбор пункта уводит в витрину, и теперь это видно на месте
+  // вызова, а не спрятано внутри каталога.
+  const catalog = useRouterCatalogTabs(UI_CATALOGS, {
+    components: "/showcase/component/{-$component}",
+    modules: "/showcase/module/{-$module}",
+  });
 
   return (
     <Workspace data-variant="multi-column" outlined>
       <WorkspaceSidebar style={{ width: railVar("rail-md"), padding: 0 }}>
         <CatalogTrees
-          groups={uiCatalog().map((catalog) => ({
-            value: catalog.value,
-            label: catalog.label,
-            adapter: catalog.items,
-            activeValue: selection.activeValue,
-            onSelect: selection.onSelect,
-          }))}
+          value={catalog.tab()}
+          onValueChange={(details) => catalog.openTab(details.value)}
+          groups={catalog.groups}
         />
       </WorkspaceSidebar>
       <WorkspaceMain style={{ padding: 0 }}>
         <Outlet />
       </WorkspaceMain>
-      <WorkspaceRightbar style={{ width: railVar("rail-lg") }}>
-        w
-      </WorkspaceRightbar>
+      <WorkspaceRightbar style={{ width: railVar("rail-lg") }} />
     </Workspace>
   );
 }

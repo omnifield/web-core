@@ -1,1 +1,1 @@
-export { uiCatalog, type Catalog } from "./ui-catalog";
+export { UI_CATALOGS, type Catalog } from "./catalogs";
