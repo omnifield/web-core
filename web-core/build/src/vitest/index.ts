@@ -5,6 +5,7 @@ import type { ViteUserConfig as UserConfig } from "vitest/config";
 import solid from "vite-plugin-solid";
 
 import { trace } from "../shared/trace.js";
+import { vendorResolvePlugin } from "../vite/vendor-resolve.js";
 import { findWorkspaceSources } from "../vite/workspace-source.js";
 
 /**
@@ -21,7 +22,7 @@ export function defineTestConfig(): UserConfig {
 
   const config: UserConfig = {
     // Тот же `moduleName`, что у дев-сервера — иначе проба и сборка резолвят разное.
-    plugins: [solid({ solid: { moduleName: "@web-core/solid/web" } })],
+    plugins: [vendorResolvePlugin(), solid({ solid: { moduleName: "@web-core/solid/web" } })],
     resolve: {
       conditions: ["development", "browser"],
       alias: aliases,

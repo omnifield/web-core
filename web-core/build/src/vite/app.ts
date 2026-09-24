@@ -6,6 +6,7 @@ import solid from "vite-plugin-solid";
 
 import { trace } from "../shared/trace.js";
 import { generatedCssPlugin } from "./generated-css.js";
+import { vendorResolvePlugin } from "./vendor-resolve.js";
 import type { DevState } from "./workspace-source.js";
 import { workspaceSourcePlugin } from "./workspace-source.js";
 
@@ -55,6 +56,7 @@ export function defineConfig(options: DefineConfigOptions = {}): UserConfig {
     envPrefix: ["VITE_", "PRESETS_", "NEUROBOX_"],
     // `moduleName` — чтобы трансформ вписывал в файлы потребителя фасад, а не вендора: см. FAQ.md.
     plugins: [
+      vendorResolvePlugin(),
       solid({ solid: { moduleName: "@web-core/solid/web" } }),
       workspaceSourcePlugin(state),
       generatedCssPlugin(state),

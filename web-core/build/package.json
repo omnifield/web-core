@@ -26,6 +26,11 @@
       "types": "./dist/env.d.ts",
       "default": "./dist/env.js"
     },
+    "./test": {
+      "development": "./src/test.ts",
+      "types": "./dist/test.d.ts",
+      "default": "./dist/test.js"
+    },
     "./tsconfig": "./dist/tsconfig/frontend.json",
     "./tsconfig-node": "./dist/tsconfig/node.json",
     "./client": "./dist/client.d.ts"
@@ -48,6 +53,10 @@
       "./env": {
         "types": "./dist/env.d.ts",
         "default": "./dist/env.js"
+      },
+      "./test": {
+        "types": "./dist/test.d.ts",
+        "default": "./dist/test.js"
       },
       "./tsconfig": "./dist/tsconfig/frontend.json",
       "./tsconfig-node": "./dist/tsconfig/node.json",

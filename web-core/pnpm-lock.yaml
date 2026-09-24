@@ -126,6 +126,19 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  build/test/fixture:
+    dependencies:
+      '@web-core/solid':
+        specifier: workspace:*
+        version: link:../../../solid
+    devDependencies:
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../..
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
   cli:
     dependencies:
       commander:
