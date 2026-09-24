@@ -1,0 +1,18 @@
+import { defineEditorInfo } from "@web-core/skin/editor";
+import { passport } from "../entity/passport.js";
+import { assemblies } from "./assemblies/index.js";
+import { parts } from "./parts.js";
+import { settings } from "./settings.js";
+
+export const editorInfo = /*@__PURE__*/ defineEditorInfo(passport, {
+  package: "@web-core/ui",
+  genus: "component",
+  group: "other",
+  footprint: "regular",
+  variantAxis: {
+    means: "имя вида типографики; его даёт человек в редакторе, кит пропускает насквозь",
+  },
+  parts,
+  settings,
+  assemblies,
+});

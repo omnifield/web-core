@@ -1,0 +1,80 @@
+{
+  "name": "@web-core/router",
+  "version": "0.5.1",
+  "description": "Роутинг web-core поверх @tanstack/solid-router: одна точка входа вместо вендора, готовый vite-плагин с верным порядком, вкус дефолтов (PROBEWEB-4).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./vite": {
+      "development": "./src/vite/index.ts",
+      "types": "./dist/vite/index.d.ts",
+      "default": "./dist/vite/index.js"
+    },
+    "./devtools": {
+      "development": "./src/devtools/index.ts",
+      "types": "./dist/devtools/index.d.ts",
+      "default": "./dist/devtools/index.js"
+    },
+    "./virtual-file-routes": {
+      "development": "./src/virtual-file-routes/index.ts",
+      "types": "./dist/virtual-file-routes/index.d.ts",
+      "default": "./dist/virtual-file-routes/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./vite": {
+        "types": "./dist/vite/index.d.ts",
+        "default": "./dist/vite/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./virtual-file-routes": {
+        "types": "./dist/virtual-file-routes/index.d.ts",
+        "default": "./dist/virtual-file-routes/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/router-plugin": "1.168.35",
+    "@tanstack/solid-router": "1.170.30",
+    "@tanstack/solid-router-devtools": "1.167.1",
+    "@tanstack/virtual-file-routes": "1.162.0",
+    "@web-core/solid": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
+  }
+}

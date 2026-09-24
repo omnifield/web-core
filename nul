@@ -1,0 +1,30 @@
+[
+    {
+        "Name": "web-core-gateway",
+        "Id": "6d6a3e5d1d47dea7a19917ee327daa7f2440b04fdcd330c376a990efcf3376f6",
+        "Created": "2026-09-08T07:33:05.384549651Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.24.0.0/16",
+                    "Gateway": "172.24.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]

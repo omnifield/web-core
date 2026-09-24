@@ -1,0 +1,91 @@
+{
+  "name": "@web-core/query",
+  "version": "0.5.1",
+  "description": "Данные из сети web-core поверх @tanstack/solid-query: одна точка входа вместо вендора, готовый QueryClient с дефолтами (PROBEWEB-4).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./devtools": {
+      "development": "./src/devtools/index.ts",
+      "types": "./dist/devtools/index.d.ts",
+      "default": "./dist/devtools/index.js"
+    },
+    "./persist": {
+      "development": "./src/persist/index.ts",
+      "types": "./dist/persist/index.d.ts",
+      "default": "./dist/persist/index.js"
+    },
+    "./graphql": {
+      "development": "./src/graphql/index.ts",
+      "types": "./dist/graphql/index.d.ts",
+      "default": "./dist/graphql/index.js"
+    },
+    "./rest": {
+      "development": "./src/rest/index.ts",
+      "types": "./dist/rest/index.d.ts",
+      "default": "./dist/rest/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./devtools": {
+        "types": "./dist/devtools/index.d.ts",
+        "default": "./dist/devtools/index.js"
+      },
+      "./persist": {
+        "types": "./dist/persist/index.d.ts",
+        "default": "./dist/persist/index.js"
+      },
+      "./graphql": {
+        "types": "./dist/graphql/index.d.ts",
+        "default": "./dist/graphql/index.js"
+      },
+      "./rest": {
+        "types": "./dist/rest/index.d.ts",
+        "default": "./dist/rest/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/query-persist-client-core": "5.102.8",
+    "@tanstack/query-sync-storage-persister": "5.102.8",
+    "@tanstack/solid-query": "5.102.8",
+    "@tanstack/solid-query-devtools": "5.102.8",
+    "@web-core/solid": "workspace:*",
+    "graphql": "16.14.2",
+    "graphql-request": "7.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
+  }
+}

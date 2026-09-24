@@ -1,0 +1,19 @@
+{
+  "name": "@web-core/build-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Стенд-потребитель зоны build: приложение, у которого в манифесте только пакеты базы.",
+  "scripts": {
+    "build": "web-core-vite build",
+    "test": "web-core-vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@web-core/solid": "workspace:*"
+  },
+  "devDependencies": {
+    "@web-core/build": "workspace:*",
+    "typescript": "7.0.2"
+  }
+}

@@ -2,7 +2,7 @@ package kinds
 
 import "encoding/json"
 
-// Form — зеркало `Form` (packages/skin/src/engine/look/types.ts). `name`/`component`/`author` —
+// Form — зеркало `Form` (web-core/skin/src/engine/look/types.ts). `name`/`component`/`author` —
 // типовые скаляры (`component` — связь на компонент кита, не на другую запись службы, поэтому
 // строка, не резолвится через dataloader). `recipe`/`keyframes`/`variantTags` — именованные
 // JSON-поля: `SlotRecipe`/`PartStyles<Part>` рекурсивны с открытыми ключами (произвольный

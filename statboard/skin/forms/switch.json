@@ -1,0 +1,163 @@
+{
+  "name": "omnifield-switch",
+  "component": "switch",
+  "recipe": {
+    "base": {
+      "control": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-6)",
+          "borderRadius": "var(--radius-full)",
+          "boxSizing": "border-box",
+          "display": "inline-flex",
+          "height": "1.5rem",
+          "padding": "0.125rem",
+          "transition": "background-color var(--motion-fast) var(--ease-out)",
+          "width": "2.5rem"
+        },
+        "states": {
+          "checked": {
+            "props": {
+              "background": "var(--accent-9)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--space-1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-7)"
+            }
+          },
+          "invalid": {
+            "props": {
+              "background": "var(--danger-9)"
+            }
+          }
+        }
+      },
+      "label": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "alignItems": "center",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "gap": "var(--space-2)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "cursor": "not-allowed",
+              "opacity": "0.5"
+            }
+          }
+        }
+      },
+      "thumb": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "borderRadius": "var(--radius-full)",
+          "boxShadow": "0 1px 2px oklch(0% 0 0 / 0.24)",
+          "height": "1.25rem",
+          "transition": "transform var(--motion-fast) var(--ease-out)",
+          "width": "1.25rem"
+        },
+        "states": {
+          "checked": {
+            "props": {
+              "transform": "translateX(1rem)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "solid",
+    "variants": {
+      "outline": {
+        "control": {
+          "props": {
+            "background": "var(--neutral-1)",
+            "borderColor": "var(--neutral-7)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "checked": {
+              "props": {
+                "background": "var(--accent-3)",
+                "borderColor": "var(--accent-9)"
+              }
+            },
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-2)",
+                "borderColor": "var(--neutral-6)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-2)",
+                "borderColor": "var(--neutral-8)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            }
+          }
+        },
+        "thumb": {
+          "props": {
+            "background": "var(--neutral-8)",
+            "boxShadow": "none"
+          },
+          "states": {
+            "checked": {
+              "props": {
+                "background": "var(--accent-9)",
+                "transform": "translateX(1rem)"
+              }
+            }
+          }
+        }
+      },
+      "solid": {}
+    }
+  },
+  "variantTags": {
+    "outline": [
+      "default"
+    ],
+    "solid": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

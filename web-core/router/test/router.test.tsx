@@ -1,0 +1,177 @@
+import { render } from "@web-core/solid/web";
+import { afterEach, describe, expect, it } from "vitest";
+
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  defaultRouterOptions,
+  Link,
+  Outlet,
+  RouterProvider,
+  useRouteParamSelection,
+} from "../src/index.js";
+
+let dispose: (() => void) | undefined;
+
+afterEach(() => {
+  dispose?.();
+  dispose = undefined;
+  document.body.innerHTML = "";
+});
+
+function buildRouter(initialPath: string) {
+  const rootRoute = createRootRoute({
+    component: () => (
+      <div>
+        <Link to="/about">to-about</Link>
+        <Outlet />
+      </div>
+    ),
+  });
+  const indexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/",
+    component: () => <p>home</p>,
+  });
+  const aboutRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/about",
+    component: () => <p>about</p>,
+  });
+  const routeTree = rootRoute.addChildren([indexRoute, aboutRoute]);
+
+  return createRouter({
+    ...defaultRouterOptions,
+    routeTree,
+    history: createMemoryHistory({ initialEntries: [initialPath] }),
+  });
+}
+
+describe("@web-core/router", () => {
+  it("реэкспорт держит дефолты и рендерит дерево маршрутов", async () => {
+    expect(defaultRouterOptions.defaultPreload).toBe("intent");
+
+    const router = buildRouter("/");
+    await router.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <RouterProvider router={router} />, host);
+
+    expect(host.textContent).toContain("home");
+  });
+
+  it("навигация меняет смонтированное дерево", async () => {
+    const router = buildRouter("/");
+    await router.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <RouterProvider router={router} />, host);
+
+    await router.navigate({ to: "/about" });
+
+    expect(host.textContent).toContain("about");
+    expect(host.textContent).not.toContain("home");
+  });
+
+  it("useRouteParamSelection читает параметр маршрута и переключает его навигацией", async () => {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const itemsRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/items/$view",
+      component: () => {
+        const selection = useRouteParamSelection("view", "/items/$view");
+        return (
+          <div>
+            <p>value: {selection.value}</p>
+            <button type="button" onClick={() => selection.select("b")}>
+              switch
+            </button>
+          </div>
+        );
+      },
+    });
+    const routeTree = rootRoute.addChildren([itemsRoute]);
+
+    const router = createRouter({
+      ...defaultRouterOptions,
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ["/items/a"] }),
+    });
+    await router.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <RouterProvider router={router} />, host);
+
+    expect(host.textContent).toContain("value: a");
+
+    host.querySelector("button")?.click();
+    await router.invalidate();
+
+    expect(host.textContent).toContain("value: b");
+    expect(router.state.location.pathname).toBe("/items/b");
+  });
+
+  it("useRouteParamSelection с defaultValue сам подставляет дефолт, если сегмент не задан", async () => {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const itemsRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/items/{-$view}",
+      component: () => {
+        const selection = useRouteParamSelection("view", "/items/{-$view}", {
+          defaultValue: "a",
+        });
+        return <p>value: {selection.value}</p>;
+      },
+    });
+    const routeTree = rootRoute.addChildren([itemsRoute]);
+
+    const router = createRouter({
+      ...defaultRouterOptions,
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ["/items"] }),
+    });
+    await router.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <RouterProvider router={router} />, host);
+
+    expect(host.textContent).toContain("value: a");
+    await router.invalidate();
+    expect(router.state.location.pathname).toBe("/items/a");
+  });
+
+  it("useRouteParamSelection с defaultValue не трогает уже заданный сегмент", async () => {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const itemsRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/items/{-$view}",
+      component: () => {
+        const selection = useRouteParamSelection("view", "/items/{-$view}", {
+          defaultValue: "a",
+        });
+        return <p>value: {selection.value}</p>;
+      },
+    });
+    const routeTree = rootRoute.addChildren([itemsRoute]);
+
+    const router = createRouter({
+      ...defaultRouterOptions,
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ["/items/b"] }),
+    });
+    await router.load();
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(() => <RouterProvider router={router} />, host);
+
+    expect(host.textContent).toContain("value: b");
+    expect(router.state.location.pathname).toBe("/items/b");
+  });
+});

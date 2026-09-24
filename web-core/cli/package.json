@@ -1,0 +1,57 @@
+{
+  "name": "@web-core/cli",
+  "version": "0.5.1",
+  "description": "Движок командных инструментов: команда объявляется данными, ответ едет одним конвертом (человеку читаемо, машине --json), код возврата различает «сделано» / «делать нечего» / «отказ», настройка разрешается аргумент → окружение → файл конфига. Плюс проба поставки — установка опубликованного пакета в чистый проект вне репозитория.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./probe": {
+      "development": "./src/probe/index.ts",
+      "types": "./dist/probe.d.ts",
+      "default": "./dist/probe.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./probe": {
+        "types": "./dist/probe.d.ts",
+        "default": "./dist/probe.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "prepare": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "commander": "15.0.0",
+    "cosmiconfig": "10.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}

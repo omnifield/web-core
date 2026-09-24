@@ -1,0 +1,72 @@
+{
+  "name": "@web-core/style",
+  "version": "0.5.1",
+  "description": "Движок стилей web-core: набор значений (токен-контракт, шкалы, роли, порождение CSS) как ядро без фреймворка, плюс Solid-обвес (cn, createStyle, cva) отдельным подпутём. Ядро — один из поставщиков значений, а не фундамент (PWEB-3).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./generate": {
+      "development": "./src/css/generate.ts",
+      "types": "./dist/css/generate.d.ts",
+      "default": "./dist/css/generate.js"
+    },
+    "./base.css": "./dist/css/base.css",
+    "./solid": {
+      "development": "./src/solid/index.ts",
+      "types": "./dist/solid/index.d.ts",
+      "default": "./dist/solid/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./generate": {
+        "types": "./dist/css/generate.d.ts",
+        "default": "./dist/css/generate.js"
+      },
+      "./base.css": "./dist/css/base.css",
+      "./solid": {
+        "types": "./dist/solid/index.d.ts",
+        "default": "./dist/solid/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/build-css.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@web-core/solid": "workspace:*",
+    "@web-core/trace": "workspace:*",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}

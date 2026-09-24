@@ -1,0 +1,379 @@
+{
+  "name": "omnifield-field",
+  "component": "field",
+  "recipe": {
+    "base": {
+      "errorText": {
+        "props": {
+          "color": "var(--danger-11)",
+          "fontSize": "var(--font-size-sm)"
+        }
+      },
+      "helperText": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          }
+        }
+      },
+      "input": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "borderRadius": "var(--radius-md)",
+          "boxSizing": "border-box",
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "minBlockSize": "var(--control-height-md)",
+          "minInlineSize": "10rem",
+          "paddingInline": "var(--space-4)",
+          "transition": "border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out)",
+          "width": "100%"
+        },
+        "states": {
+          "focus": {
+            "props": {
+              "outline": "none"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          }
+        }
+      },
+      "label": {
+        "props": {
+          "alignItems": "center",
+          "color": "var(--neutral-12)",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "gap": "var(--space-1)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          },
+          "invalid": {
+            "props": {
+              "color": "var(--danger-11)"
+            }
+          },
+          "readonly": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          },
+          "required": {
+            "props": {
+              "fontWeight": "var(--weight-semibold)"
+            }
+          }
+        }
+      },
+      "requiredIndicator": {
+        "props": {
+          "color": "var(--danger-11)"
+        }
+      },
+      "root": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-1)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "opacity": "0.6"
+            }
+          },
+          "invalid": {
+            "props": {
+              "opacity": "1"
+            }
+          },
+          "readonly": {
+            "props": {
+              "opacity": "0.85"
+            }
+          }
+        }
+      },
+      "select": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "borderRadius": "var(--radius-md)",
+          "boxSizing": "border-box",
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "minBlockSize": "var(--control-height-md)",
+          "minInlineSize": "10rem",
+          "paddingInline": "var(--space-4)",
+          "transition": "border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out)",
+          "width": "100%"
+        },
+        "states": {
+          "focus": {
+            "props": {
+              "outline": "none"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          }
+        }
+      },
+      "textarea": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "borderRadius": "var(--radius-md)",
+          "boxSizing": "border-box",
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "minBlockSize": "calc(var(--control-height-md) * 2)",
+          "minInlineSize": "10rem",
+          "paddingBlock": "var(--space-2)",
+          "paddingInline": "var(--space-3)",
+          "resize": "vertical",
+          "transition": "border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out)",
+          "width": "100%"
+        },
+        "states": {
+          "focus": {
+            "props": {
+              "outline": "none"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "outline",
+    "variants": {
+      "filled": {
+        "input": {
+          "props": {
+            "background": "var(--neutral-3)",
+            "borderColor": "transparent",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-4)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        },
+        "select": {
+          "props": {
+            "background": "var(--neutral-3)",
+            "borderColor": "transparent",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-4)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        },
+        "textarea": {
+          "props": {
+            "background": "var(--neutral-3)",
+            "borderColor": "transparent",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-4)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        }
+      },
+      "outline": {
+        "input": {
+          "props": {
+            "background": "var(--neutral-1)",
+            "borderColor": "var(--neutral-7)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "borderColor": "var(--neutral-8)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        },
+        "select": {
+          "props": {
+            "background": "var(--neutral-1)",
+            "borderColor": "var(--neutral-7)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "borderColor": "var(--neutral-8)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        },
+        "textarea": {
+          "props": {
+            "background": "var(--neutral-1)",
+            "borderColor": "var(--neutral-7)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)"
+          },
+          "states": {
+            "disabled": {
+              "props": {
+                "background": "var(--neutral-3)",
+                "color": "var(--neutral-11)"
+              }
+            },
+            "hover": {
+              "props": {
+                "borderColor": "var(--neutral-8)"
+              }
+            },
+            "invalid": {
+              "props": {
+                "borderColor": "var(--danger-9)"
+              }
+            },
+            "readonly": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "filled": [
+      "default"
+    ],
+    "outline": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

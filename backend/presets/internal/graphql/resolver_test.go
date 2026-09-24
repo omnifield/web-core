@@ -52,7 +52,7 @@ func TestPresetsListReturnsTypedRecordsAcrossKinds(t *testing.T) {
 	resolver := New(s, limits.Default)
 	ctx := ctxWithLoaders(s)
 
-	presets, err := resolver.Query().Presets(ctx, nil)
+	presets, err := resolver.Query().Presets(ctx, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("Presets: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestPresetsListFilteredByUnknownKindErrors(t *testing.T) {
 	ctx := ctxWithLoaders(s)
 
 	unknown := "filter" // будущий вид tables — сегодня ещё не зарегистрирован
-	if _, err := resolver.Query().Presets(ctx, &unknown); err == nil {
+	if _, err := resolver.Query().Presets(ctx, &unknown, nil, nil); err == nil {
 		t.Fatal("ожидалась ошибка на незарегистрированный вид")
 	}
 }
@@ -140,6 +140,71 @@ func TestOutfitRelationsResolveAndSkipDanglingReference(t *testing.T) {
 	}
 	if len(tags) != 1 || tags[0].TagLabel == nil || *tags[0].TagLabel != "По умолчанию" {
 		t.Fatalf("tag-связь не резолвнулась: %+v", tags)
+	}
+}
+
+// TestMenuResolvesAdaptersByNameAndSkipsDangling — меню адресует адаптеры именами, ровно как
+// наряд свои формы (feeder-kinds, ROADMAP.yaml): один запрос отдаёт меню вместе с адаптерами,
+// ссылка в никуда пропускается тихо, а не роняет весь запрос.
+func TestMenuResolvesAdaptersByNameAndSkipsDangling(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "adapter", "users-list", `{
+		"root": "/data/items",
+		"rules": [{"id":"r1","target":"/title","from":"/name"}],
+		"providers": {},
+		"consumers": {}
+	}`)
+	menuRecord := create(t, s, "menu", "studio", `{"adapters":["users-list","нет-такого"]}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	preset, err := toPreset(menuRecord)
+	if err != nil {
+		t.Fatalf("toPreset: %v", err)
+	}
+	menu, ok := preset.(*model.Menu)
+	if !ok {
+		t.Fatalf("ожидался *model.Menu, получено %T", preset)
+	}
+
+	adapters, err := resolver.Menu().Adapters(ctx, menu)
+	if err != nil {
+		t.Fatalf("Adapters: %v", err)
+	}
+	if len(adapters) != 1 || adapters[0].Name != "users-list" || adapters[0].Root != "/data/items" {
+		t.Fatalf("ожидался ровно один реальный адаптер: %+v", adapters)
+	}
+	if string(adapters[0].Rules) == "" {
+		t.Fatalf("правила перекладки не доехали JSON-полем: %+v", adapters[0])
+	}
+}
+
+// TestApiRecordKeepsUnknownDocumentFields — документ чужого API проходит службу без разбора:
+// поля, о которых она ничего не знает, доезжают до читателя, а не срезаются по дороге.
+func TestApiRecordKeepsUnknownDocumentFields(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	const document = `{"endpoints":[{"id":"e1","method":"GET","url":"/users","params":[],"неизвестноеПоле":1}],"defs":{"User":{"type":"object"}}}`
+	preset, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		Kind:  "api",
+		Label: "Бэк users",
+		State: model.JSON(document),
+	})
+	if err != nil {
+		t.Fatalf("CreatePreset: %v", err)
+	}
+	api, ok := preset.(*model.Api)
+	if !ok {
+		t.Fatalf("ожидался *model.Api, получено %T", preset)
+	}
+	if !strings.Contains(string(api.Endpoints), "неизвестноеПоле") {
+		t.Fatalf("байты документа пересобрались по дороге: %s", api.Endpoints)
+	}
+	if api.Groups != nil {
+		t.Fatalf("groups не задавались, ждали null: %s", api.Groups)
 	}
 }
 
@@ -251,6 +316,83 @@ func TestPresetEnvelopeValidation(t *testing.T) {
 
 func ptr(s string) *string { return &s }
 
+// TestCreatePresetKeepsClientSuppliedID — айди рождается у клиента ДО всякой сети
+// (client-supplied-id, ROADMAP.yaml): служба обязана положить запись под ним, а не под своим,
+// иначе ссылки внутри других записей начинают врать молча.
+func TestCreatePresetKeepsClientSuppliedID(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	const given = "3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+	preset, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr(given),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	})
+	if err != nil {
+		t.Fatalf("CreatePreset: %v", err)
+	}
+	palette, ok := preset.(*model.Palette)
+	if !ok || palette.ID != given {
+		t.Fatalf("айди клиента не сохранён: %+v", preset)
+	}
+
+	found, err := resolver.Query().Preset(ctx, given)
+	if err != nil || found == nil {
+		t.Fatalf("запись не читается по айди клиента: found=%v err=%v", found, err)
+	}
+
+	// Тот же айди второй раз — отказ store, а не молчаливая перезапись чужой записи.
+	if _, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr(given),
+		Kind:  "outfit",
+		Label: "Чужой",
+		State: model.JSON(`{"name":"other","palette":"brand","forms":[]}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на занятый айди")
+	}
+}
+
+func TestPresetIDEnvelopeValidation(t *testing.T) {
+	s := openTestStore(t)
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	// Форма айди проверяется в конверте, до похода в store.
+	if _, err := resolver.Mutation().CreatePreset(ctx, model.PresetInput{
+		ID:    ptr("не-uuid"),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на айди не той формы")
+	}
+
+	record := create(t, s, "palette", "brand", `{"name":"brand"}`)
+
+	// Замена с чужим айди в конверте — отказ: два айди на одну запись молча не разъезжаются.
+	if _, err := resolver.Mutation().ReplacePreset(ctx, record.ID, model.PresetInput{
+		ID:    ptr("3f2504e0-4f89-41d3-9a0c-0305e82c3301"),
+		Kind:  "palette",
+		Label: "Бренд",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err == nil {
+		t.Fatal("ожидался отказ на чужой айди в конверте замены")
+	}
+
+	// Свой же айди в конверте замены — законно: клиент всегда шлёт запись целиком.
+	if _, err := resolver.Mutation().ReplacePreset(ctx, record.ID, model.PresetInput{
+		ID:    ptr(record.ID),
+		Kind:  "palette",
+		Label: "Бренд v2",
+		State: model.JSON(`{"name":"brand"}`),
+	}); err != nil {
+		t.Fatalf("замена со своим же айди в конверте: %v", err)
+	}
+}
+
 func TestQueryPresetByIDFoundAndNotFound(t *testing.T) {
 	s := openTestStore(t)
 	record := create(t, s, "palette", "brand", `{"name":"brand"}`)
@@ -297,7 +439,7 @@ func TestPresetsListFilteredByKindReturnsOnlyThatKind(t *testing.T) {
 	ctx := ctxWithLoaders(s)
 
 	form := "form"
-	presets, err := resolver.Query().Presets(ctx, &form)
+	presets, err := resolver.Query().Presets(ctx, &form, nil, nil)
 	if err != nil {
 		t.Fatalf("Presets: %v", err)
 	}
@@ -306,6 +448,172 @@ func TestPresetsListFilteredByKindReturnsOnlyThatKind(t *testing.T) {
 	}
 	if _, ok := presets[0].(*model.Form); !ok {
 		t.Fatalf("ожидался *model.Form, получено %T", presets[0])
+	}
+}
+
+// TestPresetsFilteredByComponentMatchesAnyOfList — presets-component-filter (ROADMAP.yaml):
+// OR по списку компонентов, только у видов, несущих поле component (Form/Assembly/Content).
+func TestPresetsFilteredByComponentMatchesAnyOfList(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "form", "button/primary", `{"name":"button/primary","component":"button","recipe":{}}`)
+	create(t, s, "form", "input/primary", `{"name":"input/primary","component":"input","recipe":{}}`)
+	create(t, s, "form", "table/primary", `{"name":"table/primary","component":"table","recipe":{}}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	presets, err := resolver.Query().Presets(ctx, nil, []string{"button", "input"}, nil)
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 2 {
+		t.Fatalf("ожидались формы button+input, получено %d: %+v", len(presets), presets)
+	}
+	seen := map[string]bool{}
+	for _, p := range presets {
+		form, ok := p.(*model.Form)
+		if !ok {
+			t.Fatalf("ожидался *model.Form, получено %T", p)
+		}
+		seen[form.Component] = true
+	}
+	if !seen["button"] || !seen["input"] {
+		t.Fatalf("не оба ожидаемых компонента присутствуют: %+v", seen)
+	}
+}
+
+// TestPresetsFilteredByComponentSkipsKindsWithoutComponentField — Palette/Outfit/Tag не несут
+// component: при заданном фильтре они молча исключаются, это не ошибка (см. описание пункта).
+func TestPresetsFilteredByComponentSkipsKindsWithoutComponentField(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "palette", "brand", `{"name":"brand"}`)
+	create(t, s, "form", "button/primary", `{"name":"button/primary","component":"button","recipe":{}}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	presets, err := resolver.Query().Presets(ctx, nil, []string{"button"}, nil)
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 1 {
+		t.Fatalf("ожидалась ровно одна форма (палитра без component исключена), получено %d: %+v", len(presets), presets)
+	}
+	if _, ok := presets[0].(*model.Form); !ok {
+		t.Fatalf("ожидался *model.Form, получено %T", presets[0])
+	}
+}
+
+// TestPresetsFilteredByComponentEmptyListYieldsEmptyResult — пустой []component (не nil) — это
+// осознанный "ничего не подошло", не то же самое, что "фильтр не задан".
+func TestPresetsFilteredByComponentEmptyListYieldsEmptyResult(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "form", "button/primary", `{"name":"button/primary","component":"button","recipe":{}}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	presets, err := resolver.Query().Presets(ctx, nil, []string{}, nil)
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 0 {
+		t.Fatalf("ожидалась пустая выдача на пустой список компонентов, получено %+v", presets)
+	}
+}
+
+// TestPresetsFilteredByNameMatchesAnyOfList — корневой отбор по имени (presets-by-name,
+// ROADMAP.yaml): приложение знает имена своих записей, а айди у него нет вовсе.
+func TestPresetsFilteredByNameMatchesAnyOfList(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "palette", "brand", `{"name":"brand"}`)
+	create(t, s, "outfit", "omnifield", `{"name":"omnifield","palette":"brand","forms":[]}`)
+	create(t, s, "outfit", "twitter-dark", `{"name":"twitter-dark","palette":"brand","forms":[]}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	presets, err := resolver.Query().Presets(ctx, nil, nil, []string{"omnifield", "brand"})
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 2 {
+		t.Fatalf("ожидались две названные записи, получено %d: %+v", len(presets), presets)
+	}
+	for _, preset := range presets {
+		switch p := preset.(type) {
+		case *model.Outfit:
+			if p.Name != "omnifield" {
+				t.Errorf("в выдачу попал чужой наряд: %+v", p)
+			}
+		case *model.Palette:
+			if p.Name != "brand" {
+				t.Errorf("в выдачу попала чужая палитра: %+v", p)
+			}
+		default:
+			t.Errorf("неожиданный тип в выдаче: %T", preset)
+		}
+	}
+}
+
+// TestPresetsFilteredByNameNarrowsWithKind — имя уникально В ПРЕДЕЛАХ вида, значит одно и то же
+// имя законно живёт в двух видах; kind сужает выдачу до своего.
+func TestPresetsFilteredByNameNarrowsWithKind(t *testing.T) {
+	s := openTestStore(t)
+	create(t, s, "palette", "brand", `{"name":"brand"}`)
+	create(t, s, "tag", "brand", `{"name":"brand","label":"Бренд"}`)
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	kind := "tag"
+	presets, err := resolver.Query().Presets(ctx, &kind, nil, []string{"brand"})
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 1 {
+		t.Fatalf("ожидалась одна запись вида tag, получено %d: %+v", len(presets), presets)
+	}
+	if _, ok := presets[0].(*model.Tag); !ok {
+		t.Fatalf("ожидался *model.Tag, получено %T", presets[0])
+	}
+}
+
+// TestPresetsFilteredByNameSkipsUnnamedAndHonorsEmptyList — безымянную запись нечем адресовать по
+// имени, поэтому в такую выдачу она не попадает; пустой список — осознанное "ничего не подошло".
+func TestPresetsFilteredByNameSkipsUnnamedAndHonorsEmptyList(t *testing.T) {
+	s := openTestStore(t)
+	if _, err := s.Create(presetsmodel.Input{
+		Label: "Безымянная",
+		Kind:  "palette",
+		State: json.RawMessage(`{"name":"brand"}`),
+	}); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	resolver := New(s, limits.Default)
+	ctx := ctxWithLoaders(s)
+
+	presets, err := resolver.Query().Presets(ctx, nil, nil, []string{""})
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 0 {
+		t.Fatalf("безымянная запись не должна попадать в отбор по имени, получено %+v", presets)
+	}
+
+	presets, err = resolver.Query().Presets(ctx, nil, nil, []string{})
+	if err != nil {
+		t.Fatalf("Presets: %v", err)
+	}
+	if len(presets) != 0 {
+		t.Fatalf("ожидалась пустая выдача на пустой список имён, получено %+v", presets)
+	}
+
+	// Аргумент не задан вовсе — отбора нет, безымянная запись на месте.
+	presets, err = resolver.Query().Presets(ctx, nil, nil, nil)
+	if err != nil || len(presets) != 1 {
+		t.Fatalf("без отбора ожидалась одна запись: %d, err=%v", len(presets), err)
 	}
 }
 

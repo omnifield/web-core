@@ -1,0 +1,46 @@
+{
+  "name": "@web-core/studio",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Зона skin: витрина компонентов и содержимое скинов. Механика — во фреймворке (web-core/skin, web-core/assembly); здесь то, что показываем и чем одеваем.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "web-core-vite --port 5174 --strictPort --host 0.0.0.0",
+    "build": "web-core-vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "style": "biome check .",
+    "test": "web-core-vitest run"
+  },
+  "dependencies": {
+    "@web-core/assembly": "^0.5.1",
+    "@web-core/chat": "^0.3.0",
+    "@web-core/feeder": "^0.3.0",
+    "@web-core/generators": "^0.5.1",
+    "@web-core/io": "^0.5.1",
+    "@web-core/neurobox": "^0.5.1",
+    "@web-core/query": "^0.5.1",
+    "@web-core/router": "^0.5.1",
+    "@web-core/skin": "^0.5.1",
+    "@web-core/solid": "^0.5.1",
+    "@web-core/store": "^0.5.1",
+    "@web-core/style": "^0.5.1",
+    "@web-core/ui": "^0.5.1",
+    "@tanstack/solid-router": "^1.170.30",
+    "partial-json": "^0.1.7",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
+    "@web-core/build": "^0.5.1",
+    "@web-core/lint": "^0.5.1",
+    "@types/node": "^24.10.1",
+    "eslint": "^10.8.1",
+    "jsdom": "^30.0.1",
+    "typescript": "^7.0.2"
+  }
+}

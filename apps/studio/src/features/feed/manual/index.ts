@@ -1,0 +1,1 @@
+export { FeedManual } from "./ui";

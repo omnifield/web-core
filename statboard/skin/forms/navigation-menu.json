@@ -1,0 +1,365 @@
+{
+  "name": "omnifield-navigation-menu",
+  "component": "navigation-menu",
+  "recipe": {
+    "base": {
+      "arrow": {
+        "props": {
+          "background": "var(--neutral-1)",
+          "blockSize": "var(--space-3)",
+          "borderBlockStart": "var(--border-width-1) solid var(--neutral-6)",
+          "borderInlineStart": "var(--border-width-1) solid var(--neutral-6)",
+          "inlineSize": "var(--space-3)",
+          "insetBlockStart": "var(--border-width-1)",
+          "position": "relative",
+          "rotate": "45deg"
+        }
+      },
+      "content": {
+        "ancestors": [
+          {
+            "component": "navigation-menu",
+            "part": "viewport",
+            "style": {
+              "props": {
+                "background": "transparent",
+                "borderRadius": "0",
+                "borderWidth": "0",
+                "insetBlockStart": "0",
+                "insetInlineStart": "0",
+                "marginBlockStart": "0"
+              }
+            }
+          }
+        ],
+        "props": {
+          "background": "var(--neutral-1)",
+          "borderColor": "var(--neutral-6)",
+          "borderRadius": "var(--radius-md)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "flexDirection": "column",
+          "gap": "var(--space-1)",
+          "inlineSize": "max-content",
+          "insetBlockStart": "100%",
+          "insetInlineStart": "0",
+          "marginBlockStart": "var(--space-1)",
+          "overflow": "auto",
+          "padding": "var(--space-1)",
+          "position": "absolute"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "display": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "display": "flex"
+            }
+          }
+        }
+      },
+      "indicator": {
+        "ancestors": [
+          {
+            "component": "navigation-menu",
+            "part": "root",
+            "style": {
+              "props": {
+                "inlineSize": "var(--trigger-width)",
+                "translate": "var(--trigger-x) 0"
+              }
+            }
+          }
+        ],
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--accent-9)",
+          "blockSize": "var(--border-width-2)",
+          "borderRadius": "var(--radius-full)",
+          "insetBlockEnd": "0",
+          "insetInlineStart": "0",
+          "position": "absolute",
+          "transition": "translate var(--motion-normal) var(--ease-out), width var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0"
+            }
+          },
+          "open": {
+            "props": {
+              "display": "flex",
+              "justifyContent": "center",
+              "opacity": "1"
+            }
+          }
+        }
+      },
+      "item": {
+        "props": {
+          "position": "static"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "zIndex": "auto"
+            }
+          },
+          "disabled": {
+            "props": {
+              "cursor": "not-allowed"
+            }
+          },
+          "open": {
+            "props": {
+              "zIndex": "auto"
+            }
+          }
+        }
+      },
+      "itemIndicator": {
+        "props": {
+          "blockSize": "1em",
+          "color": "var(--accent-11)",
+          "inlineSize": "1em"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0"
+            }
+          },
+          "open": {
+            "props": {
+              "display": "inline-flex"
+            }
+          }
+        }
+      },
+      "link": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "borderRadius": "var(--radius-sm)",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "flex",
+          "fontSize": "var(--font-size-md)",
+          "gap": "var(--space-2)",
+          "lineHeight": "var(--leading-tight)",
+          "paddingBlock": "var(--space-1)",
+          "paddingInline": "var(--space-2)",
+          "textDecoration": "none",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "current": {
+            "props": {
+              "color": "var(--accent-11)",
+              "fontWeight": "var(--weight-medium)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          }
+        }
+      },
+      "list": {
+        "props": {
+          "alignItems": "center",
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": "var(--space-1)",
+          "listStyle": "none",
+          "position": "relative"
+        }
+      },
+      "root": {
+        "props": {
+          "inlineSize": "max-content",
+          "position": "relative"
+        }
+      },
+      "trigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "borderRadius": "var(--radius-md)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "gap": "var(--space-2)",
+          "justifyContent": "center",
+          "lineHeight": "var(--leading-none)",
+          "minBlockSize": "var(--control-height-md)",
+          "paddingInline": "var(--space-4)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)",
+          "whiteSpace": "nowrap"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          },
+          "closed": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "disabled": {
+            "props": {
+              "cursor": "not-allowed",
+              "opacity": "0.5"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-3)",
+              "color": "var(--neutral-12)"
+            }
+          },
+          "open": {
+            "props": {
+              "background": "var(--neutral-3)",
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "viewport": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "blockSize": "var(--viewport-height)",
+          "borderColor": "var(--neutral-6)",
+          "borderRadius": "var(--radius-md)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "flex": "none",
+          "inlineSize": "var(--viewport-width)",
+          "marginBlockStart": "var(--space-1)",
+          "overflow": "hidden",
+          "pointerEvents": "auto",
+          "position": "relative",
+          "transition": "width var(--motion-normal) var(--ease-out), height var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0"
+            }
+          },
+          "open": {
+            "props": {
+              "display": "block",
+              "opacity": "1"
+            }
+          }
+        }
+      },
+      "viewportPositioner": {
+        "props": {
+          "display": "flex",
+          "inlineSize": "100%",
+          "insetBlockStart": "100%",
+          "insetInlineStart": "0",
+          "pointerEvents": "none",
+          "position": "absolute"
+        }
+      }
+    },
+    "defaultVariant": "line",
+    "settings": {
+      "orientation": {
+        "vertical": {
+          "content": {
+            "props": {
+              "insetBlockStart": "0",
+              "insetInlineStart": "100%",
+              "marginBlockStart": "0",
+              "marginInlineStart": "var(--space-1)"
+            }
+          },
+          "indicator": {
+            "ancestors": [
+              {
+                "component": "navigation-menu",
+                "part": "root",
+                "style": {
+                  "props": {
+                    "blockSize": "var(--trigger-height)",
+                    "translate": "0 var(--trigger-y)"
+                  }
+                }
+              }
+            ],
+            "props": {
+              "inlineSize": "var(--border-width-2)",
+              "insetBlockEnd": "auto",
+              "insetInlineEnd": "0",
+              "insetInlineStart": "auto"
+            }
+          },
+          "list": {
+            "props": {
+              "alignItems": "stretch",
+              "flexDirection": "column"
+            }
+          },
+          "viewportPositioner": {
+            "props": {
+              "inlineSize": "auto",
+              "insetBlockStart": "0",
+              "insetInlineStart": "100%"
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "line": {}
+    }
+  },
+  "variantTags": {
+    "line": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

@@ -1,0 +1,136 @@
+{
+  "name": "@web-core/skin",
+  "version": "0.5.1",
+  "description": "web-core skin mechanic: model, part-by-part recipe assembly, anatomy-based addressing, CSS generation, and wearing it (switch/connection) — a framework, not a product's own dressing.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./model": {
+      "development": "./src/model.ts",
+      "types": "./dist/model.d.ts",
+      "default": "./dist/model.js"
+    },
+    "./flat": {
+      "development": "./src/flat/index.ts",
+      "types": "./dist/flat.d.ts",
+      "default": "./dist/flat.js"
+    },
+    "./editor": {
+      "development": "./src/editor/index.ts",
+      "types": "./dist/editor.d.ts",
+      "default": "./dist/editor.js"
+    },
+    "./presets": {
+      "development": "./src/presets/index.ts",
+      "types": "./dist/presets.d.ts",
+      "default": "./dist/presets.js"
+    },
+    "./wear": {
+      "development": "./src/wear/index.ts",
+      "types": "./dist/wear.d.ts",
+      "default": "./dist/wear.js"
+    },
+    "./solid": {
+      "development": "./src/solid/index.ts",
+      "solid": "./dist/solid.jsx",
+      "types": "./dist/solid.d.ts",
+      "default": "./dist/solid.js"
+    },
+    "./tags": {
+      "development": "./src/tags/index.ts",
+      "types": "./dist/tags.d.ts",
+      "default": "./dist/tags.js"
+    },
+    "./tools": {
+      "development": "./src/tools/index.ts",
+      "types": "./dist/tools.d.ts",
+      "default": "./dist/tools.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./model": {
+        "types": "./dist/model.d.ts",
+        "default": "./dist/model.js"
+      },
+      "./flat": {
+        "types": "./dist/flat.d.ts",
+        "default": "./dist/flat.js"
+      },
+      "./editor": {
+        "types": "./dist/editor.d.ts",
+        "default": "./dist/editor.js"
+      },
+      "./presets": {
+        "types": "./dist/presets.d.ts",
+        "default": "./dist/presets.js"
+      },
+      "./wear": {
+        "types": "./dist/wear.d.ts",
+        "default": "./dist/wear.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      },
+      "./tags": {
+        "types": "./dist/tags.d.ts",
+        "default": "./dist/tags.js"
+      },
+      "./tools": {
+        "types": "./dist/tools.d.ts",
+        "default": "./dist/tools.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/ai": "0.54.0",
+    "@web-core/assembly": "workspace:*",
+    "@web-core/io": "workspace:*",
+    "@web-core/neurobox": "workspace:*",
+    "@web-core/query": "workspace:*",
+    "@web-core/solid": "workspace:*",
+    "@web-core/style": "workspace:*",
+    "@web-core/trace": "workspace:*",
+    "@zag-js/anatomy": "1.43.1",
+    "postcss": "8.5.26",
+    "postcss-nested": "7.0.2"
+  },
+  "devDependencies": {
+    "@csstools/postcss-cascade-layers": "5.0.2",
+    "@kobalte/core": "0.13.13",
+    "@types/jsdom": "27.0.0",
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
+  }
+}

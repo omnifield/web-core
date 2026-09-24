@@ -1,0 +1,64 @@
+{
+  "name": "@web-core/form",
+  "version": "0.5.1",
+  "description": "Проекция дерево×io-схема→валидность (@web-core/assembly + @web-core/io) — не рендерит и не владеет состоянием формы, отдаёт issues по пути и производное UI-состояние узла (JsonLogic-правило) потребителю.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./solid": {
+      "development": "./src/solid/index.ts",
+      "solid": "./dist/solid.jsx",
+      "types": "./dist/solid.d.ts",
+      "default": "./dist/solid.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@web-core/assembly": "workspace:*",
+    "@web-core/io": "workspace:*",
+    "@web-core/solid": "workspace:*",
+    "json-logic-js": "2.0.5"
+  },
+  "devDependencies": {
+    "@types/json-logic-js": "2.0.8",
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
+  }
+}

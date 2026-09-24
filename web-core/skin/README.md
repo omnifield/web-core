@@ -1,0 +1,371 @@
+# 🎨 web-core Skin
+
+🏷️ skin · 🧬 engine · 📦 `@web-core/skin`
+
+## 🧭 Навигация
+
+- 🏠 [Главное](#главное)
+- 🧩 [Анатомия](#анатомия)
+- 🚀 [Использование](#использование)
+- 🎚️ [Настройки](#настройки)
+- 🎛️ [Состояния](#состояния)
+- 🔌 [IO](#io)
+- 🏗️ [Сборки](#сборки)
+- 🎨 [Рецепт](#рецепт)
+- ❓ [FAQ](./FAQ.md)
+
+<h2 id="главное">🏠 Главное</h2>
+
+🎨 Механика скина — используйте, если безголовому киту нужен вид: паспорт компонента, сборка
+рецепта по частям, адресация из анатомии, порождение CSS и само надевание/снятие скина
+приложением. 🧬 Один сквозной поток от объявления до документа: паспорт → наряд (палитра + формы)
+→ сборка → CSS → надет. 🛠️ Средство, а не решение — механика не приносит своего вида и не решает,
+каким скину быть: цвет, форму и роли называет тот, кто пишет наряд, здесь только то, чем это
+собрать и надеть.
+
+<h2 id="анатомия">🧩 Анатомия</h2>
+
+🗺️ У движка нет DOM — часть здесь означает подпуть поставки. Восемь точек входа, каждая — свой срез
+того, что реально нужно потребителю: от голого чтения паспорта без порождения CSS до Solid-плагина,
+который движок вообще не обязан знать.
+
+| Часть | Адрес | Экспортирует |
+|---|---|---|
+| Модель (срез рантайма) | `@web-core/skin/model` | `ComponentPassport`, `PassportAnatomy`, `PassportPart`, `PassportSetting*`, `PassportVariantAxis`, `definePassport`, `createAnatomy`, `defineSettings`, `SETTINGS`, `settingApplies`, `addressesView`, `PassportLookup`, `passportLookup`, `coordinateOf`, `partOf`, `SkinAncestor`, `SkinCoordinate`, `BoundModel`, `withPassports`, `SkinGap(Kind)`, `skinGaps`, `GROW_SHRINK_BLOCK/INLINE`, `DARK_CLASS`/`FORCE_ATTRIBUTE`/`LAYER_ORDER`/`NODE_ATTRIBUTE`/`SKETCH_LAYER`/`SKIN_LAYER`, `Form`/`Outfit`/`Palette`, `OutfitRefused`, `Role`/`RoleKind`, `knownRole`, `ROLE_NAMES`, `SCALE_ROLES`, `VOCABULARY`, типы рецепта (`Skin`, `SlotRecipe`, …) |
+| Корень (модель + порождение) | `@web-core/skin` | всё из `./model` плюс `SkinRefused`, `withPassports` (с `generateSkinCss`/`generateSketchCss`), `BoundSkin`, `skinContrast`, `INDISTINCT`, типы контраста, `checkCategories`, `CategoryClash`, `checkCalibration`, `SeedOffset`, `layoutSelf`/`layoutGroup`/`spaceVar`/`railVar`/`cardVar`/`layoutVar`, типы `LayoutSelfProps`/`LayoutGroupProps`/`AlignPosition`/`ContentDistribution`/`FlexDirection`/`SpaceToken`/`RailToken`/`CardToken`/`LayoutToken`/`NativeStyle` |
+| Плоский CSS | `@web-core/skin/flat` | `flattenCss` |
+| Срез редактора | `@web-core/skin/editor` | `admits`, `defineEditorInfo`, `checkAssembly`, `checkAssemblyData`, `footprintOf`, `GROUPS`, `groupOf`, `baseAssemblyOf`, `isAssemblyContent`, `isAssemblyRepeat`, `isContentNode`, `isDataBinding`, `resolveDataBinding`, `PassportAssembly`, `PassportEditorInfo` и её срез-типы |
+| Служба раздачи | `@web-core/skin/presets` | `createPresetsClient`, `createPresetsSkinSource`, `PRESET_KIND`, `PresetsDown`, `PresetsRefused`, `PresetRecord`, `PresetHeader`, `PresetsCatalog` |
+| Надевание | `@web-core/skin/wear` | `makeSkinSwitch`, `checkStyleOrder`, `SkinSwitch`, `SkinSource`, `SkinWorn`, `SkinMode`, `StyleMarker`, `StyleOrderReport`, `ComponentSkinAxis`, `ComponentSkinSource` |
+| Solid-плагин | `@web-core/skin/solid` | `createSkinConnection`, `SkinConnection`, `SkinProvider`, `useSkin`, `useComponentSkin`, `useComponentSkinData`, `useOutfitData`, `SkinContextValue`, `SkinProviderProps` |
+| Теги | `@web-core/skin/tags` | `sortTags`, `checkTags`, `groupByTag`, `DEFAULT_TAG`, `TagFlaw`, `TagGroup` |
+
+📦 Внутри пакета: `src/index.ts` — тонкий барель поверх `src/engine/` (та же форма, что у
+`assembly`/`store`). `src/engine/` несёт всё, что не экспортируется отдельным подпутём: паспорт,
+адресацию, значения (семена/шкалы/текучий размер — чистая арифметика печати, без своего глагола
+наружу), словарь ролей, рецепт, сборку правил, покрытие, контраст, порождение. `editor/`, `flat/`,
+`wear/`, `solid/`, `presets/`, `tags/` — отдельные папки один в один со своими точками входа.
+
+<h2 id="использование">🚀 Использование</h2>
+
+**Объявить паспорт компонента:**
+
+```ts
+import { definePassport, defineSettings } from "@web-core/skin/model";
+import { anatomy } from "./anatomy.js"; // @zag-js/anatomy
+
+export const passport = definePassport({
+  anatomy,
+  root: "root",
+  parts: [
+    { name: "root", states: [{ name: "disabled", mark: { kind: "attribute", name: "data-disabled" } }] },
+  ],
+  variantAxis: { mark: { kind: "attribute", name: "data-variant" } },
+  settings: defineSettings<ComponentProps>()({}),
+});
+```
+
+**Собрать наряд и напечатать CSS:**
+
+```ts
+import { withPassports } from "@web-core/skin";
+import { passportOf } from "@web-core/ui/passport";
+
+const { assemble, generateSkinCss } = withPassports(passportOf);
+const { skin, report } = assemble(outfit, { palettes, forms });
+const css = generateSkinCss(skin);
+```
+
+🏷️ **Больше цветов — больше категорий, без особой механики.** Палитра — это список категорий: у
+каждой имя, семя и своя лесенка из 13 ступеней. Пятёрка (`accent`, `neutral`, `danger`, `success`,
+`warning`) — обязательный минимум, который палитра закрывает; сверх него объявляется что угодно
+своё, и печатается тем же приёмом. Семена под набор взаимно различимых категорий раскладывает
+`buildCategorySeeds` (`@web-core/style`):
+
+```ts
+const palette = {
+  name: "brand",
+  scales: { ...five, purple: "#8b5cf6" }, // → --purple-1 … --purple-12, --purple-contrast
+};
+
+const clashes = checkCategories(palette); // пусто — категории различимы между собой
+```
+
+📏 **Размерное семя вправе уйти от рыночной опоры — но не молча.** У каждой оси зоны значений
+(`AXES`, `@web-core/style`) рядом с полом и потолком объявлена опора: значение семени, при котором
+ступени дают сверенные с рынком числа. Пол и потолок отвечают на вопрос «законно ли значение»,
+опора — на другой: «на месте ли калибровка». `checkCalibration` называет уход и число, во сколько
+раз он сдвинет КАЖДУЮ ступень оси, и ничего не запрещает:
+
+```ts
+const offsets = checkCalibration(palette);
+// [{ seed: "space", pole: "wide", value: 0.5, reference: 0.25, times: 2, market: "… (сверено …)" }]
+```
+
+**Надеть скин (без Solid) и проверить порядок подключения:**
+
+```ts
+import { checkStyleOrder, makeSkinSwitch } from "@web-core/skin/wear";
+import { BASE_MARKER } from "@web-core/style";
+
+const skin = makeSkinSwitch(source, { fallback: { skin: "twitter", mode: "dark" } });
+await skin.restore();
+checkStyleOrder({ marker: BASE_MARKER });
+```
+
+**Служба раздачи как источник, полный CRUD по каждому виду** — детали, полный список операций и IO
+подпути в `src/presets/README.md`/`FAQ.md`:
+
+```ts
+import { createPresetsClient, createPresetsSkinSource, PRESET_KIND } from "@web-core/skin/presets";
+
+const source = createPresetsSkinSource({ url, lookup: passportOf });
+const client = createPresetsClient({ url });
+await client.save(PRESET_KIND.palette, "brand", palette);
+```
+
+**Расставить руками — без дерева и без рецепта** (ручная JSX-сборка вне `RenderTree`, где адреса
+`SketchEdit` по `node` взять неоткуда): `layoutSelf` — место ОДНОГО элемента в чужом потоке,
+`layoutGroup` — как этот элемент расставляет СВОИХ детей. Оба принимают только имена токенов и
+литералы, отдают обычный объект под нативный `style`:
+
+```tsx
+import { layoutGroup, layoutSelf, railVar } from "@web-core/skin";
+
+<div style={layoutGroup({ direction: "column", gap: "space-4", align: "stretch" })}>
+  <div style={layoutSelf({ grow: true })}>...</div>
+</div>;
+
+<aside style={{ "inline-size": railVar("rail-md") }}>...</aside>;
+```
+
+`railVar`/`cardVar`/`layoutVar` — та же сверка со шкалой, что у `spaceVar`, только каждая под свою
+шкалу ширины (`rail`/`card`/`layout` из `@web-core/style`): рельса/райтбар, самостоятельная
+карточка, крупная область раскладки — три разных факта ширины, не сводимые друг к другу и к
+`space`/`column`.
+
+<h2 id="настройки">🎚️ Настройки</h2>
+
+⚙️ Настраиваются заводимые механизмы, а не глобальный переключатель — у каждого конструктора свой,
+независимый набор.
+
+| Конструктор | Настройка | По умолчанию |
+|---|---|---|
+| `makeSkinSwitch(source, options)` | `storageKey` | `"web-core:skin"` |
+| | `fallback: { skin?, mode? }` | не задан — голый кит, если ничего не запомнено |
+| `createSkinConnection(source, options)` | те же, что у `makeSkinSwitch` | те же |
+| `SkinProvider` (`source`, `options?`) | `options` — те же, что у `makeSkinSwitch` | восстановление на монтировании включено всегда |
+| | `onReady?` | не задан — промис restore() никуда не отдаётся, кроме `console.debug` при отказе |
+| `createPresetsClient({ url })` | `url` | обязательное |
+| `generateSkinCss(skin, lookup, vocabulary?)` | `vocabulary` | пустой словарь — сверх словаря ролей ничего не проверяется |
+| `SkinWearOptions.remember` | запоминать ли выбор | `true` |
+
+<h2 id="состояния">🎛️ Состояния</h2>
+
+🚦 Состояние здесь — не рантайм-стейт компонента, а именованный отказ или разбор проверки: то, по
+чему потребитель решает, что сказать человеку.
+
+| Источник | Имя | Значит |
+|---|---|---|
+| `checkStyleOrder` (`StyleOrderStatus`) | `ok` \| `missing-base` \| `no-skin` | приехал ли базовый CSS под надетым скином |
+| Служба раздачи | `PresetsDown` \| `PresetsRefused` | службы физически нет / служба ответила и отказала |
+| Порождение | `SkinRefused` | неизвестное значение молча проезжало бы в CSS |
+| Проверка наряда | `OutfitRefused` (несёт `flaws`) | наряд не собирается — палитра/форма неполны или конфликтуют |
+| Сборка компонента | `AssemblyDataFlaw` (через `checkAssemblyData`) | данные не проходят по объявленным путям |
+
+<h2 id="io">🔌 IO</h2>
+
+<h3 id="io-вход">📥 Вход</h3>
+
+| Конструктор | Принимает |
+|---|---|
+| `withPassports(lookup)` | `PassportLookup` — как найти паспорт компонента по имени |
+| `assemble(outfit, parts)` | `Outfit` + `{ palettes: Palette[], forms: Form[] }` |
+| `generateSkinCss(skin, vocabulary?)` | собранный `Skin` |
+| `makeSkinSwitch(source, options)` | `SkinSource` — `names()`/`css(name)`, необязательно `components` (ленивая печать по компоненту) |
+| `SkinSwitch.ensureComponentSkin(component, axis)` | `ComponentSkinAxis` — значение `variant` (может быть без `value` — на разметке нет атрибута) либо именованной `setting` |
+| `SkinProvider` | тот же `SkinSource`/`options`, что и `createSkinConnection`, — заводится один раз при монтировании |
+| `useComponentSkin(passport, props)` | `ComponentPassport` кита + его текущие props — реактивно читает variant/settings сама |
+| `useComponentSkinData(component)` | имя компонента (то же, что в `passport.component`/`data-scope`) |
+| `useOutfitData()` | ничего — наряд один на соединение, не по имени |
+| `createPresetsClient({ url })` | адрес службы раздачи |
+| `checkStyleOrder({ marker })` | пара «свойство → значение», которую база обязана поставить |
+
+<h3 id="io-выход">📤 Выход</h3>
+
+| Источник | Отдаёт |
+|---|---|
+| `assemble` | `{ skin: Skin, report: OutfitReport }` |
+| `checkOutfit`/`checkSkin` | перечень изъянов значением, не исключением |
+| `generateSkinCss` | текст CSS, вложенная форма |
+| `SkinSwitch.worn()`/`SkinConnection.worn` | `SkinWorn | null` — синхронно и сигналом соответственно |
+| `useSkin()` | `SkinContextValue` — `SkinConnection` плюс `names: Resource<readonly string[]>` |
+| `useComponentSkinData(component)` | `Accessor<T | undefined>` — то, что источник отдал вместе с CSS этого компонента (у `presets`-источника — `PresetRecord<Form>`), без второго запроса за тем же |
+| `useOutfitData()` | `Accessor<T | undefined>` — то же самое, но про наряд целиком (у `presets`-источника — `{ outfit: PresetRecord<Outfit>, palette: PresetRecord<Palette> }`) |
+| `skinGaps` | перечень непокрытых координат |
+| `skinContrast` | перечень пар, не прошедших норму читаемости, и пар, которые посчитать нечем |
+| `checkCategories` | перечень пар категорий палитры, которые не расходятся на ступенях, где различимость обещана |
+| `checkCalibration` | перечень размерных семян, ушедших от рыночной опоры оси, с числом «во сколько раз» |
+| `PresetsClient.list/get` | `PresetRecord<T>` — запись целиком, с содержимым |
+
+`author?: string` — сквозной атрибут владения на КАЖДОМ виде (`Palette`/`Form`/`Outfit`/
+`ComponentAssembly`, как и у `ContentState`): MCP подмешивает его в `state` при сохранении
+(`{...state, author}`), канон обязан нести то же поле, иначе живые записи с `author` не проходят
+типизацию. У `Outfit` — ещё `tags?: readonly string[]`, тоже подмешивается MCP (`resolveTags`) и
+добавлено в канон по той же причине.
+
+<h2 id="сборки">🏗️ Сборки</h2>
+
+🧪 Своих сборок компонентов у механики нет — она их не знает. Доказывается голыми, синтетическими
+записями (110 тестов, 20 файлов) плюс живой проверкой на реальном наряде и реальном ките.
+
+| Сборка | Что доказывает |
+|---|---|
+| `test/*.test.ts` пакета | паспорт/сборка/сборка правил/порождение/адресация — каждый узел решения отдельно |
+| `recipe.test.tsx` каждого компонента кита | `skinGaps`+`passportLookup` реально используются снаружи для проверки покрытия одного паспорта |
+| MCP-сервер зоны скина | `checkAssembly`/`checkAssemblyData`/`skinGaps` вызываются агентом на реальных данных |
+| Живой прогон против службы раздачи | `createPresetsSkinSource`/`createPresetsClient` — CRUD по всем четырём видам, различение «легла»/«отказала» |
+| `lazy-component-skin.test.ts`/`skin-switch-component.test.tsx`/`use-component-skin.test.tsx` | `ensureComponentSkin` от сети до листа: узкий фетч, накопление, гонка с чужим `wear()`, реактивный вызов из `useComponentSkin` |
+
+<h2 id="рецепт">🎨 Рецепт</h2>
+
+🧩 Съёмный слой этого движка — `./solid`: реактивная обвязка над `SkinSwitch`, которую движок сам
+не носит в себе и не требует. Без Solid механика работает целиком — надевание, проверка порядка,
+порождение CSS не знают о фреймворке ни строкой.
+
+```tsx
+import { createSkinConnection } from "@web-core/skin/solid";
+
+function ThemeSwitch() {
+  const skin = createSkinConnection(source, { fallback: { skin: "brutal", mode: "light" } });
+  onMount(() => void skin.restore());
+
+  return (
+    <button onClick={() => skin.setMode(skin.worn()?.mode === "dark" ? "light" : "dark")}>
+      {skin.worn()?.mode ?? "без скина"}
+    </button>
+  );
+}
+```
+
+☀️ `setMode()` — не второй `wear()`: половина переключается классом на корне, без похода к
+источнику — обе половины уже приехали одним CSS-текстом на первый `wear()` (разбор — `FAQ.md`).
+
+🔌 Нескольким потребителям одного приложения (переключатель темы, витрина, что угодно ещё, кому
+нужно знать надетую половину) соединение раздаёт `SkinProvider` — заводится один раз на корне,
+восстанавливает запомненный выбор сам, а `useSkin()` отдаёт то же самое соединение плюс общий
+`names` из источника:
+
+```tsx
+import { SkinProvider, useSkin } from "@web-core/skin/solid";
+
+// один раз на корне приложения
+<SkinProvider source={source} options={{ fallback: { skin: "brutal", mode: "light" } }}>
+  <App />
+</SkinProvider>;
+
+// в любом потребителе поддерева
+function ThemeSwitch() {
+  const skin = useSkin();
+
+  return (
+    <button onClick={() => skin.setMode(skin.worn()?.mode === "dark" ? "light" : "dark")}>
+      {skin.worn()?.mode ?? "без скина"}
+    </button>
+  );
+}
+```
+
+🚪 Коду ВНЕ дерева Solid (роутер-лоадеры — выполняются до рендера страницы, `useSkin()` там
+недоступен), которому нужно дождаться «наряд определён» перед своим запросом, — `onReady`:
+
+```tsx
+let readyPromise: Promise<SkinWorn | null> | undefined;
+
+<SkinProvider source={source} onReady={(p) => { readyPromise = p; }}>
+  <App />
+</SkinProvider>;
+
+// в роутер-лоадере
+await readyPromise;
+```
+
+🐢 `wear()`/`SkinProvider` печатают вид наряда сразу: переменные палитры, шрифт, ответ о половине —
+то, что нужно ВСЕГДА, независимо от того, какие компоненты страница реально рендерит. Правил и
+кейфреймов КОНКРЕТНОГО компонента там больше нет вовсе (было — до `component-skin-on-demand`; наряд
+может нести форму с сотней вариантов кнопки, а странице нужны два, и печатать их все при каждом
+`wear()` было ровно той же болезнью, от которой ушли на сети). `useComponentSkin` печатает их сама,
+при монтировании компонента, по факту его текущих variant/settings — вызывает её сам компонент кита,
+не страница:
+
+```tsx
+import { useComponentSkin } from "@web-core/skin/solid";
+
+function Component(props: SomeKitProps) {
+  useComponentSkin(passport, props); // сама решает, что из props ей нужно (variantAxis/settings)
+  return ...;
+}
+```
+
+Значение читается реактивно — новый `data-variant`/`data-*` на разметке допечатывает своё правило,
+не заменяя уже напечатанное для других значений. Без `SkinProvider` в дереве (голый кит, ручная
+стилизация, тест без провайдера) — тихий no-op: кит обязан жить без presets вовсе.
+
+⚠️ Компонент, который не зовёт `useComponentSkin`, не получает CSS от `wear()` вообще: общий лист
+наряда правил компонентов больше не несёт (см. пункт выше). Чья это забота — решает уже потребитель
+пакета, не механика.
+
+🔍 Тот же вызов, которым `useComponentSkin` находит CSS компонента, заодно находит и его форму (у
+`presets`-источника — `PresetRecord<Form>`: имя, вариант-теги, всё содержимое). Второй раз спрашивать
+за этим сеть не нужно — `useComponentSkinData(component)` читает уже найденное, реактивно, по имени
+компонента (не по конкретному инстансу — сработает в ЛЮБОМ месте под тем же `<SkinProvider>`, не
+только рядом с самим компонентом):
+
+```tsx
+import { useComponentSkinData } from "@web-core/skin/solid";
+import type { PresetRecord } from "@web-core/skin/presets";
+import type { Form } from "@web-core/skin/model";
+
+// где угодно под <SkinProvider>, необязательно там же, где рендерится сама кнопка
+function ButtonFormLabel() {
+  const form = useComponentSkinData<PresetRecord<Form>>("button");
+  return <span>{form()?.name ?? "форма ещё не загружена"}</span>;
+}
+```
+
+Ловушки:
+- **Данные появляются, только если КТО-ТО в дереве реально смонтировал компонент с этим именем и
+  позвал `useComponentSkin(passport, props)` (кнопка сама, внутри себя).** Ленивая печать (см. выше)
+  остаётся ленивой и для данных — нет смонтированной кнопки, нечему было найти форму,
+  `useComponentSkinData` держит `undefined`.
+- **`undefined` ничего не говорит о ПРИЧИНЕ.** «Компонент ещё не спрашивал», «спросил, но источник не
+  дал данных» и «наряд не одет вовсе» — неразличимы одним `undefined`. Если нужно различать — ждать,
+  пока кнопка смонтирована (или явно самому дёрнуть `ensureComponentSkin`), и не полагаться на то, что
+  пустое значение однозначно значит «формы нет».
+- **Наряд сменился — карта чистится целиком**, пока эффекты компонентов не перезапросят её заново под
+  новым нарядом (тот же лаг, что и у самого CSS).
+- **Вариант компонента отдельно эта функция не отдаёт** — вариант, который реально на разметке, нужно
+  читать оттуда же, откуда его читает сам компонент (тот же проп/атрибут); `useComponentSkinData`
+  отдаёт ЗАПИСЬ формы целиком (в ней — список объявленных вариантов,
+  `Object.keys(form().state.recipe.variants ?? {})`), а не «какой из них применён сейчас».
+
+🎽 Та же половина того же ответа несёт и наряд целиком — не только форму компонента. `useSkin().worn()`
+называет наряд только по ИМЕНИ (`{ name, mode }`); саму запись (`PresetRecord<Outfit>` — палитра,
+полный список форм — и подобранную под неё `PresetRecord<Palette>`) отдаёт `useOutfitData()`, тем же
+приёмом, что и `useComponentSkinData`, но без параметра — наряд один на соединение, не по имени:
+
+```tsx
+import { useOutfitData } from "@web-core/skin/solid";
+import type { PresetRecord } from "@web-core/skin/presets";
+import type { Outfit, Palette } from "@web-core/skin/model";
+
+function OutfitLabel() {
+  const outfit = useOutfitData<{ outfit: PresetRecord<Outfit>; palette: PresetRecord<Palette> }>();
+  return <span>{outfit()?.outfit.name ?? "наряд ещё не загружен"}</span>;
+}
+```
+
+Те же ловушки, что у `useComponentSkinData` (лениво — нужен хотя бы один компонент, реально
+позвавший `useComponentSkin`; `undefined` не различает причину; чистится при смене наряда), плюс своя:
+**один и тот же наряд, не по имени** — если под одним `<SkinProvider>` за раз надет только один
+наряд, второго значения тут просто не бывает, `useOutfitData()` не принимает параметра.

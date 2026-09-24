@@ -32,10 +32,12 @@
 //   - иначе env WEBCORE_SCOPE → config.git[roleOf(scope)]. Пусто/main без marker (=subagent)
 //     → commit-only (gated), НЕ full.
 
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { argv } from "node:process";
 import { fileURLToPath } from "node:url";
+import { outsideOwnership, ownedRoots, resolveTarget } from "./governance.mjs";
 import { gitAccess, loadConfig } from "./harness-config.mjs";
 
 function allow() {
@@ -403,6 +405,222 @@ export function blockReason(cmd, access) {
   return null;
 }
 
+// --- ГРАНИЦА ЗОНЫ ВНУТРИ РАЗРЕШЁННОГО КОММИТА -------------------------------
+// `commit-only` разрешает owner'у add/commit — и до сих пор разрешал их БЕЗ ОГЛЯДКИ НА ПУТИ.
+// Дыра не теоретическая: `git add .` в общем working tree заметает незакоммиченную работу
+// соседних зон, и она уезжает в чужой коммит под именем владельца. governance такой файл
+// править не дал бы, а закоммитить — давал: у правки граница была, у коммита её не было.
+//
+// Считаем не «что написано в команде», а ЧТО РЕАЛЬНО УЕДЕТ: индекс (`diff --cached`), а для
+// `-a` — ещё и изменённые отслеживаемые файлы. Явный pathspec добавляем сверху: `git commit
+// чужой/файл -m …` кладёт в коммит файл, которого в индексе ещё нет.
+
+/** Короткие опции commit, забирающие значение: `-m msg`, `-mMSG`, `-am msg`. */
+const SHORT_OPTS_WITH_VALUE = new Set(["m", "F", "C", "c", "S"]);
+
+/** Опции с отдельным значением — их значение НЕ pathspec (`-m msg`, `--author name`). */
+const COMMIT_OPTS_WITH_VALUE = new Set([
+  "--message",
+  "--file",
+  "--author",
+  "--date",
+  "--reuse-message",
+  "--reedit-message",
+  "--fixup",
+  "--squash",
+  "--template",
+  "--gpg-sign",
+  "-S",
+  "--cleanup",
+  "--pathspec-from-file",
+]);
+
+/** Аргументы `git add`, означающие «всё, что найдётся», а не конкретный путь. */
+const ADD_SWEEPS_ALL = new Set(["-A", "--all", "-u", "--update", "--no-ignore-removal"]);
+
+/** Вывод git построчно; git недоступен/упал → null (зовущий трактует как «не знаю»). */
+function gitLines(repoRoot, args) {
+  try {
+    const out = execFileSync("git", args, {
+      cwd: repoRoot,
+      encoding: "utf8",
+      timeout: 5000,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return out.split("\n").filter((l) => l.trim() !== "");
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Пути из `git status --porcelain`. Переименование (`R  old -> new`) даёт ОБА пути: уехать
+ * из чужой зоны так же нельзя, как в неё приехать.
+ */
+export function parsePorcelain(lines) {
+  const paths = [];
+  for (const line of lines) {
+    const body = line.slice(3);
+    const arrow = body.indexOf(" -> ");
+    if (arrow === -1) paths.push(body.replace(/^"|"$/g, ""));
+    else {
+      paths.push(body.slice(0, arrow).replace(/^"|"$/g, ""));
+      paths.push(body.slice(arrow + 4).replace(/^"|"$/g, ""));
+    }
+  }
+  return paths;
+}
+
+/**
+ * Разбор вызова: какие флаги подняты и какие пути названы.
+ *
+ * Короткие опции СКЛЕИВАЮТСЯ (`git commit -am 'x'`), и наивная проверка «есть ли среди
+ * аргументов ровно `-a`» их не видит: `-am` проезжал как обычный флаг, а текст сообщения
+ * уезжал в pathspec. Поэтому кластер разбирается посимвольно, а опция со значением забирает
+ * либо остаток кластера (`-mMSG`), либо следующий токен.
+ */
+export function parseInvocation(verb, args) {
+  const dashDash = args.indexOf("--");
+  const head = dashDash === -1 ? args : args.slice(0, dashDash);
+  const paths = dashDash === -1 ? [] : args.slice(dashDash + 1);
+  const flags = new Set();
+
+  for (let i = 0; i < head.length; i++) {
+    const token = head[i];
+    if (token === "-" || !token.startsWith("-")) {
+      paths.push(token);
+      continue;
+    }
+    if (token.startsWith("--")) {
+      const name = token.split("=")[0];
+      flags.add(name);
+      if (verb === "commit" && COMMIT_OPTS_WITH_VALUE.has(name) && !token.includes("=")) i += 1;
+      continue;
+    }
+    for (let c = 1; c < token.length; c++) {
+      flags.add(`-${token[c]}`);
+      if (verb === "commit" && SHORT_OPTS_WITH_VALUE.has(token[c])) {
+        if (c === token.length - 1) i += 1; // значение — следующий токен
+        break; // остаток кластера (если есть) — значение, не флаги
+      }
+    }
+  }
+  return { flags, paths };
+}
+
+/**
+ * Файлы, которые уедут этим вызовом. `null` — определить не удалось (git не ответил): тогда
+ * зовущий не выдумывает вердикт и пропускает, как всюду в этом хуке (fail-open).
+ */
+export function affectedFiles({ verb, args, repoRoot }) {
+  const { flags, paths } = parseInvocation(verb, args);
+  const pathspec = paths.filter((p) => p !== "." && !ADD_SWEEPS_ALL.has(p));
+
+  // Аргумент-ПАПКУ разворачиваем в реальные файлы, а не считаем одним путём: `git add apps/studio`
+  // проходил проверку как «мой корень», унося с собой вложенную чужую зону (`apps/studio/.mcp`).
+  // Разворачивает сам git — он один знает, что в этом pathspec изменено и что игнорируется.
+  // `-uall` обязателен: по умолчанию git сворачивает неотслеживаемую папку в ОДНУ строку
+  // (`?? apps/studio/`), и проверка видела корень своей зоны вместо лежащих внутри чужих
+  // файлов — новый файл во вложенной чужой зоне так проезжал насквозь.
+  const expand = (spec) => {
+    const lines = gitLines(repoRoot, [
+      "status",
+      "--porcelain",
+      "-uall",
+      ...(spec.length ? ["--", ...spec] : []),
+    ]);
+    return lines === null ? null : parsePorcelain(lines);
+  };
+
+  if (verb === "add") return expand(pathspec);
+
+  // commit: индекс — всегда; `-a` добавляет изменённые отслеживаемые файлы; явный pathspec
+  // берёт рабочие версии названных путей, даже если их нет в индексе.
+  //
+  // `--no-renames` принципиален: с распознаванием переименований diff показывает ОДНУ строку —
+  // новый путь, — и `git mv чужая/зона/файл своя/зона/файл` выглядел как правка своего файла.
+  // Без него та же операция видна как удаление у соседа плюс добавление у себя, то есть как
+  // есть: файл уносят из чужой зоны.
+  const staged = gitLines(repoRoot, ["diff", "--cached", "--name-only", "--no-renames"]);
+  if (staged === null) return null;
+  const files = [...staged];
+  if (pathspec.length) {
+    const named = expand(pathspec);
+    if (named === null) return null;
+    files.push(...named);
+  }
+  if (flags.has("-a") || flags.has("--all")) {
+    const tracked = gitLines(repoRoot, ["diff", "--name-only", "--no-renames"]);
+    if (tracked === null) return null;
+    files.push(...tracked);
+  }
+  return files;
+}
+
+/**
+ * Причина отказа по ГРАНИЦЕ ЗОНЫ для add/commit под `commit-only`, либо null.
+ * Проверяются те же корни, что у governance: одна граница на правку и на коммит, иначе они
+ * разойдутся и «можно править» перестанет означать «можно коммитить».
+ */
+export function zoneViolation({ cmd, scope, config, repoRoot }) {
+  const owned = ownedRoots(scope, config, repoRoot);
+  if (owned.unrestricted) return null;
+
+  const invocations = gitInvocations(cmd).filter(
+    ({ tool, verb }) => tool === "git" && (verb === "add" || verb === "commit"),
+  );
+  if (!invocations.length) return null;
+
+  if (!owned.roots.length) {
+    return { foreign: [], reason: `scope "${scope}" не резолвится в зону с путями` };
+  }
+
+  const foreign = new Set();
+  for (const { verb, args } of invocations) {
+    const files = affectedFiles({ verb, args, repoRoot });
+    if (files === null) continue; // git не ответил — не выдумываем вердикт
+    for (const file of files) {
+      const abs = resolveTarget(file, repoRoot);
+      // Та же проверка владения, что у правки (governance), включая правило специфичности:
+      // «можно править» и «можно коммитить» обязаны означать одно и то же.
+      if (outsideOwnership({ target: abs, scope, config, repoRoot })) {
+        foreign.add(relative(repoRoot, abs) || file);
+      }
+    }
+  }
+  if (!foreign.size) return null;
+  return { foreign: [...foreign], reason: "в коммит попадают файлы вне твоей зоны" };
+}
+
+/** Отказ по границе зоны: называем ЧУЖИЕ файлы поимённо и следующий шаг. */
+function buildZoneMessage(cmd, scope, violation, roots, repoRoot) {
+  const shown = violation.foreign.slice(0, 12);
+  const rest = violation.foreign.length - shown.length;
+  return [
+    `❌ Команда \`${cmd}\` заблокирована harness-хуком (git-gate, граница зоны).`,
+    ``,
+    `Причина: ${violation.reason}.`,
+    ...(shown.length
+      ? [
+          ``,
+          `Чужие файлы:`,
+          ...shown.map((f) => `  - ${f}`),
+          ...(rest > 0 ? [`  … и ещё ${rest}`] : []),
+        ]
+      : []),
+    ``,
+    `Твоя зона (owner-${scope}): ${roots.map((r) => `${relative(repoRoot, r)}/`).join(", ") || "—"}`,
+    ``,
+    `Это НЕ твоя работа, даже если файлы уже лежат в индексе: в общем working tree рядом`,
+    `работают соседи, и их незакоммиченные правки не твои, чтобы их отправлять.`,
+    ``,
+    `Действие: собери коммит поимённо из своих путей —`,
+    `  git add ${roots.map((r) => `${relative(repoRoot, r)}/`).join(" ")}`,
+    `а чужое оставь как есть. Чужое попало в индекс не тобой → STOP, скажи architect:`,
+    `разбирать чужой индекс самому нельзя (\`git reset\` — тоже запись в общий \`.git\`).`,
+  ].join("\n");
+}
+
 function buildMessage(cmd, label, access) {
   return [
     `❌ Команда \`${cmd}\` заблокирована harness-хуком (git-gate, доступ: ${access}).`,
@@ -415,12 +633,101 @@ function buildMessage(cmd, label, access) {
   ].join("\n");
 }
 
+// --- ЧТО ИМЕННО СЛУЧИТСЯ С ДЕРЕВОМ -----------------------------------------
+// Вопрос, называющий только ГЛАГОЛ («git checkout <branch>, разрешить?»), человек подтверждает
+// не глядя: по нему не видно, что целевая ветка отстаёт и половина работы сейчас исчезнет из
+// дерева. Поэтому вопрос несёт ЦИФРЫ расхождения — считает их git, не агент.
+
+/** Глаголы, двигающие рабочее дерево: у них есть ветка-цель и измеримая цена. */
+const TREE_MOVING_VERBS = new Set(["checkout", "switch", "merge", "rebase"]);
+
+/** Вывод git одной строкой; недоступен/упал → null. */
+function gitOut(repoRoot, args) {
+  try {
+    return execFileSync("git", args, {
+      cwd: repoRoot,
+      encoding: "utf8",
+      timeout: 5000,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+/** Кандидаты в ветку-цель: не-флаговые токены до `--` (значение `-m msg` отсеется проверкой). */
+function targetCandidates(args) {
+  const out = [];
+  for (const arg of args) {
+    if (arg === "--") break;
+    if (!arg.startsWith("-")) out.push(arg);
+  }
+  return out;
+}
+
+/**
+ * Цена операции для рабочего дерева, либо null (глагол не двигает дерево / git не ответил).
+ * `leaving` (checkout/switch) — сколько коммитов ТЕКУЩЕЙ ветки исчезнет из дерева; иначе —
+ * сколько приедет.
+ */
+export function headChangeFacts(cmd, repoRoot) {
+  for (const { tool, verb, args } of gitInvocations(cmd)) {
+    if (tool !== "git" || !TREE_MOVING_VERBS.has(verb)) continue;
+    if (verb === "checkout" && (args.includes("--") || args.includes("-b"))) continue;
+
+    const target = targetCandidates(args).find(
+      (c) => gitOut(repoRoot, ["rev-parse", "--verify", "--quiet", `${c}^{commit}`]) !== null,
+    );
+    if (!target) continue;
+
+    const leaving = verb === "checkout" || verb === "switch";
+    const commits = gitOut(repoRoot, [
+      "rev-list",
+      "--count",
+      leaving ? `${target}..HEAD` : `HEAD..${target}`,
+    ]);
+    const files = gitOut(repoRoot, ["diff", "--name-only", "HEAD", target]);
+    const dirty = gitOut(repoRoot, ["status", "--porcelain", "-uall"]);
+    const count = (out) => (out === null ? null : out.split("\n").filter(Boolean).length);
+
+    return {
+      current: gitOut(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]) ?? "HEAD",
+      target,
+      leaving,
+      commits: commits === null ? null : Number(commits),
+      files: count(files),
+      dirty: count(dirty),
+    };
+  }
+  return null;
+}
+
 /** Вопрос человеку (не агенту) — architect на записи в shared `.git`, постановка user 2026-08-31. */
-function buildAskMessage(cmd, label) {
-  return [
-    `Команда \`${cmd}\` — запись в shared \`.git\` (\`${label}\`).`,
-    "Разрешить именно эту операцию?",
-  ].join("\n");
+function buildAskMessage(cmd, label, facts) {
+  const lines = [`Команда \`${cmd}\` — запись в shared \`.git\` (\`${label}\`).`];
+
+  if (facts) {
+    lines.push(
+      "",
+      `  текущая: ${facts.current}`,
+      `  целевая: ${facts.target}`,
+      facts.leaving
+        ? `  в текущей есть, в целевой НЕТ: ${facts.commits ?? "?"} коммитов`
+        : `  приедет в дерево коммитов: ${facts.commits ?? "?"}`,
+      `  файлов изменится в дереве: ${facts.files ?? "?"}`,
+      `  незакоммиченных правок в дереве: ${facts.dirty ?? "?"}`,
+    );
+    if (facts.leaving && facts.commits) {
+      lines.push(
+        "",
+        `⚠️ Работа из ${facts.commits} коммитов пропадёт из рабочего дерева`,
+        `   (останется в ${facts.current}).`,
+      );
+    }
+  }
+
+  lines.push("", "Разрешить именно эту операцию?");
+  return lines.join("\n");
 }
 
 function isMainSession(input) {
@@ -460,12 +767,28 @@ function main() {
   const cmd = String(input.tool_input?.command ?? "");
   if (!cmd) return allow();
 
-  const config = loadConfig(input.cwd || process.cwd());
+  const repoRoot = input.cwd || process.cwd();
+  const config = loadConfig(repoRoot);
   const access = currentAccess(input, config);
   const reason = blockReason(cmd, access);
-  if (!reason) return allow();
-  if (access === "full") return ask(buildAskMessage(cmd, reason));
-  deny(buildMessage(cmd, reason, access));
+  if (reason) {
+    if (access === "full") return ask(buildAskMessage(cmd, reason, headChangeFacts(cmd, repoRoot)));
+    return deny(buildMessage(cmd, reason, access));
+  }
+
+  // Глагол разрешён ролью — остаётся граница зоны. Касается только owner'а: architect владеет
+  // доставкой (его записи и так под вопросом), layer до add/commit не доходит вовсе.
+  if (access === "commit-only") {
+    const scope = process.env.WEBCORE_SCOPE;
+    if (scope && scope !== "main") {
+      const violation = zoneViolation({ cmd, scope, config, repoRoot });
+      if (violation) {
+        const roots = ownedRoots(scope, config, repoRoot).roots;
+        return deny(buildZoneMessage(cmd, scope, violation, roots, repoRoot));
+      }
+    }
+  }
+  allow();
 }
 
 // Исполняем main() ТОЛЬКО как скрипт (node git-gate.mjs) — при import (тесты) main не

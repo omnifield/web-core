@@ -124,7 +124,7 @@ categories:
         name: "«ДО» — контрольный замер перед переездом на GraphQL, для сравнения после"
         repro: |
           # Тот же скрипт, что у measure-component-switch, прогнан заново 2026-09-09 — специально
-          # СЕЙЧАС, пока backend/presets на стенде ещё старый REST (переезд идёт в packages/skin,
+          # СЕЙЧАС, пока backend/presets на стенде ещё старый REST (переезд идёт в web-core/skin,
           # стенд не трогали). После переезда потребителей — прогнать буквально то же самое и
           # сравнить с этими числами, не с числами 2026-09-09 measure-component-switch (те уже
           # устарели по времени, хоть счётчик совпал).
@@ -140,7 +140,7 @@ categories:
           (chrome-devtools, dev-сервер apps/skin, `/showcase/button`, ЛОКАЛЬНАЯ база, не стенд)
           показал 211 xhr/fetch запросов на ПЕРВЫЙ заход на компонент — то есть заметно больше 47.
           Это не тот же сценарий (первый заход, не смена компонента, другая база с другим числом
-          записей) и снят В ПРОЦЕССЕ параллельной правки `packages/skin` овнером (пойманы 400-ки от
+          записей) и снят В ПРОЦЕССЕ параллельной правки `web-core/skin` овнером (пойманы 400-ки от
           POST, список запросов сбрасывался между вызовами — среда была в движении, не чистая).
           Записано как сигнал «порядок величины похож или хуже, не лучше», а не как число для
           сравнения «до/после» — для этого пересниму тем же приёмом (браузер, вкладка Network)
@@ -154,7 +154,7 @@ categories:
         basis: code-read
         name: Чтение любого вида пресетов — это 1+N запросов
         description: |
-          `createPresetsClient().list()` (packages/skin/src/presets/client.ts:119-126) сначала
+          `createPresetsClient().list()` (web-core/skin/src/presets/client.ts:119-126) сначала
           берёт индекс (`?kind=`), затем делает `wireRead` на КАЖДУЮ запись по её id — потому
           что индекс не отдаёт `state` (см. `measure-index-without-state`).
 
@@ -170,7 +170,7 @@ categories:
         basis: code-read
         name: Справочник форм и нарядов перезапрашивается на каждую смену компонента
         description: |
-          `componentInfo(component)` (packages/ui/src/component-info.ts:199) делает
+          `componentInfo(component)` (web-core/ui/src/component-info.ts:199) делает
           `Promise.all([presets.list("form"), presets.list("outfit")])`. Вызывается через
           `componentInfoAtom`, ключ которого — `currentComponent`
           (apps/skin/src/entities/component/model/store.ts:14), то есть на каждую смену
@@ -204,7 +204,7 @@ categories:
         basis: code-read
         name: Список нарядов для кнопки вычитывает записи и выбрасывает их
         description: |
-          `createPresetsSkinSource().names()` (packages/skin/src/presets/source.ts:28) зовёт
+          `createPresetsSkinSource().names()` (web-core/skin/src/presets/source.ts:28) зовёт
           `client.list(outfit)` и берёт только `record.name` — а имя уже есть в индексе.
 
           Правка тривиальная, но экономит 2 запроса из 47. В первой версии плана этот пункт
@@ -216,7 +216,7 @@ categories:
         basis: code-read
         name: Переключение light/dark, похоже, заново скачивает весь наряд
         description: |
-          `setMode()` (packages/skin/src/solid/connection.ts:47-50) реализован как
+          `setMode()` (web-core/skin/src/solid/connection.ts:47-50) реализован как
           `wear(current.name, { mode })`, а `wear()` (wear/switch.ts) зовёт `source.css(name)`.
           `css()` (presets/source.ts:29-46) — это `get(outfit)` + `list(palette)` +
           `list(form)`, то есть снова десятки запросов.

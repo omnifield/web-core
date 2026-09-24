@@ -1,0 +1,158 @@
+{
+  "name": "omnifield-toc",
+  "component": "toc",
+  "recipe": {
+    "base": {
+      "content": {
+        "props": {
+          "display": "contents"
+        }
+      },
+      "indicator": {
+        "ancestors": [
+          {
+            "component": "toc",
+            "part": "root",
+            "style": {
+              "props": {
+                "height": "var(--height)",
+                "left": "var(--left)",
+                "top": "var(--top)",
+                "width": "var(--width)"
+              }
+            }
+          }
+        ],
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--accent-3)",
+          "borderRadius": "var(--radius-md)",
+          "position": "absolute",
+          "transition": "top var(--motion-normal) var(--ease-out), height var(--motion-normal) var(--ease-out)"
+        }
+      },
+      "item": {
+        "props": {
+          "paddingInlineStart": "calc((var(--depth) - 2) * var(--space-3))"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--accent-2)",
+              "borderRadius": "var(--radius-md)"
+            }
+          },
+          "first": {
+            "props": {
+              "scrollMarginBlockStart": "var(--space-2)"
+            }
+          },
+          "last": {
+            "props": {
+              "scrollMarginBlockEnd": "var(--space-2)"
+            }
+          }
+        }
+      },
+      "link": {
+        "props": {
+          "borderRadius": "var(--radius-md)",
+          "color": "var(--neutral-11)",
+          "display": "block",
+          "fontSize": "var(--font-size-sm)",
+          "paddingBlock": "var(--space-1)",
+          "paddingInline": "var(--space-2)",
+          "position": "relative",
+          "textDecoration": "none",
+          "zIndex": "1"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "color": "var(--accent-11)",
+              "fontWeight": "var(--weight-medium)"
+            }
+          }
+        }
+      },
+      "list": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-1)",
+          "position": "relative"
+        }
+      },
+      "nav": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "flexShrink": "0",
+          "width": "240px"
+        }
+      },
+      "root": {
+        "props": {
+          "display": "block",
+          "position": "relative"
+        }
+      },
+      "title": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "fontWeight": "var(--weight-medium)",
+          "margin": "0 0 var(--space-2) 0"
+        }
+      }
+    },
+    "defaultVariant": "filled",
+    "variants": {
+      "filled": {},
+      "rail": {
+        "indicator": {
+          "props": {
+            "background": "var(--accent-9)",
+            "borderRadius": "0",
+            "width": "var(--border-width-2)"
+          }
+        },
+        "item": {
+          "states": {
+            "active": {
+              "props": {
+                "background": "transparent"
+              }
+            }
+          }
+        },
+        "link": {
+          "props": {
+            "borderRadius": "0",
+            "paddingBlock": "var(--space-2)"
+          }
+        },
+        "list": {
+          "props": {
+            "borderInlineStartColor": "var(--neutral-6)",
+            "borderInlineStartStyle": "solid",
+            "borderInlineStartWidth": "var(--border-width-1)",
+            "gap": "0",
+            "paddingInlineStart": "var(--space-3)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "filled": [
+      "default"
+    ],
+    "rail": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

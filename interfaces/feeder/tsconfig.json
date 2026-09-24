@@ -1,0 +1,31 @@
+{
+  "//": [
+    "Конфиг САМОГО пакета. Своего `tsconfig` наружу пакет не отдаёт — базу приложениям задаёт",
+    "зона `build` подпутём `@web-core/build/tsconfig`.",
+    "",
+    "`include` держит и `test`: по этому же конфигу ходят `pnpm typecheck` и `pnpm lint`, и без",
+    "папки тестов их не проверял никто — vitest типы не считает."
+  ],
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src", "test", "vite.config.ts", "vitest.config.ts"],
+  "exclude": ["dist", "node_modules"]
+}

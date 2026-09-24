@@ -1,0 +1,25 @@
+{
+  "name": "@web-core/release",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Сценарий выпуска группы web-core/ — скрипты на движке @web-core/cli. В поставку не едет.",
+  "type": "module",
+  "bin": {
+    "web-core-release": "./src/index.ts"
+  },
+  "scripts": {
+    "release": "web-core-node src/index.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck"
+  },
+  "dependencies": {
+    "@web-core/cli": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "typescript": "7.0.2"
+  }
+}

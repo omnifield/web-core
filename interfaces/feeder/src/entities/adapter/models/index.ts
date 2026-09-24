@@ -1,0 +1,14 @@
+export { isFed, type Adapter, type AdapterRule, type UserTree } from "./types";
+export { applyAdapter, noFeed } from "./apply";
+export { adapterFor } from "./adapter-for";
+export { asAdapter } from "./record";
+export { feed, type FeedResult } from "./feed";
+export { partnersOf } from "./partners-of";
+export { usedBy } from "./used-by";
+export { usersOf } from "./users-of";
+export { fitOf, type Fit } from "./fit";
+export { layoutOf, type LayoutField, type LayoutGroup, type LayoutRow } from "./layout";
+export * from "./users";
+export * from "./edit";
+export { ADAPTER_KIND } from "./kind";
+export { ADAPTER_SHAPE } from "./shape";

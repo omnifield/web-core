@@ -1,0 +1,35 @@
+{
+  "name": "@web-core/studio-mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Зона skin-mcp: локальный MCP-сервер для создания скина — ручки на уже готовую механику web-core/skin, а не новая. Обкатка v1 — только текст (CSS-текст, отчёты проверок); скриншот-превью — вторая волна.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "start": "web-core-node src/index.ts",
+    "serve": "SKIN_MCP_TRANSPORT=http SKIN_MCP_HOST=0.0.0.0 web-core-node src/index.ts",
+    "dev": "web-core-node watch src/index.ts",
+    "push-to-prod": "node scripts/push-to-prod.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "style": "biome check ."
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@web-core/io": "^0.4.0",
+    "@web-core/neurobox": "^0.4.0",
+    "@web-core/skin": "^0.4.0",
+    "@web-core/ui": "^0.4.0",
+    "zocker": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
+    "@web-core/build": "^0.4.0",
+    "@web-core/lint": "^0.4.0",
+    "@types/node": "^24.10.1",
+    "eslint": "^10.8.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

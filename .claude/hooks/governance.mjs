@@ -24,6 +24,9 @@ import { argv } from "node:process";
 import { fileURLToPath } from "node:url";
 import { loadConfig, roleOf, zonePaths } from "./harness-config.mjs";
 
+// zonePaths используется и границей owner'а (ownedRoots), и разбором чужих зон (foreignRoots):
+// одна и та же раскладка читается одним способом, иначе «своё» и «чужое» разойдутся.
+
 // Файло-мутирующие тулы Claude Code (MultiEdit — на случай старых сборок).
 const EDIT_TOOLS = new Set(["Edit", "Write", "NotebookEdit", "MultiEdit"]);
 
@@ -80,20 +83,58 @@ export function resolveTarget(rawPath, repoRoot) {
   }
 }
 
+/** Корни ЧУЖИХ зон (всех, кроме scope) — абсолютные, с именем зоны. */
+export function foreignRoots(scope, config, repoRoot) {
+  const out = [];
+  for (const [zone, def] of Object.entries(config?.zones ?? {})) {
+    if (zone === scope) continue;
+    for (const p of zonePaths(def)) out.push({ zone, root: resolve(repoRoot, p) });
+  }
+  return out;
+}
+
+/**
+ * Владельцем файла считается зона с САМЫМ ДЛИННЫМ совпавшим путём: вложенная зона выигрывает
+ * у родительской.
+ *
+ * Без этого правила вложенность означала бы отсутствие границы. `apps/studio/.mcp` (зона
+ * `studio-mcp`) лежит внутри `apps/studio` (зона `studio-app`), и по одному лишь `within`
+ * владелец приложения проходил бы в MCP-сервер соседа как к себе домой — при том, что зоны
+ * разводили ровно затем, чтобы у каждой папки был один владелец (решение user 2026-09-18).
+ *
+ * Причина отказа, либо null (файл наш).
+ */
+export function outsideOwnership({ target, scope, config, repoRoot }) {
+  const owned = ownedRoots(scope, config, repoRoot);
+  if (owned.unrestricted) return null;
+  if (!owned.roots.length) {
+    return `scope "${scope}" не резолвится в зону с путями — boundary неизвестна`;
+  }
+  const rel = relative(repoRoot, target) || target;
+  const mine = owned.roots.filter((r) => within(target, r));
+  if (!mine.length) {
+    return `файл \`${rel}\` вне зоны owner-${scope} (${owned.roots.map((r) => `${relative(repoRoot, r)}/`).join(", ")})`;
+  }
+  // Наш корень совпал — но чужой мог совпасть ГЛУБЖЕ, и тогда файл принадлежит ему.
+  const deepest = Math.max(...mine.map((r) => r.length));
+  const nested = foreignRoots(scope, config, repoRoot).find(
+    ({ root }) => root.length > deepest && within(target, root),
+  );
+  if (nested) {
+    return `файл \`${rel}\` лежит в зоне owner-${nested.zone} (\`${relative(repoRoot, nested.root)}/\`), вложенной в твою — у вложенной папки свой владелец`;
+  }
+  return null;
+}
+
 /**
  * Причина блокировки правки, либо null (разрешено). unrestricted → всегда null; иначе цель
- * должна лежать хотя бы в одном owned-корне. Пустые корни (нерезолвимая зона) → всё блокируется.
+ * должна лежать в owned-корне и не принадлежать зоне, вложенной глубже.
  */
 export function editViolation({ scope, config, repoRoot, rawPath }) {
   const owned = ownedRoots(scope, config, repoRoot);
   if (owned.unrestricted) return null;
   const target = resolveTarget(rawPath, repoRoot);
-  if (owned.roots.some((r) => within(target, r))) return null;
-  if (!owned.roots.length) {
-    return `scope "${scope}" не резолвится в зону с путями — boundary неизвестна`;
-  }
-  const rel = relative(repoRoot, target) || target;
-  return `файл \`${rel}\` вне зоны owner-${scope} (${owned.roots.map((r) => `${relative(repoRoot, r)}/`).join(", ")})`;
+  return outsideOwnership({ target, scope, config, repoRoot });
 }
 
 function isMainSession(input) {

@@ -1,0 +1,219 @@
+{
+  "name": "omnifield-tabs",
+  "component": "tabs",
+  "recipe": {
+    "base": {
+      "content": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "lineHeight": "var(--leading-relaxed)"
+        },
+        "states": {
+          "selected": {}
+        }
+      },
+      "indicator": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--accent-9)",
+          "borderRadius": "var(--radius-full)",
+          "height": "var(--border-width-2)",
+          "left": "var(--left)",
+          "position": "absolute",
+          "top": "calc(var(--top) + var(--height) - var(--border-width-2))",
+          "transition": "left var(--motion-normal) var(--ease-out), top var(--motion-normal) var(--ease-out), width var(--motion-normal) var(--ease-out), height var(--motion-normal) var(--ease-out)",
+          "width": "var(--width)",
+          "zIndex": "0"
+        }
+      },
+      "list": {
+        "props": {
+          "borderBlockEnd": "var(--border-width-1) solid var(--neutral-6)",
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": "var(--space-1)",
+          "position": "relative"
+        },
+        "states": {
+          "focus": {}
+        }
+      },
+      "root": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column"
+        }
+      },
+      "trigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "borderRadius": "var(--radius-md)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "gap": "var(--space-2)",
+          "justifyContent": "center",
+          "lineHeight": "var(--leading-none)",
+          "minHeight": "var(--control-height-md)",
+          "paddingInline": "var(--space-4)",
+          "position": "relative",
+          "transition": "color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out)",
+          "zIndex": "1"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)",
+              "cursor": "not-allowed"
+            }
+          },
+          "focus": {},
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          },
+          "selected": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "line",
+    "settings": {
+      "orientation": {
+        "vertical": {
+          "indicator": {
+            "props": {
+              "height": "var(--height)",
+              "left": "0",
+              "top": "var(--top)",
+              "width": "var(--border-width-2)"
+            }
+          },
+          "list": {
+            "props": {
+              "borderBlockEnd": "none",
+              "borderInlineEnd": "var(--border-width-1) solid var(--neutral-6)",
+              "flexDirection": "column"
+            }
+          },
+          "root": {
+            "props": {
+              "flexDirection": "row"
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "enclosed": {
+        "indicator": {
+          "props": {
+            "display": "none"
+          }
+        },
+        "list": {
+          "props": {
+            "borderBlockEnd": "var(--border-width-1) solid var(--neutral-6)",
+            "gap": "var(--space-1)"
+          }
+        },
+        "trigger": {
+          "props": {
+            "background": "var(--neutral-2)",
+            "borderColor": "transparent",
+            "borderEndEndRadius": "0",
+            "borderEndStartRadius": "0",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)",
+            "marginBlockEnd": "calc(var(--border-width-1) * -1)"
+          },
+          "states": {
+            "hover": {
+              "props": {
+                "background": "var(--neutral-3)"
+              }
+            },
+            "selected": {
+              "props": {
+                "background": "var(--neutral-1)",
+                "borderBlockEndColor": "var(--neutral-1)",
+                "borderColor": "var(--neutral-6)"
+              }
+            }
+          }
+        }
+      },
+      "line": {},
+      "pills": {
+        "indicator": {
+          "props": {
+            "background": "var(--accent-9)",
+            "borderRadius": "var(--radius-md)",
+            "display": "block",
+            "height": "var(--height)",
+            "left": "var(--left)",
+            "top": "var(--top)",
+            "width": "var(--width)"
+          }
+        },
+        "list": {
+          "props": {
+            "background": "var(--neutral-3)",
+            "borderBlockEnd": "none",
+            "borderRadius": "var(--radius-lg)",
+            "padding": "var(--space-1)"
+          }
+        },
+        "trigger": {
+          "props": {
+            "borderRadius": "var(--radius-md)"
+          },
+          "states": {
+            "selected": {
+              "props": {
+                "color": "var(--accent-contrast)"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "enclosed": [
+      "default"
+    ],
+    "line": [
+      "default"
+    ],
+    "pills": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

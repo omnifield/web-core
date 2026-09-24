@@ -116,6 +116,12 @@ export const EXPECTED_REGISTRATIONS = [
     matcher: "Edit|Write|NotebookEdit|MultiEdit",
     command: "node .claude/hooks/governance.mjs",
   },
+  { event: "PreToolUse", matcher: null, command: "node .claude/hooks/docs-gate.mjs" },
+  {
+    event: "PostToolUse",
+    matcher: "Read|NotebookRead",
+    command: "node .claude/hooks/docs-gate.mjs",
+  },
   { event: "SessionStart", matcher: null, command: "node .claude/hooks/main-session-marker.mjs" },
   { event: "SessionStart", matcher: null, command: "node .claude/hooks/scope-identity.mjs" },
 ];
@@ -159,7 +165,30 @@ export function registrationReport(cwd, _moduleUrl, { ok, bad, warn }) {
     });
   for (const r of stale) lines.push(warn(`зарегистрирован отсутствующий хук: ${r.command}`));
 
+  // statusLine живёт не в `hooks`, а отдельным ключом — общей проверкой выше он не ловится.
+  // Смотрим его здесь же: незарегистрированная строка состояния молчит ровно так же, как
+  // незарегистрированный хук, а роль сессии перестаёт быть видна на экране.
+  lines.push(...statusLineReport(settings, cwd, { ok, bad, warn }));
+
   return lines;
+}
+
+/** Отчёт по строке состояния: объявлена ли и существует ли файл, на который она указывает. */
+export function statusLineReport(settings, cwd, { ok, bad, warn }) {
+  const command = settings?.statusLine?.command;
+  if (!command) {
+    return [
+      bad(`statusLine не объявлен в ${CONSUMER_SETTINGS} — роль сессии не видна на экране`),
+      `    Баннер роли уезжает из видимой части после первых ходов, и при нескольких открытых`,
+      `    сессиях человек отличает architect от owner-<zone> по памяти. Допиши в настройки:`,
+      `      "statusLine": { "type": "command", "command": "node .claude/hooks/statusline.mjs" }`,
+    ];
+  }
+  const file = /(\.claude[/\\]hooks[/\\][\w.-]+)/.exec(command)?.[1];
+  if (file && !existsSync(resolve(cwd, file))) {
+    return [warn(`statusLine указывает на отсутствующий файл: ${command}`)];
+  }
+  return [ok(`statusLine подключён: ${command}`)];
 }
 
 // --- машинный pre-commit: есть он или его нет (BRAIN2-64) --------------------
@@ -365,15 +394,23 @@ export function report(cwd, moduleUrl) {
   } else if (zones.length) {
     p(ok("валидатор роль-модели: пути относительные и непустые"));
   }
-  // Пересечение зон — НЕ ошибка: governance конфиг не валидирует и правку пускает. Раньше
-  // мы называли это ошибкой «одна папка — один владелец» и тем обещали защиту, которой нет.
+  // Совпадение путей — НЕ ошибка конфига, но и не защита: governance пускает обоих владельцев.
+  // Вложенность — отдельный случай и с 2026-09-18 штатная механика, а не дыра: владелец
+  // определяется самым длинным совпавшим путём. Печатать их одинаково значило бы звать чинить
+  // то, что работает как задумано.
   const overlaps = overlappingZones(config);
-  if (overlaps.length) {
-    p(warn(`пути зон пересекаются (${overlaps.length}) — машинной границы между ними НЕТ:`));
-    for (const o of overlaps)
+  const equal = overlaps.filter((o) => o.kind === "equal");
+  const nested = overlaps.filter((o) => o.kind === "nested");
+  if (equal.length) {
+    p(warn(`пути зон СОВПАДАЮТ (${equal.length}) — машинной границы между ними НЕТ:`));
+    for (const o of equal)
       p(`    - "${o.zones[0]}" ↔ "${o.zones[1]}": "${o.paths[0]}" ↔ "${o.paths[1]}"`);
     p("    Задумано так (несколько ролей над одними файлами) — это законная раскладка.");
     p("    Не задумано — разведи paths[], иначе владельца у этих файлов машинно нет.");
+  }
+  if (nested.length) {
+    p(ok(`вложенных зон: ${nested.length} — владелец по самому длинному пути:`));
+    for (const o of nested) p(`    - "${o.paths[0]}" → ${o.zones[0]} (внутри ${o.zones[1]})`);
   }
   p("");
 

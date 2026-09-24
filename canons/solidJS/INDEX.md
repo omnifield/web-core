@@ -47,7 +47,7 @@
 
 | источник | редакция | статус | сверен | цитаты | файл |
 |---|---|---|---|---|---|
-| solid-js (packages/solid/src/index.ts, ветка main) — проверка нескольких копий | ветка main, снято 2026-08-08 | действует | 2026-08-08 | первичный | `solid-js-multiple-instances.md` |
+| solid-js (web-core/solid/src/index.ts, ветка main) — проверка нескольких копий | ветка main, снято 2026-08-08 | действует | 2026-08-08 | первичный | `solid-js-multiple-instances.md` |
 | solid-lib-starter (package.json, ветка main) | ветка main, снято 2026-08-08 | действует | 2026-08-08 | первичный | `solid-lib-starter.md` |
 | solid-primitives (CONTRIBUTING.md, ветка main) | ветка main, снято 2026-08-08 | действует | 2026-08-08 | первичный | `solid-primitives.md` |
 | tsup-preset-solid (README, ветка main) | не версионирована в README, снято 2026-08-08 | действует | 2026-08-08 | первичный | `tsup-preset-solid.md` |

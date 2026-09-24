@@ -1,0 +1,182 @@
+{
+  "name": "omnifield-workspace",
+  "component": "workspace",
+  "recipe": {
+    "base": {
+      "footer": {
+        "props": {
+          "gridArea": "footer",
+          "minInlineSize": "0"
+        }
+      },
+      "header": {
+        "props": {
+          "gridArea": "header",
+          "minInlineSize": "0"
+        }
+      },
+      "main": {
+        "props": {
+          "gridArea": "main",
+          "minBlockSize": "0",
+          "minInlineSize": "0",
+          "overflow": "auto"
+        }
+      },
+      "rightbar": {
+        "props": {
+          "gridArea": "rightbar",
+          "minBlockSize": "0",
+          "minInlineSize": "0",
+          "overflow": "auto"
+        }
+      },
+      "root": {
+        "props": {
+          "blockSize": "100%",
+          "display": "grid",
+          "minBlockSize": "0"
+        }
+      },
+      "sidebar": {
+        "props": {
+          "gridArea": "sidebar",
+          "minBlockSize": "0",
+          "overflow": "auto"
+        }
+      }
+    },
+    "defaultVariant": "sidebar-first",
+    "settings": {
+      "filled": {
+        "true": {
+          "footer": {
+            "props": {
+              "padding": "var(--space-1)"
+            }
+          },
+          "header": {
+            "props": {
+              "padding": "var(--space-1)"
+            }
+          },
+          "main": {
+            "props": {
+              "padding": "var(--space-1)"
+            }
+          },
+          "rightbar": {
+            "props": {
+              "padding": "var(--space-1)"
+            }
+          },
+          "sidebar": {
+            "props": {
+              "padding": "var(--space-1)"
+            }
+          }
+        }
+      },
+      "outlined": {
+        "true": {
+          "footer": {
+            "props": {
+              "backgroundColor": "var(--neutral-2)"
+            }
+          },
+          "header": {
+            "props": {
+              "backgroundColor": "var(--neutral-2)"
+            }
+          },
+          "main": {
+            "props": {
+              "backgroundColor": "var(--neutral-2)"
+            }
+          },
+          "rightbar": {
+            "props": {
+              "backgroundColor": "var(--neutral-2)"
+            }
+          },
+          "root": {
+            "props": {
+              "backgroundColor": "var(--neutral-6)",
+              "gap": "var(--border-width-1)"
+            }
+          },
+          "sidebar": {
+            "props": {
+              "backgroundColor": "var(--neutral-2)"
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "header-first": {
+        "root": {
+          "props": {
+            "gridTemplateAreas": "\"header   header  header\" \"sidebar  main    rightbar\" \"footer   footer  footer\"",
+            "gridTemplateColumns": "minmax(var(--rail-sm), max-content) 1fr minmax(var(--rail-sm), max-content)",
+            "gridTemplateRows": "auto 1fr auto"
+          }
+        }
+      },
+      "header-full": {
+        "root": {
+          "props": {
+            "gridTemplateAreas": "\"header   header  header\" \"sidebar  main    rightbar\" \"sidebar  footer  rightbar\"",
+            "gridTemplateColumns": "minmax(var(--rail-sm), max-content) 1fr minmax(var(--rail-sm), max-content)",
+            "gridTemplateRows": "auto 1fr auto"
+          }
+        }
+      },
+      "multi-column": {
+        "root": {
+          "props": {
+            "gridTemplateAreas": "\"sidebar main rightbar\"",
+            "gridTemplateColumns": "minmax(var(--rail-sm), max-content) 1fr minmax(var(--rail-sm), max-content)",
+            "gridTemplateRows": "1fr"
+          }
+        }
+      },
+      "sidebar-first": {
+        "root": {
+          "props": {
+            "gridTemplateAreas": "\"sidebar header  rightbar\" \"sidebar main    rightbar\" \"sidebar footer  rightbar\"",
+            "gridTemplateColumns": "minmax(var(--rail-sm), max-content) 1fr minmax(var(--rail-sm), max-content)",
+            "gridTemplateRows": "auto 1fr auto"
+          }
+        }
+      },
+      "stacked": {
+        "root": {
+          "props": {
+            "gridTemplateAreas": "\"header\" \"main\"",
+            "gridTemplateColumns": "1fr",
+            "gridTemplateRows": "auto 1fr"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "header-first": [
+      "default"
+    ],
+    "header-full": [
+      "default"
+    ],
+    "multi-column": [
+      "default"
+    ],
+    "sidebar-first": [
+      "default"
+    ],
+    "stacked": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

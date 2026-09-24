@@ -1,0 +1,10 @@
+{
+  "//": [
+    "Гейт поставки в серверные пакеты: транспорт (./graphql, ./rest) обязан типизироваться БЕЗ",
+    "библиотеки DOM — у потребителя на @web-core/build/tsconfig-node её глобалов нет.",
+    "Разбор — FAQ.md."
+  ],
+  "extends": "@web-core/build/tsconfig-node",
+  "include": ["src/graphql", "src/rest"],
+  "exclude": ["dist", "node_modules"]
+}

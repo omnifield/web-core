@@ -1,0 +1,349 @@
+import { createRegistry, updateNode, type AssemblyTree, type DispatchedEvent, type ReadableComponent, type Registry } from "@web-core/assembly";
+import { RenderTree } from "@web-core/assembly/render";
+import { admits, baseAssemblyOf } from "@web-core/skin/editor";
+import type { PassportAssembly, PassportEditorInfo } from "@web-core/skin/editor";
+import type { ComponentPassport } from "@web-core/skin/model";
+import { createSignal } from "@web-core/solid";
+import { render } from "@web-core/solid/web";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { kitComponentRenderer } from "../../component-registry.jsx";
+import { kit as treeViewKit } from "../components/index.jsx";
+import type { Data } from "../entity/io.js";
+import { passport as treeViewPassport } from "../entity/passport.js";
+import { assemblies } from "../playground/assemblies/index.js";
+import { editorInfo as treeViewEditorInfo } from "../playground/index.js";
+import { kit as iconKit } from "../../icon/components/index.js";
+import { passport as iconPassport } from "../../icon/entity/passport.js";
+import { editorInfo as iconEditorInfo } from "../../icon/playground/index.js";
+
+function readable<Part extends string, EditorData = unknown>(
+  passport: ComponentPassport<Part>,
+  editorInfo: PassportEditorInfo<Part, string, EditorData>,
+): ReadableComponent["passport"] {
+  return {
+    component: passport.component,
+    genus: editorInfo.genus,
+    anatomy: passport.anatomy,
+    root: passport.root,
+    parts: passport.parts.map((part) => ({
+      name: part.name,
+      accepts: editorInfo.parts[part.name]?.accepts,
+    })),
+  };
+}
+
+const REGISTRY: Registry = createRegistry({
+  components: {
+    "tree-view": {
+      passport: readable(treeViewPassport, treeViewEditorInfo),
+      parts: treeViewKit.parts,
+    },
+    icon: { passport: readable(iconPassport, iconEditorInfo), parts: iconKit.parts },
+  },
+  admits,
+});
+
+let dispose: (() => void) | undefined;
+
+afterEach(() => {
+  dispose?.();
+  dispose = undefined;
+  document.body.innerHTML = "";
+});
+
+function mount(
+  assembly: PassportAssembly,
+  data: Data,
+  dispatch?: (event: DispatchedEvent) => void,
+  rootProps?: Readonly<Record<string, unknown>>,
+): HTMLElement {
+  const base = baseAssemblyOf(treeViewPassport, assembly, "tree-view", data);
+  const onRoot = updateNode(base as AssemblyTree, base.components.root, { props: { ...rootProps } });
+  if (!onRoot.ok) throw new Error(`витрина: экземпляр отвергнут механикой — ${onRoot.means}`);
+
+  const host = document.createElement("div");
+  document.body.append(host);
+  dispose = render(() => <RenderTree registry={REGISTRY} tree={onRoot.tree} data={data} dispatch={dispatch} />, host);
+  return host;
+}
+
+describe('tree view "base" — one level, every item labeled and clickable, click dispatches the whole item', () => {
+  it("labels each item from data and dispatches controlClick with the whole item as payload", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = { items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta" }] };
+
+    const dispatched: DispatchedEvent[] = [];
+    const host = mount(assembly as PassportAssembly, data, (event) => dispatched.push(event));
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "Beta"]);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "1"]);
+
+    (controls[1] as HTMLElement).click();
+    await Promise.resolve();
+
+    expect(dispatched).toEqual([
+      expect.objectContaining({ name: "controlClick", context: { payload: data.items[1] } }),
+    ]);
+    expect(items[1]!.getAttribute("data-selected")).toBe("");
+    // Лист не заводит индикатор вовсе — даже активный, ему нечего раскрывать.
+    expect(controls[1]!.querySelector('[data-part="control-indicator"]')).toBeNull();
+    expect(controls[1]!.textContent).toBe("Beta");
+  });
+});
+
+describe('tree view "base" — recur grows the same node again from its own data, depth from data alone', () => {
+  it("labels and dispatches correctly three levels deep, off ONE small schema with no per-level node", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = {
+      items: [
+        {
+          value: "a",
+          label: "Alpha",
+          children: [
+            {
+              value: "a1",
+              label: "Alpha One",
+              children: [{ value: "a1x", label: "Alpha One X" }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const dispatched: DispatchedEvent[] = [];
+    const host = mount(assembly as PassportAssembly, data, (event) => dispatched.push(event));
+
+    await vi.waitFor(() => {
+      if (host.querySelectorAll('[data-scope="tree-view"][data-part="control"]').length === 0) {
+        throw new Error("tree not rendered yet");
+      }
+    });
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "Alpha One", "Alpha One X"]);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "2", "3"]);
+
+    // Только у веток есть controlIndicator (Zag сам не рисует его для листа). Индикатор — реальный
+    // `<Icon>` со своей `<Suspense>`-границей (см. `icon/components/root.tsx`), резолвится независимо
+    // от остального дерева, поэтому ждём его отдельно.
+    await vi.waitFor(
+      () => {
+        if (!controls[0]!.querySelector('svg[data-scope="icon"][data-part="root"]')) {
+          throw new Error("icon not resolved yet");
+        }
+        if (!controls[1]!.querySelector('svg[data-scope="icon"][data-part="root"]')) {
+          throw new Error("icon not resolved yet");
+        }
+      },
+      { timeout: 10_000 },
+    );
+    expect(controls[2]!.querySelector('svg[data-scope="icon"][data-part="root"]')).toBeNull();
+
+    (controls[2] as HTMLElement).click();
+    await Promise.resolve();
+
+    expect(dispatched).toEqual([
+      expect.objectContaining({
+        name: "controlClick",
+        context: { payload: data.items[0]!.children![0]!.children![0] },
+      }),
+    ]);
+  });
+
+  it("stops on its own where the data stops — no children means no deeper nodes, not an error", () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = { items: [{ value: "a", label: "Alpha" }] };
+
+    const host = mount(assembly as PassportAssembly, data);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1"]);
+  });
+});
+
+describe('tree view "base" — externally driven activeValue overrides Zag\'s own click-driven selection', () => {
+  it("highlights exactly the given value, and a real click elsewhere does not move it", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = { items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta" }] };
+
+    const host = mount(assembly as PassportAssembly, data, undefined, { activeValue: "a" });
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items[0]!.getAttribute("data-selected")).toBe("");
+    expect(items[1]!.getAttribute("data-selected")).toBeNull();
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    (controls[1] as HTMLElement).click();
+    await Promise.resolve();
+
+    // Клик по Beta — родной `selectNode` у Zag его бы выбрал, но снаружи задан "a", и он побеждает.
+    expect(items[0]!.getAttribute("data-selected")).toBe("");
+    expect(items[1]!.getAttribute("data-selected")).toBeNull();
+  });
+
+  it("without activeValue, native click-driven selection works exactly as before", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = { items: [{ value: "a", label: "Alpha" }, { value: "b", label: "Beta" }] };
+
+    const host = mount(assembly as PassportAssembly, data);
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    (controls[1] as HTMLElement).click();
+    await Promise.resolve();
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items[1]!.getAttribute("data-selected")).toBe("");
+  });
+});
+
+describe('tree view "base" — the real consumer path: instanceOf feeds the root its own collection', () => {
+  it("grows every level off data alone, with nothing hand-fed into the root props", async () => {
+    const { registry, instanceOf } = kitComponentRenderer();
+    const data: Data = {
+      items: [
+        { value: "a", label: "Alpha", children: [{ value: "a1", label: "Alpha One" }] },
+        { value: "b", label: "Beta" },
+      ],
+    };
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(
+      () => <RenderTree registry={registry} tree={instanceOf("tree-view", {}, "base", data)} data={data} />,
+      host,
+    );
+
+    await vi.waitFor(() => {
+      if (host.querySelectorAll('[data-scope="tree-view"][data-part="control"]').length === 0) {
+        throw new Error("suspended tree not resolved yet");
+      }
+    });
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "Alpha One", "Beta"]);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "2", "1"]);
+  });
+});
+
+describe('tree view "base" — a leaf that GAINS its first child turns into a real branch', () => {
+  it("swaps the wrapper on live data: the node opens, its child renders, nothing falls in the console", async () => {
+    const { registry, instanceOf } = kitComponentRenderer();
+    const [data, setData] = createSignal<Data>({ items: [{ value: "a", label: "Alpha" }] });
+
+    const failures: unknown[][] = [];
+    const console_error = vi.spyOn(console, "error").mockImplementation((...args: unknown[]) => {
+      failures.push(args);
+    });
+
+    const host = document.createElement("div");
+    document.body.append(host);
+    dispose = render(
+      () => <RenderTree registry={registry} tree={instanceOf("tree-view", {}, "base", data())} data={data()} />,
+      host,
+    );
+
+    const itemOf = () => host.querySelector('[data-scope="tree-view"][data-part="item"]')!;
+    const controlsOf = () => [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+
+    await vi.waitFor(() => {
+      if (controlsOf().length === 0) throw new Error("suspended tree not resolved yet");
+    });
+    // Лист: ветка ставит на узел data-state, лист — нет.
+    expect(itemOf().getAttribute("data-state")).toBeNull();
+
+    setData({
+      items: [{ value: "a", label: "Alpha", children: [{ value: "a1", label: "Alpha One" }] }],
+    });
+
+    await vi.waitFor(() => {
+      if (itemOf().getAttribute("data-state") === null) throw new Error("still a leaf");
+    });
+    expect(itemOf().getAttribute("data-state")).toBe("closed");
+
+    (controlsOf()[0] as HTMLElement).click();
+    await Promise.resolve();
+
+    expect(itemOf().getAttribute("data-state")).toBe("open");
+    expect(controlsOf().map((node) => node.textContent)).toEqual(["Alpha", "Alpha One"]);
+    expect(failures).toEqual([]);
+
+    console_error.mockRestore();
+  });
+});
+
+describe('tree view "base" — a branch with SIBLING children, next to a sibling leaf at the top level', () => {
+  it("wires node/indexPath correctly for every sibling under recur, not just an only child", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = {
+      items: [
+        {
+          value: "a",
+          label: "Alpha",
+          children: [
+            { value: "a1", label: "A1" },
+            { value: "a2", label: "A2" },
+          ],
+        },
+        { value: "b", label: "Beta" },
+      ],
+    };
+
+    const host = mount(assembly as PassportAssembly, data);
+
+    await vi.waitFor(() => {
+      if (host.querySelectorAll('[data-scope="tree-view"][data-part="control"]').length === 0) {
+        throw new Error("suspended tree not resolved yet");
+      }
+    });
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "A1", "A2", "Beta"]);
+
+    const items = [...host.querySelectorAll('[data-scope="tree-view"][data-part="item"]')];
+    expect(items.map((el) => el.getAttribute("data-depth"))).toEqual(["1", "2", "2", "1"]);
+  });
+
+  it("a real click that OPENS a multi-child branch does not throw — not just a pre-rendered snapshot", async () => {
+    const assembly = assemblies.find((candidate) => candidate.name === "base")!;
+    const data: Data = {
+      items: [
+        {
+          value: "a",
+          label: "Alpha",
+          children: [
+            { value: "a1", label: "A1" },
+            { value: "a2", label: "A2" },
+          ],
+        },
+      ],
+    };
+
+    const host = mount(assembly as PassportAssembly, data);
+
+    await vi.waitFor(() => {
+      if (host.querySelectorAll('[data-scope="tree-view"][data-part="control"]').length === 0) {
+        throw new Error("suspended tree not resolved yet");
+      }
+    });
+
+    const rootItem = host.querySelector('[data-scope="tree-view"][data-part="item"]')!;
+    expect(rootItem.getAttribute("data-state")).toBe("closed");
+
+    const control = host.querySelector('[data-scope="tree-view"][data-part="control"]') as HTMLElement;
+    control.click();
+    await Promise.resolve();
+
+    expect(rootItem.getAttribute("data-state")).toBe("open");
+
+    const controls = [...host.querySelectorAll('[data-scope="tree-view"][data-part="control"]')];
+    expect(controls.map((node) => node.textContent)).toEqual(["Alpha", "A1", "A2"]);
+  });
+});

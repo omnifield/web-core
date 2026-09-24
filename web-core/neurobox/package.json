@@ -1,0 +1,111 @@
+{
+  "name": "@web-core/neurobox",
+  "version": "0.5.1",
+  "description": "Клиент web-core для бокса нейробокс (AG-UI, см. NEUROBOX_CLIENT.md) поверх @tanstack/ai-client/@tanstack/ai-solid: одна точка входа вместо вендора.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./solid": {
+      "development": "./src/solid/index.ts",
+      "solid": "./dist/solid.jsx",
+      "types": "./dist/solid.d.ts",
+      "default": "./dist/solid.js"
+    },
+    "./mcp": {
+      "development": "./src/mcp/index.ts",
+      "types": "./dist/mcp.d.ts",
+      "default": "./dist/mcp.js"
+    },
+    "./server": {
+      "development": "./src/server/index.ts",
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./pagination": {
+      "development": "./src/pagination/index.ts",
+      "types": "./dist/pagination.d.ts",
+      "default": "./dist/pagination.js"
+    },
+    "./zone-feedback": {
+      "development": "./src/zone-feedback/index.ts",
+      "types": "./dist/zone-feedback.d.ts",
+      "default": "./dist/zone-feedback.js"
+    },
+    "./tool": {
+      "development": "./src/tool/index.ts",
+      "types": "./dist/tool.d.ts",
+      "default": "./dist/tool.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./solid": {
+        "solid": "./dist/solid.jsx",
+        "types": "./dist/solid.d.ts",
+        "default": "./dist/solid.js"
+      },
+      "./mcp": {
+        "types": "./dist/mcp.d.ts",
+        "default": "./dist/mcp.js"
+      },
+      "./server": {
+        "types": "./dist/server.d.ts",
+        "default": "./dist/server.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
+      "./zone-feedback": {
+        "types": "./dist/zone-feedback.d.ts",
+        "default": "./dist/zone-feedback.js"
+      },
+      "./tool": {
+        "types": "./dist/tool.d.ts",
+        "default": "./dist/tool.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@tanstack/ai": "0.54.0",
+    "@tanstack/ai-client": "0.31.1",
+    "@tanstack/ai-mcp": "0.3.10",
+    "@tanstack/ai-solid": "0.21.1",
+    "@web-core/io": "workspace:*",
+    "@web-core/query": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "jsdom": "30.0.1",
+    "solid-js": "1.9.14",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vite-plugin-solid": "2.11.14",
+    "vitest": "4.1.10"
+  }
+}

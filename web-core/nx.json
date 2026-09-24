@@ -1,0 +1,65 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/test/**/*",
+      "!{projectRoot}/**/*.test.*",
+      "!{projectRoot}/**/*.stories.*",
+      "!{projectRoot}/README.md"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/pnpm-workspace.yaml",
+      "{workspaceRoot}/nx.json"
+    ]
+  },
+  "release": {
+    "projects": ["@web-core/*", "!@web-core/release", "!@web-core/build-fixture"],
+    "projectsRelationship": "fixed",
+    "versionPlans": true,
+    "version": {
+      "generatorOptions": {
+        "specifierSource": "version-plans"
+      }
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": false
+        }
+      },
+      "projectChangelogs": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": false
+        }
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/dist"],
+      "cache": true
+    },
+    "test": {
+      "dependsOn": ["build", "^build"],
+      "inputs": ["default", "^production"],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["build", "^build"],
+      "inputs": ["default", "^production"],
+      "cache": true
+    },
+    "typecheck": {
+      "dependsOn": ["build", "^build"],
+      "inputs": ["default", "^production"],
+      "cache": true
+    }
+  }
+}

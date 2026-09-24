@@ -1,0 +1,93 @@
+{
+  "name": "@web-core/mcp",
+  "version": "0.5.1",
+  "description": "Тулинг для MCP-серверов зон web-core: обязательные annotations и конверт ответа при регистрации тула (input/output — настоящие Zod-схемы), бутстрап транспорта (stdio/Streamable HTTP) с точкой расширения под auth, курсорная пагинация листингов.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./transport": {
+      "development": "./src/transport/index.ts",
+      "types": "./dist/transport.d.ts",
+      "default": "./dist/transport.js"
+    },
+    "./pagination": {
+      "development": "./src/pagination/index.ts",
+      "types": "./dist/pagination.d.ts",
+      "default": "./dist/pagination.js"
+    },
+    "./peer": {
+      "development": "./src/peer/index.ts",
+      "types": "./dist/peer.d.ts",
+      "default": "./dist/peer.js"
+    },
+    "./browser": {
+      "development": "./src/browser/index.ts",
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    },
+    "./feedback": {
+      "development": "./src/feedback/index.ts",
+      "types": "./dist/feedback.d.ts",
+      "default": "./dist/feedback.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./transport": {
+        "types": "./dist/transport.d.ts",
+        "default": "./dist/transport.js"
+      },
+      "./pagination": {
+        "types": "./dist/pagination.d.ts",
+        "default": "./dist/pagination.js"
+      },
+      "./peer": {
+        "types": "./dist/peer.d.ts",
+        "default": "./dist/peer.js"
+      },
+      "./browser": {
+        "types": "./dist/browser.d.ts",
+        "default": "./dist/browser.js"
+      },
+      "./feedback": {
+        "types": "./dist/feedback.d.ts",
+        "default": "./dist/feedback.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . && pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@web-core/io": "workspace:*",
+    "@web-core/query": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@web-core/build": "workspace:*",
+    "@web-core/lint": "workspace:*",
+    "eslint": "10.8.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}

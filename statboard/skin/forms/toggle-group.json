@@ -1,0 +1,188 @@
+{
+  "name": "omnifield-toggle-group",
+  "component": "toggle-group",
+  "recipe": {
+    "base": {
+      "item": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "borderRadius": "var(--radius-md)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-sm)",
+          "fontWeight": "var(--weight-medium)",
+          "gap": "var(--space-2)",
+          "justifyContent": "center",
+          "minHeight": "var(--control-height-sm)",
+          "paddingInline": "var(--space-3)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)",
+              "cursor": "not-allowed"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          },
+          "on": {
+            "props": {
+              "background": "var(--neutral-1)",
+              "boxShadow": "0 1px 2px oklch(0% 0 0 / 0.16)",
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "background": "var(--neutral-3)",
+          "borderRadius": "var(--radius-lg)",
+          "display": "inline-flex",
+          "gap": "var(--space-1)",
+          "padding": "var(--space-1)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "opacity": "0.6"
+            }
+          },
+          "focus": {
+            "props": {
+              "outline": "none"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "outline",
+    "settings": {
+      "orientation": {
+        "vertical": {
+          "root": {
+            "props": {
+              "flexDirection": "column"
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "outline": {
+        "item": {
+          "props": {
+            "borderRadius": "0"
+          },
+          "states": {
+            "hover": {
+              "props": {
+                "background": "var(--neutral-2)"
+              }
+            },
+            "on": {
+              "props": {
+                "background": "var(--accent-3)",
+                "boxShadow": "none",
+                "color": "var(--accent-12)"
+              }
+            }
+          }
+        },
+        "root": {
+          "props": {
+            "background": "transparent",
+            "borderColor": "var(--neutral-7)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)",
+            "gap": "0",
+            "overflow": "hidden",
+            "padding": "0"
+          }
+        }
+      },
+      "pill": {
+        "item": {
+          "props": {
+            "borderRadius": "var(--radius-full)",
+            "paddingInline": "var(--space-3)"
+          },
+          "states": {
+            "hover": {
+              "props": {
+                "background": "var(--neutral-4)"
+              }
+            },
+            "on": {
+              "props": {
+                "background": "var(--neutral-1)",
+                "boxShadow": "0 1px 2px oklch(0% 0 0 / 0.16)",
+                "color": "var(--neutral-12)"
+              }
+            }
+          }
+        },
+        "root": {
+          "props": {
+            "borderRadius": "var(--radius-full)"
+          }
+        }
+      },
+      "solid": {
+        "item": {
+          "props": {
+            "borderRadius": "var(--radius-md)"
+          },
+          "states": {
+            "hover": {
+              "props": {
+                "background": "var(--neutral-4)",
+                "color": "var(--neutral-12)"
+              }
+            },
+            "on": {
+              "props": {
+                "background": "var(--accent-9)",
+                "boxShadow": "none",
+                "color": "var(--accent-contrast)"
+              }
+            }
+          }
+        },
+        "root": {
+          "props": {
+            "background": "var(--neutral-3)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "outline": [
+      "default"
+    ],
+    "pill": [
+      "default"
+    ],
+    "solid": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

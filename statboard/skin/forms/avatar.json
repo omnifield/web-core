@@ -1,0 +1,108 @@
+{
+  "name": "omnifield-avatar",
+  "component": "avatar",
+  "recipe": {
+    "base": {
+      "fallback": {
+        "props": {
+          "alignItems": "center",
+          "blockSize": "100%",
+          "display": "flex",
+          "fontSize": "var(--font-size-sm)",
+          "fontWeight": "var(--weight-medium)",
+          "inlineSize": "100%",
+          "justifyContent": "center",
+          "textTransform": "uppercase"
+        },
+        "states": {
+          "hidden": {
+            "props": {
+              "display": "none"
+            }
+          },
+          "visible": {
+            "props": {
+              "display": "flex"
+            }
+          }
+        }
+      },
+      "image": {
+        "props": {
+          "blockSize": "100%",
+          "inlineSize": "100%",
+          "objectFit": "cover"
+        },
+        "states": {
+          "hidden": {
+            "props": {
+              "display": "none"
+            }
+          },
+          "visible": {
+            "props": {
+              "display": "block"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "alignItems": "center",
+          "background": "var(--neutral-4)",
+          "blockSize": "var(--control-height-md)",
+          "borderRadius": "var(--radius-full)",
+          "color": "var(--neutral-12)",
+          "display": "inline-flex",
+          "flexShrink": "0",
+          "inlineSize": "var(--control-height-md)",
+          "justifyContent": "center",
+          "overflow": "hidden",
+          "position": "relative"
+        }
+      }
+    },
+    "defaultVariant": "md",
+    "variants": {
+      "lg": {
+        "fallback": {
+          "props": {
+            "fontSize": "var(--font-size-md)"
+          }
+        },
+        "root": {
+          "props": {
+            "blockSize": "var(--control-height-lg)",
+            "inlineSize": "var(--control-height-lg)"
+          }
+        }
+      },
+      "md": {},
+      "sm": {
+        "fallback": {
+          "props": {
+            "fontSize": "var(--font-size-xs)"
+          }
+        },
+        "root": {
+          "props": {
+            "blockSize": "var(--control-height-sm)",
+            "inlineSize": "var(--control-height-sm)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "lg": [
+      "default"
+    ],
+    "md": [
+      "default"
+    ],
+    "sm": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

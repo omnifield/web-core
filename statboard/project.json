@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/nx/schemas/project-schema.json",
+  "name": "statboard",
+  "projectType": "application",
+  "sourceRoot": "src",
+  "tags": ["type:app", "deploy:static"],
+  "metadata": {
+    "description": "Приложение: собранная статика из dist, разворачивается как статический сайт. В реестр не публикуется."
+  }
+}

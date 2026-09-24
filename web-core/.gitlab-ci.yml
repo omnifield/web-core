@@ -1,0 +1,99 @@
+# Пайплайн web-core. Порядок шагов и то, обо что реально спотыкаются, — `.release/FLOW.md`.
+#
+# Устроен на графе задач: он знает зависимости между пакетами, считает порядок сам и не
+# пересчитывает то, что не менялось. Отсюда два следствия, на которых стоит весь пайплайн:
+# на ветке считается только ЗАТРОНУТОЕ, а результат кладётся в кэш и переиспользуется дальше.
+
+stages:
+  - check
+  - build
+  - release
+  - publish
+  - acceptance
+
+default:
+  image: node:24
+  before_script:
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+      - .nx/cache
+
+variables:
+  # Глубина истории: графу задач нужен общий предок с целевой веткой, иначе «затронутое»
+  # посчитать не из чего. Мелкий клон (по умолчанию 20) на длинной ветке этого не даёт.
+  GIT_DEPTH: "0"
+  PNPM_CONFIG_STORE_DIR: .pnpm-store
+
+# ── ветка и merge request ──────────────────────────────────────────────────────
+# Считаем ТОЛЬКО затронутое: граф сравнивает ветку с целевой и берёт пакеты, до которых
+# изменение реально дотянулось, вместе с их зависимыми.
+affected:
+  stage: check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - pnpm exec nx affected -t lint typecheck test --base=origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME --head=HEAD
+
+# Есть ли план версии под эти изменения. Шаг напоминает разработчику объявить изменение,
+# а не ловит это на выпуске, когда поздно.
+version-plan:
+  stage: check
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      allow_failure: true
+  script:
+    - pnpm exec nx release plan:check
+
+# ── основная ветка ─────────────────────────────────────────────────────────────
+# Целиком, без «затронутого»: основная ветка обязана быть зелёной вся, а не частично.
+full:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - pnpm exec nx run-many -t lint typecheck test build
+
+# ── выпуск ─────────────────────────────────────────────────────────────────────
+# Запускается ЧЕЛОВЕКОМ, а не по каждому коммиту: поднять версии — решение, а не событие.
+# Публикации здесь нет: шаг делает версии, CHANGELOG, коммит и тег, а тег и есть сигнал
+# к публикации. Сухой прогон печатает то же самое, ничего не записывая.
+release:
+  stage: release
+  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - git config user.name "$GITLAB_USER_NAME"
+    - git config user.email "$GITLAB_USER_EMAIL"
+    - pnpm exec nx release --skip-publish
+    - git push --follow-tags "https://oauth2:$RELEASE_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" HEAD:$CI_DEFAULT_BRANCH
+
+# ── публикация ─────────────────────────────────────────────────────────────────
+# По тегу. Сборка обязательна: публикуется содержимое `dist`, и никто не соберёт его за вас.
+publish:
+  stage: publish
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - pnpm exec nx run-many -t build
+    - pnpm exec nx release publish
+
+# ── приёмка ────────────────────────────────────────────────────────────────────
+# Единственный шаг, отвечающий на вопрос «а у потребителя оно вообще работает»: ставит
+# опубликованное в чистый проект ВНЕ репозитория. Внутри репозитория эта проверка невозможна
+# в принципе — там пакеты подменены ссылками на соседние папки.
+#
+# Читается глазами, а не как светофор: часть отказов — ограничения самой пробы (`.release/FLOW.md`).
+acceptance:
+  stage: acceptance
+  rules:
+    - if: $CI_COMMIT_TAG
+      allow_failure: true
+  script:
+    - pnpm --filter @web-core/release release verify --json

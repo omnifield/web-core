@@ -77,7 +77,7 @@ type Content implements Preset {
   author: String
 }
 
-"""tagLabel — человеческое имя тега (packages/skin/src/tags), отдельное от Preset.label верхнего
+"""tagLabel — человеческое имя тега (web-core/skin/src/tags), отдельное от Preset.label верхнего
 уровня: на живой записи прода (tag/status) это два разных значения ("status" / "Статусы")."""
 type Tag implements Preset {
   id: ID!
@@ -104,9 +104,57 @@ type Assembly implements Preset {
   author: String
 }
 
+"""Документ описания чужого API в уже разобранном виде (не сырьё свагера) — запись движка
+кормления (interfaces/feeder). endpoints/groups/defs — именованные JSON-поля: внутри произвольная
+JSON Schema. Связей на другие записи у вида нет, человеческое имя документа едет в label."""
+type Api implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  endpoints: JSON!
+  groups: JSON
+  defs: JSON
+}
+
+"""Шов «поставщик → потребитель»: root — где в ответе лежит набор записей, rules — правила
+перекладки, providers/consumers — деревья участников (витринная отметка, не связь и не проверка).
+Машинное name у записи этого вида — то, чем её адресует разметка приложения (adapter="users-list"),
+как data-variant одевает компонент."""
+type Adapter implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  root: String!
+  rules: JSON!
+  extra: String
+  providers: JSON
+  consumers: JSON
+}
+
+"""Какие адаптеры берёт одно приложение. adapters — связь по имени, симметрично Outfit.forms:
+один запрос отдаёт меню вместе со всеми его адаптерами, батчем."""
+type Menu implements Preset {
+  id: ID!
+  label: String!
+  name: String
+  description: String
+  kind: String!
+  savedAt: String!
+  adapters: [Adapter!]!
+}
+
 """Конверт записи/замены — тот же смысл, что у сегодняшнего REST-конверта (label/name/description/
 kind/state), state валидируется по kinds-registry вида."""
 input PresetInput {
+  """Айди клиента (client-supplied-id, ROADMAP.yaml): не задан — выдаёт служба; задан — запись
+  рождается с ним, занятый отвергается. У replacePreset обязан совпадать с айди аргумента."""
+  id: ID
   kind: String!
   label: String!
   name: String
@@ -117,8 +165,13 @@ input PresetInput {
 type Query {
   """Перечень записей; kind не задан — все виды разом (см. mcp-surgical-reads/showcase-page-batch
   профили в ROADMAP.yaml — сама схема не решает, сколько тянуть за раз, решает клиент выбором
-  полей)."""
-  presets(kind: String): [Preset!]!
+  полей). component — доп. сужение (presets-component-filter, ROADMAP.yaml): совпадение по ЛЮБОМУ
+  компоненту из списка (OR). Смысл только у видов, несущих поле component (Form/Assembly/Content)
+  — записи остальных видов (Palette/Outfit/Tag) при заданном component в выдачу не попадают, это
+  не ошибка. kind и component независимы, комбинируются или задаются по отдельности. name —
+  отбор по машинному имени (presets-by-name, ROADMAP.yaml), тоже по ЛЮБОМУ из списка: запись без
+  имени в такую выдачу не попадает — её нечем адресовать."""
+  presets(kind: String, component: [String!], name: [String!]): [Preset!]!
   preset(id: ID!): Preset
 }
 

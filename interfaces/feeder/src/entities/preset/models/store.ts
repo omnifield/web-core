@@ -1,0 +1,113 @@
+import { createActionStore } from "@web-core/store";
+import { castDraft, mutate, type Draft } from "@web-core/store/mutate";
+
+import type { Preset } from "./types";
+
+export interface PresetsState {
+  readonly presets: readonly Preset[];
+}
+
+export const presetsStore = createActionStore<
+  PresetsState,
+  {
+    add(kind: string, label: string, content: unknown): string;
+    remove(id: string): void;
+    relabel(id: string, label: string): void;
+    rename(id: string, name: string): void;
+    replace(id: string, content: unknown): void;
+    markSaved(id: string, savedAt: string): void;
+    edit<T>(id: string, recipe: (content: Draft<T>) => void): void;
+    adopt(presets: readonly Preset[]): void;
+    hydrate(presets: readonly Preset[]): void;
+  },
+  {
+    presetBy(state: PresetsState, id: string): Preset | undefined;
+    presetsOf(state: PresetsState, kind: string): readonly Preset[];
+  }
+>(
+  { presets: [] },
+  ({ setState }) => ({
+    add(kind, label, content) {
+      const id = crypto.randomUUID();
+      setState(
+        mutate<PresetsState>((draft) => {
+          draft.presets.push(castDraft({ id, kind, label, content }));
+        }),
+      );
+      return id;
+    },
+    remove(id) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          draft.presets = draft.presets.filter((preset) => preset.id !== id);
+        }),
+      );
+    },
+    relabel(id, label) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.label = label;
+        }),
+      );
+    },
+    rename(id, name) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.name = name;
+        }),
+      );
+    },
+    replace(id, content) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.content = castDraft(content);
+        }),
+      );
+    },
+    markSaved(id, savedAt) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) preset.savedAt = savedAt;
+        }),
+      );
+    },
+    edit(id, recipe) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          const preset = draft.presets.find((item) => item.id === id);
+          if (preset !== undefined) recipe(preset.content as Draft<never>);
+        }),
+      );
+    },
+    adopt(presets) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          for (const preset of presets) {
+            const at = draft.presets.findIndex((item) => item.id === preset.id);
+            if (at === -1) draft.presets.push(castDraft(preset));
+            else draft.presets[at] = castDraft(preset);
+          }
+        }),
+      );
+    },
+    hydrate(presets) {
+      setState(
+        mutate<PresetsState>((draft) => {
+          draft.presets = castDraft(presets);
+        }),
+      );
+    },
+  }),
+  () => ({
+    presetBy(state, id) {
+      return state.presets.find((preset) => preset.id === id);
+    },
+    presetsOf(state, kind) {
+      return state.presets.filter((preset) => preset.kind === kind);
+    },
+  }),
+);

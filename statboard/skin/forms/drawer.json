@@ -1,0 +1,335 @@
+{
+  "name": "omnifield-drawer",
+  "component": "drawer",
+  "recipe": {
+    "base": {
+      "backdrop": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "oklch(0% 0 0 / 0.4)",
+          "inset": "0",
+          "position": "fixed",
+          "transition": "opacity var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0",
+              "pointerEvents": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "opacity": "1"
+            }
+          },
+          "swiping": {
+            "props": {
+              "transition": "none"
+            }
+          }
+        }
+      },
+      "closeTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "blockSize": "1.75rem",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "inlineSize": "1.75rem",
+          "insetInlineEnd": "var(--space-3)",
+          "justifyContent": "center",
+          "position": "absolute",
+          "top": "var(--space-3)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)",
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "content": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "borderColor": "var(--neutral-6)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "color": "var(--neutral-12)",
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-3)",
+          "maxBlockSize": "100%",
+          "overflowY": "auto",
+          "padding": "var(--space-6)",
+          "position": "relative",
+          "transform": "translate3d(var(--drawer-translate-x), var(--drawer-translate-y), 0)",
+          "transition": "transform var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "pointerEvents": "none"
+            }
+          },
+          "down": {
+            "props": {
+              "inlineSize": "100%",
+              "maxBlockSize": "90vh"
+            }
+          },
+          "dragging": {
+            "props": {
+              "cursor": "grabbing",
+              "transition": "none"
+            }
+          },
+          "expanded": {
+            "props": {
+              "maxBlockSize": "100%"
+            }
+          },
+          "left": {
+            "props": {
+              "blockSize": "100%",
+              "inlineSize": "min(90vw, 22rem)"
+            }
+          },
+          "right": {
+            "props": {
+              "blockSize": "100%",
+              "inlineSize": "min(90vw, 22rem)"
+            }
+          },
+          "swiping": {
+            "props": {
+              "transition": "none"
+            }
+          },
+          "up": {
+            "props": {
+              "inlineSize": "100%",
+              "maxBlockSize": "90vh"
+            }
+          }
+        }
+      },
+      "description": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "lineHeight": "var(--leading-relaxed)",
+          "margin": "0"
+        }
+      },
+      "grabber": {
+        "props": {
+          "alignItems": "center",
+          "cursor": "grab",
+          "display": "flex",
+          "justifyContent": "center",
+          "paddingBlock": "var(--space-2)",
+          "touchAction": "none"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "cursor": "grabbing"
+            }
+          },
+          "hover": {
+            "props": {
+              "opacity": "0.9"
+            }
+          }
+        }
+      },
+      "grabberIndicator": {
+        "props": {
+          "background": "var(--neutral-7)",
+          "blockSize": "0.25rem",
+          "borderRadius": "var(--radius-full)",
+          "inlineSize": "2.5rem"
+        }
+      },
+      "positioner": {
+        "props": {
+          "display": "flex",
+          "inset": "0",
+          "position": "fixed"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "pointerEvents": "none"
+            }
+          },
+          "down": {
+            "props": {
+              "alignItems": "flex-end",
+              "justifyContent": "stretch"
+            }
+          },
+          "left": {
+            "props": {
+              "alignItems": "stretch",
+              "justifyContent": "flex-start"
+            }
+          },
+          "open": {
+            "props": {
+              "pointerEvents": "auto"
+            }
+          },
+          "right": {
+            "props": {
+              "alignItems": "stretch",
+              "justifyContent": "flex-end"
+            }
+          },
+          "up": {
+            "props": {
+              "alignItems": "flex-start",
+              "justifyContent": "stretch"
+            }
+          }
+        }
+      },
+      "swipeArea": {
+        "props": {
+          "position": "fixed",
+          "touchAction": "none"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "pointerEvents": "none"
+            }
+          }
+        }
+      },
+      "title": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-xl)",
+          "fontWeight": "var(--weight-semibold)",
+          "lineHeight": "var(--leading-tight)",
+          "margin": "0"
+        }
+      },
+      "trigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-3)",
+          "borderRadius": "var(--radius-md)",
+          "borderWidth": "0",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "justifyContent": "center",
+          "minBlockSize": "var(--control-height-md)",
+          "paddingInline": "var(--space-4)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "transform": "translateY(1px)"
+            }
+          },
+          "current": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          },
+          "open": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "panel",
+    "variants": {
+      "panel": {
+        "content": {
+          "props": {
+            "boxShadow": "0 8px 32px oklch(0% 0 0 / 0.2)"
+          },
+          "states": {
+            "down": {
+              "props": {
+                "borderRadius": "var(--radius-lg) var(--radius-lg) 0 0"
+              }
+            },
+            "left": {
+              "props": {
+                "borderRadius": "0 var(--radius-lg) var(--radius-lg) 0"
+              }
+            },
+            "right": {
+              "props": {
+                "borderRadius": "var(--radius-lg) 0 0 var(--radius-lg)"
+              }
+            },
+            "up": {
+              "props": {
+                "borderRadius": "0 0 var(--radius-lg) var(--radius-lg)"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "panel": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

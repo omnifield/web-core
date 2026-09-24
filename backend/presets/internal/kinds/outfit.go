@@ -2,7 +2,7 @@ package kinds
 
 import "encoding/json"
 
-// Outfit — зеркало `Outfit` (packages/skin/src/engine/look/types.ts). `palette` (имя одной
+// Outfit — зеркало `Outfit` (web-core/skin/src/engine/look/types.ts). `palette` (имя одной
 // записи `palette`), `forms` (имена записей `form`) и `tags` (имена записей `tag`) — связи на
 // другие записи службы: резолвятся GraphQL-полями через dataloader (no-server-side-n-plus-one в
 // ROADMAP.yaml), здесь остаются простыми строками/списком строк — резолвер вида решает, во что их

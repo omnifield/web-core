@@ -72,6 +72,34 @@ func toPreset(record *presetsmodel.Record) (model.Preset, error) {
 			Author:   state.Author,
 		}, nil
 
+	case *kinds.Api:
+		return &model.Api{
+			Meta:      record.Meta,
+			Endpoints: model.JSON(state.Endpoints),
+			Groups:    model.JSON(state.Groups),
+			Defs:      model.JSON(state.Defs),
+		}, nil
+
+	case *kinds.Adapter:
+		var extra *string
+		if state.Extra != "" {
+			extra = ptrString(state.Extra)
+		}
+		return &model.Adapter{
+			Meta:      record.Meta,
+			Root:      state.Root,
+			Rules:     model.JSON(state.Rules),
+			Extra:     extra,
+			Providers: model.JSON(state.Providers),
+			Consumers: model.JSON(state.Consumers),
+		}, nil
+
+	case *kinds.Menu:
+		return &model.Menu{
+			Meta:         record.Meta,
+			AdapterNames: state.Adapters,
+		}, nil
+
 	case *kinds.ComponentAssembly:
 		return &model.Assembly{
 			Meta:      record.Meta,

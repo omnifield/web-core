@@ -1,0 +1,24 @@
+{
+  "name": "web-core",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "FORCE_COLOR=0 nx run-many -t build -p '@web-core/*'",
+    "test": "FORCE_COLOR=0 nx run-many -t test -p '@web-core/*'",
+    "lint": "FORCE_COLOR=0 nx run-many -t lint -p '@web-core/*'",
+    "typecheck": "FORCE_COLOR=0 nx run-many -t typecheck -p '@web-core/*'",
+    "graph": "nx graph",
+    "nx": "nx",
+    "release": "nx release",
+    "release:publish": "nx release publish",
+    "plan": "nx release plan"
+  },
+  "devDependencies": {
+    "@nx/js": "23.1.1",
+    "nx": "23.1.1"
+  }
+}

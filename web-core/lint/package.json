@@ -1,0 +1,89 @@
+{
+  "name": "@web-core/lint",
+  "version": "0.5.1",
+  "description": "Машинный контроль кода двумя канонами, независимо от движка проверки: Solid-реактивность (`./eslint`, поверх eslint-plugin-solid) и кодстиль/импорты (`./biome`, поверх Biome).",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./eslint": {
+      "development": "./src/eslint/index.ts",
+      "types": "./dist/eslint/index.d.ts",
+      "default": "./dist/eslint/index.js"
+    },
+    "./style": {
+      "development": "./src/style/index.ts",
+      "types": "./dist/style/index.d.ts",
+      "default": "./dist/style/index.js"
+    },
+    "./biome": {
+      "development": "./src/biome/index.ts",
+      "types": "./dist/biome/index.d.ts",
+      "default": "./dist/biome/index.js"
+    },
+    "./biome.json": "./dist/biome/biome.json"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./eslint": {
+        "types": "./dist/eslint/index.d.ts",
+        "default": "./dist/eslint/index.js"
+      },
+      "./style": {
+        "types": "./dist/style/index.d.ts",
+        "default": "./dist/style/index.js"
+      },
+      "./biome": {
+        "types": "./dist/biome/index.d.ts",
+        "default": "./dist/biome/index.js"
+      },
+      "./biome.json": "./dist/biome/biome.json"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/generate-biome-json.mjs",
+    "prepare": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "pnpm run typecheck",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@babel/core": "8.0.1",
+    "@babel/eslint-parser": "8.0.1",
+    "eslint-plugin-solid": "0.14.5"
+  },
+  "peerDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "eslint": "^9.0.0 || ^10.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@biomejs/biome": {
+      "optional": true
+    },
+    "eslint": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.13",
+    "@types/node": "24.13.3",
+    "eslint": "10.8.1",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  }
+}

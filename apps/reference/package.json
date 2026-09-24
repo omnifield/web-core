@@ -15,16 +15,16 @@
   },
   "dependencies": {
     "@kobalte/core": "^0.13.12",
-    "@web-core/skin": "workspace:*",
-    "@web-core/solid": "workspace:*",
-    "@web-core/style": "workspace:*",
-    "@web-core/trace": "workspace:*",
-    "@web-core/ui": "workspace:*",
+    "@web-core/skin": "^0.4.0",
+    "@web-core/solid": "^0.4.0",
+    "@web-core/style": "^0.4.0",
+    "@web-core/trace": "^0.4.0",
+    "@web-core/ui": "^0.4.0",
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
-    "@web-core/build": "workspace:*",
-    "@web-core/lint": "workspace:*",
+    "@web-core/build": "^0.4.0",
+    "@web-core/lint": "^0.4.0",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^24.10.1",
     "eslint": "^10.8.1",

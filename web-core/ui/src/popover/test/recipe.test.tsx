@@ -1,0 +1,146 @@
+import { passportLookup, skinGaps, withPassports } from "@web-core/skin";
+import type { PassportEditorInfo } from "@web-core/skin/editor";
+import type { Outfit, Palette } from "@web-core/skin/model";
+import { render } from "@web-core/solid/web";
+import { describe, expect, it } from "vitest";
+
+import { declarationsFor } from "../../../test/skin-rules.js";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverPositioner,
+  PopoverTitle,
+} from "../components/index.js";
+import { passport } from "../entity/passport.js";
+import { editorInfo } from "../playground/index.js";
+import { form } from "../playground/recipe.js";
+
+const lookup = passportLookup([passport]);
+const bound = withPassports(lookup);
+
+const palette: Palette = {
+  name: "test-palette",
+  scales: {
+    accent: "#3457d5",
+    neutral: "#6b7280",
+    danger: "#c2282e",
+    success: "#197a3d",
+    warning: "#a35a06",
+  },
+  dimensions: {
+    radius: "10px",
+    space: { narrow: "0.375rem", wide: "0.5rem", between: ["360px", "1280px"] },
+    "font-size": { narrow: "0.9375rem", wide: "1rem", between: ["360px", "1280px"] },
+    column: "1rem",
+    "control-height": { narrow: "2rem", wide: "2.25rem", between: ["360px", "1280px"] },
+    rail: { narrow: "12rem", wide: "14rem", between: ["360px", "1280px"] },
+    card: { narrow: "20rem", wide: "24rem", between: ["360px", "1280px"] },
+    layout: { narrow: "64rem", wide: "80rem", between: ["360px", "1280px"] },
+    "border-width": "1px",
+    tracking: "0em",
+    density: "1",
+  },
+  light: {
+    "leading-none": "1",
+    "leading-tight": "1.2",
+    "leading-snug": "1.35",
+    "leading-normal": "1.5",
+    "leading-relaxed": "1.7",
+    "weight-normal": "400",
+    "weight-medium": "500",
+    "weight-semibold": "600",
+    "weight-bold": "700",
+    "motion-instant": "75ms",
+    "motion-fast": "150ms",
+    "motion-normal": "250ms",
+    "motion-slow": "400ms",
+    "ease-linear": "linear",
+    "ease-in": "cubic-bezier(0.4, 0, 1, 1)",
+    "ease-out": "cubic-bezier(0, 0, 0.2, 1)",
+    "ease-in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "accent-contrast": "#ffffff",
+    "danger-contrast": "#ffffff",
+    "success-contrast": "#ffffff",
+    "warning-contrast": "#ffffff",
+  },
+  dark: {
+    "accent-contrast": "#ffffff",
+    "danger-contrast": "#ffffff",
+    "success-contrast": "#ffffff",
+    "warning-contrast": "#ffffff",
+    "accent-9": "#3457d5",
+    "accent-10": "#4062df",
+    "danger-9": "#c2282e",
+    "danger-10": "#d13237",
+    "success-9": "#197a3d",
+    "success-10": "#1a8040",
+    "warning-9": "#a35a06",
+    "warning-10": "#aa5e06",
+  },
+};
+
+const outfit: Outfit = { name: "popover-proof", palette: palette.name, forms: [form.name] };
+const assembled = bound.assemble(outfit, { palettes: [palette], forms: [form] });
+
+describe("popover proof recipe — the passport dressed whole (PWEB-111)", () => {
+  it("carries no reference/structural flaw against a real palette", () => {
+    expect(bound.checkSkin(assembled.skin)).toEqual([]);
+  });
+
+  it("generates real CSS, not an empty rule set", () => {
+    const css = bound.generateSkinCss(assembled.skin);
+    expect(css.length).toBeGreaterThan(0);
+    expect(css).toContain('[data-scope="popover"]');
+  });
+
+  it("covers every state the passport declares — no silent gap", () => {
+    expect(skinGaps(assembled.skin, [passport], [editorInfo as PassportEditorInfo])).toEqual([]);
+  });
+});
+
+describe("the floating panel scrolls inside its own content, not the document", () => {
+  it("puts flex column on the positioner and a shrinkable, scrollable content — on nodes that really exist", async () => {
+    const css = bound.generateSkinCss(assembled.skin);
+
+    const host = document.createElement("div");
+    document.body.append(host);
+
+    const dispose = render(
+      () => (
+        <Popover defaultOpen>
+          <PopoverPositioner>
+            <PopoverContent>
+              <PopoverTitle>Заголовок</PopoverTitle>
+              <PopoverDescription>{"Очень длинное описание. ".repeat(200)}</PopoverDescription>
+            </PopoverContent>
+          </PopoverPositioner>
+        </Popover>
+      ),
+      host,
+    );
+
+    await Promise.resolve();
+
+    const positionerSelector = '[data-scope="popover"][data-part="positioner"]';
+    const contentSelector = '[data-scope="popover"][data-part="content"]';
+    const positioner = document.querySelector(positionerSelector)!;
+    const content = document.querySelector(contentSelector)!;
+
+    expect(positioner.matches(positionerSelector)).toBe(true);
+    expect(content.matches(contentSelector)).toBe(true);
+    expect(positioner.contains(content)).toBe(true);
+
+    const positionerRule = declarationsFor(css, positionerSelector);
+    expect(positionerRule).toContain("display: flex");
+    expect(positionerRule).toContain("flex-direction: column");
+    expect(positionerRule).toContain("max-height: var(--available-height)");
+
+    const contentRule = declarationsFor(css, contentSelector);
+    expect(contentRule).toContain("overflow: auto");
+    expect(contentRule).toContain("min-block-size: 0");
+
+    dispose();
+    host.remove();
+  });
+});
