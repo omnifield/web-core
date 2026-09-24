@@ -16,7 +16,7 @@
     ]
   },
   "release": {
-    "projects": ["@web-core/*", "!@web-core/release"],
+    "projects": ["@web-core/*", "!@web-core/release", "!@web-core/build-fixture"],
     "projectsRelationship": "fixed",
     "versionPlans": true,
     "version": {
