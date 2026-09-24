@@ -18,14 +18,14 @@
     "test": "web-core-vitest run"
   },
   "dependencies": {
-    "@web-core/skin": "^0.4.0",
-    "@web-core/solid": "^0.4.0",
-    "@web-core/ui": "^0.4.0"
+    "@web-core/skin": "^0.5.1",
+    "@web-core/solid": "^0.5.1",
+    "@web-core/ui": "^0.5.1"
   },
   "devDependencies": {
     "@nx/js": "23.1.1",
-    "@web-core/build": "^0.4.0",
-    "@web-core/lint": "^0.4.0",
+    "@web-core/build": "^0.5.1",
+    "@web-core/lint": "^0.5.1",
     "eslint": "^10.8.1",
     "nx": "23.1.1"
   }

@@ -22,7 +22,8 @@ const { assemble, generateSkinCss } = withPassports(passportOf);
 
 const source: SkinSource = {
   names: () => [outfit.name],
-  css: () => generateSkinCss(assemble(outfit, { palettes: [palette], forms }).skin),
+  css: () =>
+    generateSkinCss(assemble(outfit, { palettes: [palette], forms }).skin),
 };
 
 export function Skin(props: ParentProps) {
