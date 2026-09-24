@@ -1,0 +1,65 @@
+{
+  "name": "omnifield-flow",
+  "component": "flow",
+  "recipe": {
+    "base": {
+      "item": {
+        "props": {
+          "display": "block",
+          "minWidth": "0"
+        },
+        "states": {}
+      },
+      "root": {
+        "props": {
+          "alignItems": "center",
+          "display": "flex",
+          "flexWrap": "wrap",
+          "gap": "var(--space-1)"
+        }
+      }
+    },
+    "defaultVariant": "row",
+    "variants": {
+      "column": {
+        "root": {
+          "props": {
+            "alignItems": "stretch",
+            "flexDirection": "column",
+            "flexWrap": "nowrap"
+          }
+        }
+      },
+      "column-center": {
+        "root": {
+          "props": {
+            "alignItems": "center",
+            "flexDirection": "column",
+            "flexWrap": "nowrap"
+          }
+        }
+      },
+      "row": {
+        "root": {
+          "props": {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "flexWrap": "wrap"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "column": [
+      "default"
+    ],
+    "column-center": [
+      "default"
+    ],
+    "row": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

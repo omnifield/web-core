@@ -1,0 +1,129 @@
+{
+  "name": "omnifield-typography",
+  "component": "typography",
+  "recipe": {
+    "base": {
+      "root": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-normal)",
+          "letterSpacing": "var(--tracking-normal)",
+          "lineHeight": "var(--leading-normal)",
+          "margin": "0"
+        }
+      }
+    },
+    "defaultVariant": "body",
+    "variants": {
+      "body": {},
+      "body-strong": {
+        "root": {
+          "props": {
+            "fontWeight": "var(--weight-semibold)"
+          }
+        }
+      },
+      "caption": {
+        "root": {
+          "props": {
+            "color": "var(--neutral-11)",
+            "fontSize": "var(--font-size-sm)",
+            "lineHeight": "var(--leading-snug)"
+          }
+        }
+      },
+      "code": {
+        "root": {
+          "props": {
+            "background": "var(--neutral-3)",
+            "borderRadius": "var(--radius-sm)",
+            "fontFamily": "ui-monospace, \"SF Mono\", Consolas, monospace",
+            "fontSize": "var(--font-size-sm)",
+            "paddingInline": "var(--space-1)"
+          }
+        }
+      },
+      "display": {
+        "root": {
+          "props": {
+            "fontSize": "var(--font-size-4xl)",
+            "fontWeight": "var(--weight-bold)",
+            "letterSpacing": "var(--tracking-tight)",
+            "lineHeight": "var(--leading-none)"
+          }
+        }
+      },
+      "heading-1": {
+        "root": {
+          "props": {
+            "fontSize": "var(--font-size-3xl)",
+            "fontWeight": "var(--weight-bold)",
+            "letterSpacing": "var(--tracking-tight)",
+            "lineHeight": "var(--leading-tight)"
+          }
+        }
+      },
+      "heading-2": {
+        "root": {
+          "props": {
+            "fontSize": "var(--font-size-2xl)",
+            "fontWeight": "var(--weight-semibold)",
+            "lineHeight": "var(--leading-tight)"
+          }
+        }
+      },
+      "heading-3": {
+        "root": {
+          "props": {
+            "fontSize": "var(--font-size-xl)",
+            "fontWeight": "var(--weight-semibold)",
+            "lineHeight": "var(--leading-snug)"
+          }
+        }
+      },
+      "label": {
+        "root": {
+          "props": {
+            "color": "var(--neutral-11)",
+            "fontSize": "var(--font-size-sm)",
+            "fontWeight": "var(--weight-medium)",
+            "letterSpacing": "var(--tracking-wide)",
+            "lineHeight": "var(--leading-none)",
+            "textTransform": "uppercase"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "body": [
+      "default"
+    ],
+    "body-strong": [
+      "default"
+    ],
+    "caption": [
+      "default"
+    ],
+    "code": [
+      "default"
+    ],
+    "display": [
+      "default"
+    ],
+    "heading-1": [
+      "default"
+    ],
+    "heading-2": [
+      "default"
+    ],
+    "heading-3": [
+      "default"
+    ],
+    "label": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

@@ -1,0 +1,202 @@
+{
+  "name": "omnifield-diagram",
+  "component": "diagram",
+  "recipe": {
+    "base": {
+      "arc": {
+        "props": {
+          "color": "var(--accent-11)"
+        }
+      },
+      "area": {
+        "props": {
+          "color": "var(--accent-11)",
+          "opacity": "0.16"
+        }
+      },
+      "axis": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-xs)"
+        },
+        "states": {
+          "x": {
+            "props": {
+              "textAnchor": "middle"
+            }
+          },
+          "y": {
+            "props": {
+              "textAnchor": "end"
+            }
+          }
+        }
+      },
+      "bar": {
+        "props": {
+          "color": "var(--accent-11)"
+        }
+      },
+      "grid": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "opacity": "0.25",
+          "strokeDasharray": "2 4"
+        },
+        "states": {
+          "x": {
+            "props": {
+              "opacity": "0.25"
+            }
+          },
+          "y": {
+            "props": {
+              "opacity": "0.25"
+            }
+          }
+        }
+      },
+      "line": {
+        "props": {
+          "color": "var(--accent-11)",
+          "strokeLinecap": "round",
+          "strokeLinejoin": "round",
+          "strokeWidth": "2"
+        }
+      },
+      "point": {
+        "props": {
+          "color": "var(--accent-11)"
+        }
+      },
+      "root": {
+        "props": {
+          "blockSize": "24rem",
+          "color": "var(--neutral-12)",
+          "display": "block",
+          "fontSize": "var(--font-size-sm)",
+          "inlineSize": "100%"
+        }
+      }
+    },
+    "defaultVariant": "default",
+    "variants": {
+      "contrast": {
+        "arc": {
+          "props": {
+            "opacity": "1"
+          }
+        },
+        "axis": {
+          "props": {
+            "color": "var(--neutral-12)",
+            "fontSize": "var(--font-size-sm)"
+          }
+        },
+        "bar": {
+          "props": {
+            "opacity": "1"
+          }
+        },
+        "grid": {
+          "props": {
+            "opacity": "0.4"
+          }
+        },
+        "line": {
+          "props": {
+            "strokeWidth": "3"
+          }
+        }
+      },
+      "dashed": {
+        "arc": {
+          "props": {
+            "opacity": "0.9"
+          }
+        },
+        "area": {
+          "props": {
+            "opacity": "0.08"
+          }
+        },
+        "grid": {
+          "props": {
+            "opacity": "0.25"
+          }
+        },
+        "line": {
+          "props": {
+            "strokeDasharray": "6 4",
+            "strokeWidth": "2"
+          }
+        }
+      },
+      "default": {
+        "arc": {
+          "props": {
+            "opacity": "1"
+          }
+        },
+        "axis": {
+          "props": {
+            "opacity": "1"
+          }
+        },
+        "grid": {
+          "props": {
+            "opacity": "0.25"
+          }
+        },
+        "line": {
+          "props": {
+            "strokeWidth": "2"
+          }
+        }
+      },
+      "minimal": {
+        "arc": {
+          "props": {
+            "opacity": "0.85"
+          }
+        },
+        "area": {
+          "props": {
+            "opacity": "0.1"
+          }
+        },
+        "axis": {
+          "props": {
+            "opacity": "0.7",
+            "strokeWidth": "0.5"
+          }
+        },
+        "grid": {
+          "props": {
+            "opacity": "0"
+          }
+        },
+        "line": {
+          "props": {
+            "strokeWidth": "1.5"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "contrast": [
+      "default"
+    ],
+    "dashed": [
+      "default"
+    ],
+    "default": [
+      "default"
+    ],
+    "minimal": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

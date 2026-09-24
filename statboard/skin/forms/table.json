@@ -1,0 +1,172 @@
+{
+  "name": "omnifield-table",
+  "component": "table",
+  "recipe": {
+    "base": {
+      "body": {
+        "props": {}
+      },
+      "caption": {
+        "props": {
+          "captionSide": "top",
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "paddingBlock": "var(--space-2)",
+          "textAlign": "start"
+        }
+      },
+      "cell": {
+        "props": {
+          "borderBlockEnd": "var(--border-width-1) solid var(--neutral-4)",
+          "paddingBlock": "var(--space-2)",
+          "paddingInline": "var(--space-3)"
+        }
+      },
+      "head": {
+        "props": {}
+      },
+      "headRow": {
+        "props": {}
+      },
+      "headerCell": {
+        "props": {
+          "borderBlockEnd": "var(--border-width-2) solid var(--neutral-6)",
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "fontWeight": "var(--weight-medium)",
+          "paddingBlock": "var(--space-2)",
+          "paddingInline": "var(--space-3)",
+          "textAlign": "start"
+        }
+      },
+      "headerSortTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "borderWidth": "0",
+          "color": "inherit",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "font": "inherit",
+          "gap": "var(--space-1)",
+          "padding": "0",
+          "transition": "color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "ascending": {
+            "props": {
+              "color": "var(--accent-11)"
+            }
+          },
+          "descending": {
+            "props": {
+              "color": "var(--accent-11)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "cursor": "default"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--space-1)"
+            }
+          },
+          "hover": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "borderCollapse": "collapse",
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "width": "100%"
+        }
+      },
+      "row": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "transition": "background-color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "selected": {
+            "props": {
+              "background": "var(--accent-3)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "plain",
+    "variants": {
+      "bordered": {
+        "cell": {
+          "props": {
+            "borderInlineEnd": "var(--border-width-1) solid var(--neutral-4)"
+          }
+        },
+        "headerCell": {
+          "props": {
+            "background": "var(--neutral-2)",
+            "borderInlineEnd": "var(--border-width-1) solid var(--neutral-6)"
+          }
+        },
+        "root": {
+          "props": {
+            "borderColor": "var(--neutral-6)",
+            "borderRadius": "var(--radius-md)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)",
+            "overflow": "hidden"
+          }
+        }
+      },
+      "condensed": {
+        "caption": {
+          "props": {
+            "paddingBlock": "var(--space-1)"
+          }
+        },
+        "cell": {
+          "props": {
+            "fontSize": "var(--font-size-sm)",
+            "paddingBlock": "var(--space-1)",
+            "paddingInline": "var(--space-2)"
+          }
+        },
+        "headerCell": {
+          "props": {
+            "borderBlockEnd": "var(--border-width-1) solid var(--neutral-6)",
+            "fontSize": "var(--font-size-xs)",
+            "paddingBlock": "var(--space-1)",
+            "paddingInline": "var(--space-2)"
+          }
+        }
+      },
+      "plain": {}
+    }
+  },
+  "variantTags": {
+    "bordered": [
+      "default"
+    ],
+    "condensed": [
+      "default"
+    ],
+    "plain": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

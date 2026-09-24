@@ -1,0 +1,159 @@
+{
+  "name": "omnifield-splitter",
+  "component": "splitter",
+  "recipe": {
+    "base": {
+      "panel": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "minBlockSize": "0",
+          "minInlineSize": "0",
+          "overflow": "auto"
+        },
+        "states": {
+          "dragging": {
+            "props": {
+              "userSelect": "none"
+            }
+          }
+        }
+      },
+      "resizeTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "borderWidth": "0",
+          "cursor": "col-resize",
+          "display": "flex",
+          "flexShrink": "0",
+          "inlineSize": "var(--space-2)",
+          "justifyContent": "center",
+          "padding": "0",
+          "touchAction": "none",
+          "transition": "background-color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "cursor": "default",
+              "opacity": "0.5"
+            }
+          },
+          "focus": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "calc(var(--border-width-2) * -1)"
+            }
+          }
+        }
+      },
+      "resizeTriggerIndicator": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "blockSize": "var(--space-6)",
+          "borderRadius": "var(--radius-full)",
+          "inlineSize": "var(--border-width-2)",
+          "transition": "background-color var(--motion-fast) var(--ease-out)"
+        }
+      },
+      "root": {
+        "props": {
+          "blockSize": "100%",
+          "display": "flex",
+          "flexDirection": "row",
+          "inlineSize": "100%",
+          "minBlockSize": "0"
+        },
+        "states": {
+          "dragging": {
+            "props": {
+              "cursor": "col-resize",
+              "userSelect": "none"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "line",
+    "settings": {
+      "orientation": {
+        "vertical": {
+          "resizeTrigger": {
+            "props": {
+              "blockSize": "var(--space-2)",
+              "cursor": "row-resize",
+              "inlineSize": "auto"
+            }
+          },
+          "resizeTriggerIndicator": {
+            "props": {
+              "blockSize": "var(--border-width-2)",
+              "inlineSize": "var(--space-6)"
+            }
+          },
+          "root": {
+            "props": {
+              "flexDirection": "column"
+            },
+            "states": {
+              "dragging": {
+                "props": {
+                  "cursor": "row-resize"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "line": {
+        "resizeTrigger": {
+          "props": {
+            "background": "transparent"
+          },
+          "states": {
+            "dragging": {
+              "props": {
+                "background": "var(--accent-3)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-3)"
+              }
+            }
+          }
+        },
+        "resizeTriggerIndicator": {
+          "props": {
+            "background": "var(--neutral-6)"
+          },
+          "states": {
+            "dragging": {
+              "props": {
+                "background": "var(--accent-9)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-8)"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "line": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

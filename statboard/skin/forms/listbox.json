@@ -1,0 +1,224 @@
+{
+  "name": "omnifield-listbox",
+  "component": "listbox",
+  "recipe": {
+    "base": {
+      "content": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "outline": "none"
+        },
+        "states": {
+          "empty": {
+            "props": {
+              "alignItems": "center",
+              "justifyContent": "center",
+              "minHeight": "6rem"
+            }
+          }
+        }
+      },
+      "empty": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)"
+        }
+      },
+      "input": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "borderColor": "var(--neutral-7)",
+          "borderRadius": "var(--radius-md)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "paddingBlock": "var(--space-2)",
+          "paddingInline": "var(--space-3)",
+          "transition": "border-color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "background": "var(--neutral-3)",
+              "borderColor": "var(--neutral-6)",
+              "cursor": "not-allowed"
+            }
+          }
+        }
+      },
+      "item": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "flex",
+          "gap": "var(--space-2)",
+          "justifyContent": "space-between",
+          "paddingBlock": "var(--space-1)",
+          "paddingInline": "var(--space-2)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "checked": {
+            "props": {
+              "color": "var(--accent-11)",
+              "fontWeight": "var(--weight-medium)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)",
+              "cursor": "not-allowed"
+            }
+          },
+          "highlighted": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "itemGroup": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "opacity": "0.6"
+            }
+          }
+        }
+      },
+      "itemGroupLabel": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "fontWeight": "var(--weight-medium)",
+          "paddingBlock": "var(--space-1)",
+          "paddingInline": "var(--space-2)"
+        }
+      },
+      "itemIndicator": {
+        "props": {
+          "color": "var(--accent-11)"
+        },
+        "states": {
+          "checked": {
+            "props": {
+              "display": "inline-flex"
+            }
+          }
+        }
+      },
+      "itemText": {
+        "props": {
+          "overflow": "hidden",
+          "textOverflow": "ellipsis",
+          "whiteSpace": "nowrap"
+        }
+      },
+      "label": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-2)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "opacity": "0.6"
+            }
+          }
+        }
+      },
+      "valueText": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)"
+        },
+        "states": {
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "comfortable",
+    "variants": {
+      "comfortable": {
+        "content": {
+          "props": {
+            "gap": "var(--space-1)",
+            "padding": "var(--space-1)"
+          }
+        },
+        "item": {
+          "props": {
+            "paddingBlock": "var(--space-1)",
+            "paddingInline": "var(--space-2)"
+          }
+        },
+        "itemGroupLabel": {
+          "props": {
+            "paddingBlock": "var(--space-1)"
+          }
+        }
+      },
+      "compact": {
+        "content": {
+          "props": {
+            "gap": "0",
+            "padding": "0"
+          }
+        },
+        "item": {
+          "props": {
+            "paddingBlock": "var(--space-1)",
+            "paddingInline": "var(--space-1)"
+          }
+        },
+        "itemGroupLabel": {
+          "props": {
+            "fontSize": "var(--font-size-xs)",
+            "paddingBlock": "var(--space-1)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "comfortable": [
+      "default"
+    ],
+    "compact": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

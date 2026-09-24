@@ -1,0 +1,94 @@
+{
+  "name": "omnifield-palette",
+  "author": "EgorRaybul",
+  "scales": {
+    "accent": "#3457d5",
+    "danger": "#c2282e",
+    "neutral": "#6b7280",
+    "success": "#197a3d",
+    "type-boolean": "oklch(0.74 0.12 345)",
+    "type-enum": "oklch(0.74 0.12 310)",
+    "type-number": "oklch(0.74 0.12 105)",
+    "type-string": "oklch(0.74 0.12 225)",
+    "type-unknown": "oklch(0.74 0.12 190)",
+    "warning": "#a35a06"
+  },
+  "dimensions": {
+    "border-width": "1px",
+    "card": {
+      "between": [
+        "360px",
+        "1280px"
+      ],
+      "narrow": "20rem",
+      "wide": "24rem"
+    },
+    "column": "0.5rem",
+    "control-height": "2.5rem",
+    "density": "1",
+    "font-size": {
+      "between": [
+        "360px",
+        "1280px"
+      ],
+      "narrow": "0.9375rem",
+      "wide": "1rem"
+    },
+    "layout": {
+      "between": [
+        "360px",
+        "1280px"
+      ],
+      "narrow": "64rem",
+      "wide": "80rem"
+    },
+    "radius": "10px",
+    "rail": {
+      "between": [
+        "360px",
+        "1280px"
+      ],
+      "narrow": "12rem",
+      "wide": "14rem"
+    },
+    "space": "0.25rem",
+    "tracking": "0em"
+  },
+  "light": {
+    "accent-contrast": "#ffffff",
+    "danger-contrast": "#ffffff",
+    "ease-in": "cubic-bezier(0.4, 0, 1, 1)",
+    "ease-in-out": "cubic-bezier(0.4, 0, 0.2, 1)",
+    "ease-linear": "linear",
+    "ease-out": "cubic-bezier(0, 0, 0.2, 1)",
+    "leading-none": "1",
+    "leading-normal": "1.5",
+    "leading-relaxed": "1.7",
+    "leading-snug": "1.35",
+    "leading-tight": "1.2",
+    "motion-fast": "150ms",
+    "motion-instant": "75ms",
+    "motion-normal": "250ms",
+    "motion-slow": "400ms",
+    "success-contrast": "#ffffff",
+    "warning-contrast": "#ffffff",
+    "weight-bold": "700",
+    "weight-medium": "500",
+    "weight-normal": "400",
+    "weight-semibold": "600"
+  },
+  "dark": {
+    "accent-10": "#4062df",
+    "accent-9": "#3457d5",
+    "accent-contrast": "#ffffff",
+    "danger-10": "#d13237",
+    "danger-9": "#c2282e",
+    "danger-contrast": "#ffffff",
+    "success-10": "#1a8040",
+    "success-9": "#197a3d",
+    "success-contrast": "#ffffff",
+    "warning-10": "#aa5e06",
+    "warning-9": "#a35a06",
+    "warning-contrast": "#ffffff"
+  }
+}

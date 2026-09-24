@@ -1,0 +1,325 @@
+{
+  "name": "omnifield-tree-view",
+  "component": "tree-view",
+  "recipe": {
+    "base": {
+      "content": {
+        "props": {
+          "boxSizing": "border-box",
+          "display": "block",
+          "overflow": "hidden",
+          "position": "relative"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "@media (prefers-reduced-motion: reduce)": {
+                "animation": "none",
+                "blockSize": "0"
+              },
+              "animation": "shrink-block-size var(--motion-normal) var(--ease-out) forwards",
+              "pointerEvents": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "@media (prefers-reduced-motion: reduce)": {
+                "animation": "none"
+              },
+              "animation": "grow-block-size var(--motion-normal) var(--ease-out)"
+            }
+          }
+        }
+      },
+      "control": {
+        "ancestors": [
+          {
+            "component": "tree-view",
+            "part": "item",
+            "style": {
+              "props": {
+                "color": "var(--active-color, var(--neutral-12))",
+                "fontWeight": "var(--active-weight, var(--weight-medium))",
+                "paddingInlineStart": "calc((var(--depth) - 1) * var(--space-8) / 1.5)"
+              }
+            }
+          }
+        ],
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "borderRadius": "var(--radius-sm)",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "gap": "calc(var(--space-1) * 0.5)",
+          "minHeight": "var(--control-height-sm)",
+          "paddingBlock": "var(--space-1)",
+          "paddingInlineEnd": "var(--space-2)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)",
+          "userSelect": "none"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "checked": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "closed": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "disabled": {
+            "props": {
+              "color": "var(--neutral-11)",
+              "cursor": "not-allowed",
+              "opacity": "0.6"
+            }
+          },
+          "focus": {
+            "props": {
+              "outline": "none"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "indeterminate": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "loading": {
+            "props": {
+              "cursor": "progress",
+              "opacity": "0.7"
+            }
+          },
+          "open": {
+            "props": {
+              "background": "transparent"
+            }
+          },
+          "renaming": {
+            "props": {
+              "cursor": "text"
+            }
+          },
+          "selected": {
+            "props": {
+              "background": "transparent"
+            }
+          }
+        }
+      },
+      "controlIndicator": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "color": "var(--neutral-11)",
+          "display": "inline-flex",
+          "flexShrink": "0",
+          "fontSize": "var(--font-size-sm)",
+          "justifyContent": "center",
+          "transition": "transform var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "transform": "rotate(0deg)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "opacity": "0.6"
+            }
+          },
+          "focus": {
+            "props": {
+              "color": "var(--neutral-12)"
+            }
+          },
+          "loading": {
+            "props": {
+              "opacity": "0.6"
+            }
+          },
+          "open": {
+            "props": {
+              "transform": "rotate(90deg)"
+            }
+          },
+          "selected": {
+            "props": {
+              "color": "var(--accent-11)"
+            }
+          }
+        }
+      },
+      "item": {
+        "props": {
+          "--active-color": "initial",
+          "--active-weight": "initial",
+          "display": "flex",
+          "flexDirection": "column"
+        },
+        "states": {
+          "branch": {
+            "props": {
+              "display": "flex"
+            }
+          },
+          "checked": {
+            "props": {
+              "borderInlineStartWidth": "0"
+            }
+          },
+          "closed": {
+            "props": {
+              "marginBlockEnd": "0"
+            }
+          },
+          "disabled": {
+            "props": {
+              "pointerEvents": "none"
+            }
+          },
+          "focus": {
+            "props": {
+              "zIndex": "1"
+            }
+          },
+          "indeterminate": {
+            "props": {
+              "borderInlineStartWidth": "0"
+            }
+          },
+          "loading": {
+            "props": {
+              "pointerEvents": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "marginBlockEnd": "var(--space-1)"
+            }
+          },
+          "renaming": {
+            "props": {
+              "cursor": "text"
+            }
+          },
+          "selected": {
+            "props": {
+              "--active-color": "var(--accent-11)",
+              "--active-weight": "var(--weight-semibold)"
+            }
+          }
+        }
+      },
+      "root": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column"
+        }
+      }
+    },
+    "defaultVariant": "plain",
+    "keyframes": {
+      "grow-block-size": {
+        "from": {
+          "blockSize": "0"
+        },
+        "to": {
+          "blockSize": "var(--height)"
+        }
+      },
+      "shrink-block-size": {
+        "from": {
+          "blockSize": "var(--height)"
+        },
+        "to": {
+          "blockSize": "0"
+        }
+      }
+    },
+    "variants": {
+      "highlight": {
+        "control": {
+          "props": {
+            "borderRadius": "var(--radius-md)",
+            "paddingInlineEnd": "var(--space-2)"
+          },
+          "states": {
+            "active": {
+              "props": {
+                "background": "var(--neutral-5)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--neutral-3)"
+              }
+            },
+            "selected": {
+              "props": {
+                "background": "var(--accent-3)"
+              }
+            }
+          }
+        },
+        "item": {
+          "states": {
+            "open": {
+              "props": {
+                "marginBlockEnd": "0"
+              }
+            }
+          }
+        }
+      },
+      "plain": {}
+    }
+  },
+  "keyframes": {
+    "grow-block-size": {
+      "from": {
+        "blockSize": "0"
+      },
+      "to": {
+        "blockSize": "var(--height)"
+      }
+    },
+    "shrink-block-size": {
+      "from": {
+        "blockSize": "var(--height)"
+      },
+      "to": {
+        "blockSize": "0"
+      }
+    }
+  },
+  "variantTags": {
+    "highlight": [
+      "default"
+    ],
+    "plain": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

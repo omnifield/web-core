@@ -1,0 +1,338 @@
+{
+  "name": "omnifield-carousel",
+  "component": "carousel",
+  "recipe": {
+    "base": {
+      "autoplayIndicator": {
+        "props": {
+          "alignItems": "center",
+          "display": "inline-flex",
+          "justifyContent": "center"
+        }
+      },
+      "autoplayTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-3)",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "justifyContent": "center",
+          "minBlockSize": "var(--control-height-md)",
+          "minInlineSize": "var(--control-height-md)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), opacity var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          },
+          "pressed": {
+            "props": {
+              "background": "var(--accent-9)",
+              "color": "var(--accent-contrast)"
+            }
+          }
+        }
+      },
+      "control": {
+        "props": {
+          "alignItems": "center",
+          "display": "flex",
+          "gap": "var(--space-2)",
+          "justifyContent": "center"
+        }
+      },
+      "indicator": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-6)",
+          "blockSize": "0.5rem",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "cursor": "pointer",
+          "inlineSize": "0.5rem",
+          "padding": "0",
+          "transition": "background-color var(--motion-fast) var(--ease-out), transform var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "transform": "scale(0.85)"
+            }
+          },
+          "current": {
+            "props": {
+              "background": "var(--accent-9)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-8)"
+            }
+          },
+          "readonly": {
+            "props": {
+              "cursor": "default",
+              "opacity": "0.6"
+            }
+          }
+        }
+      },
+      "indicatorGroup": {
+        "props": {
+          "alignItems": "center",
+          "display": "flex",
+          "gap": "var(--space-2)",
+          "justifyContent": "center"
+        }
+      },
+      "item": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-2)",
+          "blockSize": "100%",
+          "color": "var(--neutral-11)",
+          "display": "flex",
+          "flex": "0 0 100%",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "justifyContent": "center",
+          "opacity": "0.4",
+          "transition": "opacity var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "inview": {
+            "props": {
+              "opacity": "1"
+            }
+          }
+        }
+      },
+      "itemGroup": {
+        "props": {
+          "borderRadius": "var(--radius-lg)",
+          "display": "flex",
+          "overflow": "hidden",
+          "position": "relative"
+        },
+        "states": {
+          "dragging": {
+            "props": {
+              "cursor": "grabbing"
+            }
+          }
+        }
+      },
+      "nextTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-3)",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "justifyContent": "center",
+          "minBlockSize": "var(--control-height-md)",
+          "minInlineSize": "var(--control-height-md)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), opacity var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "cursor": "not-allowed",
+              "opacity": "0.5"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          }
+        }
+      },
+      "prevTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--neutral-3)",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-12)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "justifyContent": "center",
+          "minBlockSize": "var(--control-height-md)",
+          "minInlineSize": "var(--control-height-md)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out), opacity var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "disabled": {
+            "props": {
+              "cursor": "not-allowed",
+              "opacity": "0.5"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)"
+            }
+          }
+        }
+      },
+      "progressText": {
+        "props": {
+          "alignItems": "center",
+          "color": "var(--neutral-11)",
+          "display": "flex",
+          "flexDirection": "row",
+          "fontSize": "var(--font-size-sm)",
+          "fontVariantNumeric": "tabular-nums",
+          "gap": "var(--space-2)"
+        }
+      },
+      "root": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-3)",
+          "position": "relative"
+        }
+      }
+    },
+    "defaultVariant": "framed",
+    "settings": {
+      "orientation": {
+        "vertical": {
+          "control": {
+            "props": {
+              "flexDirection": "column"
+            }
+          },
+          "indicatorGroup": {
+            "props": {
+              "flexDirection": "column"
+            }
+          },
+          "item": {
+            "props": {
+              "aspectRatio": "auto",
+              "minBlockSize": "0"
+            }
+          },
+          "itemGroup": {
+            "props": {
+              "blockSize": "32rem",
+              "flex": "1",
+              "flexDirection": "column"
+            }
+          },
+          "nextTrigger": {
+            "props": {
+              "transform": "rotate(90deg)"
+            }
+          },
+          "prevTrigger": {
+            "props": {
+              "transform": "rotate(90deg)"
+            }
+          },
+          "progressText": {
+            "props": {
+              "flexDirection": "column"
+            }
+          },
+          "root": {
+            "props": {
+              "alignItems": "center",
+              "flexDirection": "row"
+            }
+          }
+        }
+      }
+    },
+    "variants": {
+      "framed": {
+        "root": {
+          "props": {
+            "background": "var(--neutral-1)",
+            "borderColor": "var(--neutral-6)",
+            "borderRadius": "var(--radius-lg)",
+            "borderStyle": "solid",
+            "borderWidth": "var(--border-width-1)",
+            "padding": "var(--space-4)"
+          }
+        }
+      },
+      "plain": {}
+    }
+  },
+  "variantTags": {
+    "framed": [
+      "default"
+    ],
+    "plain": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

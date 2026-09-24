@@ -1,0 +1,198 @@
+{
+  "name": "omnifield-dialog",
+  "component": "dialog",
+  "recipe": {
+    "base": {
+      "backdrop": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "oklch(0% 0 0 / 0.4)",
+          "inset": "0",
+          "position": "fixed",
+          "transition": "opacity var(--motion-normal) var(--ease-out)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0",
+              "pointerEvents": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "opacity": "1"
+            }
+          }
+        }
+      },
+      "closeTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "blockSize": "1.75rem",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "inlineSize": "1.75rem",
+          "insetInlineEnd": "var(--space-3)",
+          "justifyContent": "center",
+          "position": "absolute",
+          "top": "var(--space-3)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)",
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "content": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "borderColor": "var(--neutral-6)",
+          "borderRadius": "var(--radius-lg)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "boxShadow": "0 8px 32px oklch(0% 0 0 / 0.2)",
+          "color": "var(--neutral-12)",
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-3)",
+          "insetBlockStart": "50%",
+          "insetInlineStart": "50%",
+          "isolation": "isolate",
+          "maxBlockSize": "85vh",
+          "opacity": "1",
+          "overflowY": "auto",
+          "padding": "var(--space-4)",
+          "position": "fixed",
+          "transform": "translate(-50%, -50%)",
+          "transition": "opacity var(--motion-normal) var(--ease-out), background-color var(--motion-fast) var(--ease-out)",
+          "width": "min(90vw, 28rem)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0",
+              "pointerEvents": "none"
+            }
+          },
+          "open": {
+            "props": {
+              "opacity": "1"
+            }
+          }
+        }
+      },
+      "control": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "var(--accent-9)",
+          "borderRadius": "var(--radius-md)",
+          "borderWidth": "0",
+          "color": "var(--accent-contrast)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-medium)",
+          "justifyContent": "center",
+          "minBlockSize": "var(--control-height-md)",
+          "paddingInline": "var(--space-4)",
+          "transition": "background-color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "transform": "translateY(1px)"
+            }
+          },
+          "current": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--accent-10)"
+            }
+          }
+        }
+      }
+    },
+    "defaultVariant": "centered",
+    "variants": {
+      "auto": {
+        "content": {
+          "props": {
+            "blockSize": "auto",
+            "inlineSize": "max-content",
+            "maxBlockSize": "min(85vh, max-content)",
+            "maxInlineSize": "min(90vw, 48rem)",
+            "minInlineSize": "min(90vw, 16rem)",
+            "width": "auto"
+          }
+        }
+      },
+      "centered": {},
+      "sheet": {
+        "content": {
+          "props": {
+            "borderRadius": "var(--radius-lg) var(--radius-lg) 0 0",
+            "borderWidth": "var(--border-width-1) var(--border-width-1) 0 var(--border-width-1)",
+            "inset": "auto 0 0 0",
+            "margin": "0",
+            "maxBlockSize": "90vh",
+            "transform": "none",
+            "width": "100vw"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "auto": [
+      "default"
+    ],
+    "centered": [
+      "default"
+    ],
+    "sheet": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}

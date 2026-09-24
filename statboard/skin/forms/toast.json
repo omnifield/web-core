@@ -1,0 +1,155 @@
+{
+  "name": "omnifield-toast",
+  "component": "toast",
+  "recipe": {
+    "base": {
+      "closeTrigger": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "alignItems": "center",
+          "background": "transparent",
+          "blockSize": "var(--control-height-sm)",
+          "borderRadius": "var(--radius-full)",
+          "borderWidth": "0",
+          "color": "var(--neutral-11)",
+          "cursor": "pointer",
+          "display": "inline-flex",
+          "inlineSize": "var(--control-height-sm)",
+          "insetInlineEnd": "var(--space-2)",
+          "justifyContent": "center",
+          "position": "absolute",
+          "top": "var(--space-2)",
+          "transition": "background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)"
+        },
+        "states": {
+          "active": {
+            "props": {
+              "background": "var(--neutral-5)"
+            }
+          },
+          "focus-visible": {
+            "props": {
+              "outline": "var(--border-width-2) solid var(--accent-8)",
+              "outlineOffset": "var(--border-width-2)"
+            }
+          },
+          "hover": {
+            "props": {
+              "background": "var(--neutral-4)",
+              "color": "var(--neutral-12)"
+            }
+          }
+        }
+      },
+      "description": {
+        "props": {
+          "color": "var(--neutral-11)",
+          "fontSize": "var(--font-size-sm)",
+          "lineHeight": "var(--leading-normal)"
+        }
+      },
+      "group": {
+        "props": {
+          "display": "flex",
+          "flexDirection": "column",
+          "insetBlockEnd": "var(--space-4)",
+          "insetInlineEnd": "var(--space-4)",
+          "pointerEvents": "none",
+          "position": "fixed"
+        }
+      },
+      "root": {
+        "props": {
+          "@media (prefers-reduced-motion: reduce)": {
+            "transition": "none"
+          },
+          "background": "var(--neutral-1)",
+          "borderColor": "var(--neutral-6)",
+          "borderRadius": "var(--radius-lg)",
+          "borderStyle": "solid",
+          "borderWidth": "var(--border-width-1)",
+          "boxShadow": "0 8px 32px oklch(0% 0 0 / 0.2)",
+          "color": "var(--neutral-12)",
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": "var(--space-2)",
+          "insetBlockEnd": "0",
+          "insetInlineEnd": "0",
+          "opacity": "var(--opacity)",
+          "padding": "var(--space-4)",
+          "pointerEvents": "auto",
+          "position": "absolute",
+          "transform": "translate3d(var(--x), var(--y), 0) scale(var(--scale))",
+          "transition": "transform var(--motion-normal) var(--ease-out), opacity var(--motion-normal) var(--ease-out)",
+          "width": "var(--card-sm)",
+          "zIndex": "var(--z-index)"
+        },
+        "states": {
+          "closed": {
+            "props": {
+              "opacity": "0"
+            }
+          },
+          "open": {
+            "props": {
+              "opacity": "var(--opacity)"
+            }
+          }
+        }
+      },
+      "title": {
+        "props": {
+          "color": "var(--neutral-12)",
+          "fontSize": "var(--font-size-md)",
+          "fontWeight": "var(--weight-semibold)"
+        }
+      }
+    },
+    "defaultVariant": "plain",
+    "variants": {
+      "plain": {},
+      "success": {
+        "closeTrigger": {
+          "props": {
+            "color": "var(--success-11)"
+          },
+          "states": {
+            "active": {
+              "props": {
+                "background": "var(--success-5)"
+              }
+            },
+            "hover": {
+              "props": {
+                "background": "var(--success-4)",
+                "color": "var(--success-12)"
+              }
+            }
+          }
+        },
+        "root": {
+          "props": {
+            "background": "var(--success-2)",
+            "borderColor": "var(--success-6)"
+          }
+        },
+        "title": {
+          "props": {
+            "color": "var(--success-11)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "plain": [
+      "default"
+    ],
+    "success": [
+      "status"
+    ]
+  },
+  "author": "EgorRaybul"
+}

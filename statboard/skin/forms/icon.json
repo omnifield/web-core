@@ -1,0 +1,37 @@
+{
+  "name": "omnifield-icon",
+  "component": "icon",
+  "recipe": {
+    "base": {
+      "root": {
+        "props": {
+          "alignItems": "center",
+          "blockSize": "1em",
+          "display": "inline-flex",
+          "flexShrink": "0",
+          "inlineSize": "1em",
+          "justifyContent": "center",
+          "lineHeight": "1",
+          "verticalAlign": "middle"
+        }
+      }
+    },
+    "defaultVariant": "plain",
+    "variants": {
+      "plain": {
+        "root": {
+          "props": {
+            "color": "currentColor",
+            "fontSize": "var(--font-size-md)"
+          }
+        }
+      }
+    }
+  },
+  "variantTags": {
+    "plain": [
+      "default"
+    ]
+  },
+  "author": "EgorRaybul"
+}
