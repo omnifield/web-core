@@ -1,6 +1,6 @@
 {
   "name": "@web-core/neurobox",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Клиент web-core для бокса нейробокс (AG-UI, см. NEUROBOX_CLIENT.md) поверх @tanstack/ai-client/@tanstack/ai-solid: одна точка входа вместо вендора.",
   "license": "UNLICENSED",
   "type": "module",

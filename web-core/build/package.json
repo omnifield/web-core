@@ -1,6 +1,6 @@
 {
   "name": "@web-core/build",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Оснастка сборки web-core: фабрика конфига Vite, базовый tsconfig, пресет vitest, TS-раннер для серверов и рантайм-ридер env для приложений (`/env`).",
   "license": "UNLICENSED",
   "type": "module",

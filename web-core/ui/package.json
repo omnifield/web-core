@@ -1,6 +1,6 @@
 {
   "name": "@web-core/ui",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Примитивы web-core поверх @kobalte/core: 1-to-1 DOM, ноль стилей по умолчанию, свои обработчики насквозь (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",

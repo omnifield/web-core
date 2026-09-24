@@ -1,6 +1,6 @@
 {
   "name": "@web-core/skin",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "web-core skin mechanic: model, part-by-part recipe assembly, anatomy-based addressing, CSS generation, and wearing it (switch/connection) — a framework, not a product's own dressing.",
   "license": "UNLICENSED",
   "type": "module",
