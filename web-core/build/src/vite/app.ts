@@ -64,6 +64,8 @@ export function defineConfig(options: DefineConfigOptions = {}): UserConfig {
       generatedCssPlugin(state),
       ...(options.plugins ?? []),
     ],
+    // Страховка на случай, когда вендор у потребителя всё-таки объявлен: одна копия на всех.
+    resolve: { dedupe: ["solid-js"] },
     server: {
       host: true, // не "localhost" — см. FAQ.md
       ...(options.proxy ? { proxy: options.proxy } : {}),
