@@ -13,6 +13,7 @@ export function vendorResolvePlugin(): Plugin {
   return {
     name: "web-core-build:vendor-resolve",
     enforce: "pre",
+
     async resolveId(source, _importer, options) {
       if (!VENDOR.test(source)) return null;
 
