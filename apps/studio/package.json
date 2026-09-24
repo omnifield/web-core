@@ -9,12 +9,12 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "vite --port 5174 --strictPort --host 0.0.0.0",
-    "build": "vite build",
+    "dev": "web-core-vite --port 5174 --strictPort --host 0.0.0.0",
+    "build": "web-core-vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . && pnpm run typecheck",
     "style": "biome check .",
-    "test": "vitest run"
+    "test": "web-core-vitest run"
   },
   "dependencies": {
     "@web-core/assembly": "^0.5.1",
@@ -32,7 +32,6 @@
     "@web-core/ui": "^0.5.1",
     "@tanstack/solid-router": "^1.170.30",
     "partial-json": "^0.1.7",
-    "solid-js": "^1.9.14",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
@@ -42,8 +41,6 @@
     "@types/node": "^24.10.1",
     "eslint": "^10.8.1",
     "jsdom": "^30.0.1",
-    "typescript": "^7.0.2",
-    "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "typescript": "^7.0.2"
   }
 }
