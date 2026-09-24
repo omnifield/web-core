@@ -22,19 +22,19 @@ importers:
         version: 0.13.13(solid-js@1.9.14)
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../web-core/skin
+        version: 0.4.0(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../web-core/solid
+        version: 0.4.0(solid-js@1.9.14)
       '@web-core/style':
         specifier: ^0.4.0
-        version: link:../../web-core/style
+        version: 0.4.0(solid-js@1.9.14)
       '@web-core/trace':
         specifier: ^0.4.0
-        version: link:../../web-core/trace
+        version: 0.4.0(solid-js@1.9.14)
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../web-core/ui
+        version: 0.4.0(@ark-ui/solid@5.39.1(solid-js@1.9.14))(@internationalized/date@3.12.3)(@kobalte/core@0.13.13(solid-js@1.9.14))(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       solid-js:
         specifier: ^1.9.14
         version: 1.9.14
@@ -47,10 +47,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../web-core/build
+        version: 0.4.0(jsdom@30.0.1)(solid-js@1.9.14)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../web-core/lint
+        version: 0.4.0(@biomejs/biome@2.5.13)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -73,7 +73,7 @@ importers:
         specifier: ^1.170.30
         version: 1.170.30(solid-js@1.9.14)
       '@web-core/assembly':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/assembly
       '@web-core/chat':
         specifier: ^0.3.0
@@ -82,34 +82,34 @@ importers:
         specifier: ^0.3.0
         version: link:../../interfaces/feeder
       '@web-core/generators':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/generators
       '@web-core/io':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/io
       '@web-core/neurobox':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/neurobox
       '@web-core/query':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/query
       '@web-core/router':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/router
       '@web-core/skin':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/skin
       '@web-core/solid':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/solid
       '@web-core/store':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/store
       '@web-core/style':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/style
       '@web-core/ui':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/ui
       partial-json:
         specifier: ^0.1.7
@@ -128,10 +128,10 @@ importers:
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/build
       '@web-core/lint':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../../web-core/lint
       eslint:
         specifier: ^10.8.1
@@ -156,16 +156,16 @@ importers:
         version: 1.30.0(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/io':
         specifier: ^0.4.0
-        version: link:../../../web-core/io
+        version: 0.4.0
       '@web-core/neurobox':
         specifier: ^0.4.0
-        version: link:../../../web-core/neurobox
+        version: 0.4.0(graphql@16.14.2)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../../web-core/skin
+        version: 0.4.0(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../../web-core/ui
+        version: 0.4.0(@ark-ui/solid@5.39.1(solid-js@1.9.14))(@internationalized/date@3.12.3)(@kobalte/core@0.13.13(solid-js@1.9.14))(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       zocker:
         specifier: ^3.0.0
         version: 3.0.0(zod@4.4.3)
@@ -178,10 +178,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../../web-core/build
+        version: 0.4.0(jsdom@30.0.1)(solid-js@1.9.14)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../../web-core/lint
+        version: 0.4.0(@biomejs/biome@2.5.13)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -196,23 +196,23 @@ importers:
     dependencies:
       '@web-core/neurobox':
         specifier: ^0.4.0
-        version: link:../../web-core/neurobox
+        version: 0.4.0(graphql@16.14.2)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../web-core/solid
+        version: 0.4.0(solid-js@1.9.14)
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../web-core/ui
+        version: 0.4.0(@ark-ui/solid@5.39.1(solid-js@1.9.14))(@internationalized/date@3.12.3)(@kobalte/core@0.13.13(solid-js@1.9.14))(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../web-core/build
+        version: 0.4.0(jsdom@30.0.1)(solid-js@1.9.14)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../web-core/lint
+        version: 0.4.0(@biomejs/biome@2.5.13)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -236,25 +236,25 @@ importers:
         version: 3.1.0
       '@web-core/generators':
         specifier: ^0.4.0
-        version: link:../../web-core/generators
+        version: 0.4.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
       '@web-core/io':
         specifier: ^0.4.0
-        version: link:../../web-core/io
+        version: 0.4.0
       '@web-core/query':
         specifier: ^0.4.0
-        version: link:../../web-core/query
+        version: 0.4.0(graphql@16.14.2)(solid-js@1.9.14)
       '@web-core/skin':
         specifier: ^0.4.0
-        version: link:../../web-core/skin
+        version: 0.4.0(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       '@web-core/solid':
         specifier: ^0.4.0
-        version: link:../../web-core/solid
+        version: 0.4.0(solid-js@1.9.14)
       '@web-core/store':
         specifier: ^0.4.0
-        version: link:../../web-core/store
+        version: 0.4.0(@xstate/solid@2.0.0(solid-js@1.9.14)(xstate@5.32.6))(solid-js@1.9.14)(xstate@5.32.6)
       '@web-core/ui':
         specifier: ^0.4.0
-        version: link:../../web-core/ui
+        version: 0.4.0(@ark-ui/solid@5.39.1(solid-js@1.9.14))(@internationalized/date@3.12.3)(@kobalte/core@0.13.13(solid-js@1.9.14))(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
       yaml:
         specifier: ^2.8.1
         version: 2.9.0
@@ -264,10 +264,10 @@ importers:
         version: 24.13.3
       '@web-core/build':
         specifier: ^0.4.0
-        version: link:../../web-core/build
+        version: 0.4.0(jsdom@30.0.1)(solid-js@1.9.14)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))
       '@web-core/lint':
         specifier: ^0.4.0
-        version: link:../../web-core/lint
+        version: 0.4.0(@biomejs/biome@2.5.13)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
       eslint:
         specifier: ^10.8.1
         version: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
@@ -312,23 +312,23 @@ importers:
   statboard:
     dependencies:
       '@web-core/skin':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../web-core/skin
       '@web-core/solid':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../web-core/solid
       '@web-core/ui':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../web-core/ui
     devDependencies:
       '@nx/js':
         specifier: 23.1.1
         version: 23.1.1(@babel/traverse@7.29.8(supports-color@8.1.1))(nx@23.1.1)(supports-color@8.1.1)
       '@web-core/build':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../web-core/build
       '@web-core/lint':
-        specifier: ^0.4.0
+        specifier: ^0.5.1
         version: link:../web-core/lint
       eslint:
         specifier: ^10.8.1
@@ -3215,6 +3215,117 @@ packages:
 
   '@vitest/utils@4.1.10':
     resolution: {integrity: sha512-fy9am/HWxbaGt/Sawrp90vt6Y6jQwf1RX77cz3uwoJwJVMli/e1IEwRPnMNJ7vKfPTwo0diXifkpPvwH9v7nGA==}
+
+  '@web-core/assembly@0.4.0':
+    resolution: {integrity: sha512-A/bYahcBRWIah1KR0L69wQxdr2l+43OuqQ/HzLPItK7ExsnbYeUQ7IdNVCm6movWJ90p8xOAAgsyWEUKuC9O7g==}
+    peerDependencies:
+      solid-js: ^1.9.14
+    peerDependenciesMeta:
+      solid-js:
+        optional: true
+
+  '@web-core/build@0.4.0':
+    resolution: {integrity: sha512-QYcChT5SAhBCOY9r4emgoxfBZjNKvgnpcbY8AjKf6p960S79XVqpiT3l/1wSEkuywVrQDh14ZF2/eT43fZMRZg==}
+    hasBin: true
+    peerDependencies:
+      jsdom: ^30.0.1
+      solid-js: ^1.9.14
+      vite: ^8.2.1
+      vitest: ^4.1.10
+    peerDependenciesMeta:
+      jsdom:
+        optional: true
+      vitest:
+        optional: true
+
+  '@web-core/form@0.4.0':
+    resolution: {integrity: sha512-9cmBfUrL+VIze3vyfzQUn+iQNTvYR4QMwbo7TBnLNXA2JXNQ3Fp/H7pusx1/BOOZAueLEK1D848CzYCre8NVbQ==}
+    peerDependencies:
+      solid-js: ^1.9.14
+
+  '@web-core/generators@0.4.0':
+    resolution: {integrity: sha512-KCSLTAMqFQVnW2cHklgRVp+jP8FRoY/cYBTe6FsZpA1PoCKOBgy9yYC54JWIKkJy1CJqFFFeZNtFyTXe5PLZUg==}
+    hasBin: true
+
+  '@web-core/io@0.4.0':
+    resolution: {integrity: sha512-XT63mY7eV3YHczmScbnvRPG8TpEeDV7eanIFMxuB1RtUYjhE11UVTRCzG0e8VaAwwOxijmRVwyvZWMS3ddBLqQ==}
+
+  '@web-core/lint@0.4.0':
+    resolution: {integrity: sha512-eUDhN3pIWiC+jAqCbSHLdP8ovadTttZu6DHR0/ZLOQ2/vZsBs+uZosG4k6UvfccKkNgUMhpb7pkmK6LU/QOuyg==}
+    peerDependencies:
+      '@biomejs/biome': ^2.0.0
+      eslint: ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      '@biomejs/biome':
+        optional: true
+      eslint:
+        optional: true
+
+  '@web-core/neurobox@0.4.0':
+    resolution: {integrity: sha512-5RJxpH3x5xovqqssLfcc9IPLPwEQcctNdNdTiL1ijwx/b6LfTNC/xEqjta3BhMNOe5e8WjEkdJANZFMtFac9mg==}
+    peerDependencies:
+      solid-js: ^1.9.14
+
+  '@web-core/query@0.4.0':
+    resolution: {integrity: sha512-z5+XxGszhN0u2iB/AzNXjFD3jH6fVCq7iIXcLcuPqzqK7p0m9TS18KJYq1E7WSpcpzR5+xgINW9h2iAQJJi3XQ==}
+    peerDependencies:
+      graphql: 14 - 16
+      solid-js: ^1.9.14
+
+  '@web-core/skin@0.4.0':
+    resolution: {integrity: sha512-YqVmgYhE4hKzHIvjnIDhoyEpagPd/BJJM5jwdhE3Bv9UqiBhlL+9LoezW4+1XaIo79fcdPpX/H2ywceCJvPGeg==}
+    peerDependencies:
+      '@web-core/style': ^0.4.0
+      postcss: ^8.5.14
+      postcss-nested: ^7.0.2
+      solid-js: ^1.9.14
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      postcss-nested:
+        optional: true
+      solid-js:
+        optional: true
+
+  '@web-core/solid@0.4.0':
+    resolution: {integrity: sha512-sZpjQTjjH4tx90Krw7VEYtKQt8rHcwoqF56qAGJTlTMpcKt7TBTdSi9+dCS8aLzx4WchJo5j1DfM9pB93ka/lA==}
+    peerDependencies:
+      solid-js: ^1.9.14
+
+  '@web-core/store@0.4.0':
+    resolution: {integrity: sha512-dCe56LeScPIuGRWwOCdy/rAFrqIdSubAQfsLZcXEIWFbc7ZOGejjeHBzf2IcxTTBZHjdlCEODxpHeGWrzg7k2w==}
+    peerDependencies:
+      '@xstate/solid': ^2.0.0
+      solid-js: ^1.9.14
+      xstate: ^5.32.6
+    peerDependenciesMeta:
+      '@xstate/solid':
+        optional: true
+      xstate:
+        optional: true
+
+  '@web-core/style@0.4.0':
+    resolution: {integrity: sha512-pzy1+ym8ZTDiW/sPUrCgwSkyezHBmonrGTQ5fsrMIVDm2E6ZP9EGDHLScVVE+15UsMXatY4dHXlwqmKwGuuhjA==}
+    peerDependencies:
+      solid-js: ^1.9.14
+    peerDependenciesMeta:
+      solid-js:
+        optional: true
+
+  '@web-core/trace@0.4.0':
+    resolution: {integrity: sha512-Hn7spfLym2+MnOwUdraulV5AXgFUwt6/5Pn6a89lKWe8sVOYhOUdUfRPF6hATRJ43gt4dAp+Uota21VsmhX9fg==}
+    peerDependencies:
+      solid-js: ^1.9.14
+    peerDependenciesMeta:
+      solid-js:
+        optional: true
+
+  '@web-core/ui@0.4.0':
+    resolution: {integrity: sha512-AHO3hhz4/jm8vKCPTmbKEUMTlXTtMvUWeFrnPSUit2gy/2MkwXJwpTqlxUctDoh+nHHuCq6chhZu9VuW3eVUIw==}
+    peerDependencies:
+      '@ark-ui/solid': ^5.39.1
+      '@kobalte/core': ^0.13.12
+      solid-js: ^1.9.14
 
   '@xstate/solid@2.0.0':
     resolution: {integrity: sha512-ycGMMJWPtfnc+CGhUxxe664wTVr4M2NXEJx4EsShbcT5G0d2bP378AtAsVvVhSjr6W5+7Br6htDivND1I6DOfQ==}
@@ -8362,6 +8473,203 @@ snapshots:
       '@vitest/pretty-format': 4.1.10
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.1
+
+  '@web-core/assembly@0.4.0(solid-js@1.9.14)':
+    dependencies:
+      '@web-core/trace': 0.4.0(solid-js@1.9.14)
+      fast-json-patch: 3.1.1
+    optionalDependencies:
+      solid-js: 1.9.14
+
+  '@web-core/build@0.4.0(jsdom@30.0.1)(solid-js@1.9.14)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))(vitest@4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))':
+    dependencies:
+      '@typescript/typescript6': 6.0.2
+      '@web-core/trace': 0.4.0(solid-js@1.9.14)
+      esbuild: 0.27.7
+      rollup: 4.63.1
+      rollup-plugin-dts: 6.5.1(@typescript/typescript6@6.0.2)(rollup@4.63.1)(typescript@7.0.2)
+      solid-js: 1.9.14
+      tsx: 4.23.13
+      vite: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
+      vite-plugin-solid: 2.11.14(solid-js@1.9.14)(supports-color@8.1.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
+    optionalDependencies:
+      jsdom: 30.0.1
+      vitest: 4.1.10(@types/node@24.13.3)(happy-dom@20.11.6)(jsdom@30.0.1)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
+    transitivePeerDependencies:
+      - '@testing-library/jest-dom'
+      - supports-color
+      - typescript
+
+  '@web-core/form@0.4.0(solid-js@1.9.14)':
+    dependencies:
+      '@web-core/assembly': 0.4.0(solid-js@1.9.14)
+      '@web-core/io': 0.4.0
+      json-logic-js: 2.0.5
+      solid-js: 1.9.14
+
+  '@web-core/generators@0.4.0(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)':
+    dependencies:
+      '@web-core/io': 0.4.0
+      handlebars: 4.7.9
+      vite: 8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - '@vitejs/devtools'
+      - esbuild
+      - jiti
+      - less
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
+
+  '@web-core/io@0.4.0':
+    dependencies:
+      fast-json-patch: 3.1.1
+      zod: 4.4.3
+
+  '@web-core/lint@0.4.0(@biomejs/biome@2.5.13)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)':
+    dependencies:
+      '@babel/core': 8.0.1
+      '@babel/eslint-parser': 8.0.1(@babel/core@8.0.1)(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))
+      eslint-plugin-solid: 0.14.5(eslint@10.8.1(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@7.0.2)
+    optionalDependencies:
+      '@biomejs/biome': 2.5.13
+      eslint: 10.8.1(jiti@2.7.0)(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  '@web-core/neurobox@0.4.0(graphql@16.14.2)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)':
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.30.0(supports-color@8.1.1)(zod@4.4.3)
+      '@tanstack/ai': 0.54.0(zod@4.4.3)
+      '@tanstack/ai-client': 0.31.1(zod@4.4.3)
+      '@tanstack/ai-mcp': 0.3.10(supports-color@8.1.1)(zod@4.4.3)
+      '@tanstack/ai-solid': 0.21.1(@tanstack/ai@0.54.0(zod@4.4.3))(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
+      '@web-core/io': 0.4.0
+      '@web-core/query': 0.4.0(graphql@16.14.2)(solid-js@1.9.14)
+      solid-js: 1.9.14
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - '@opentelemetry/api'
+      - graphql
+      - supports-color
+      - zod
+
+  '@web-core/query@0.4.0(graphql@16.14.2)(solid-js@1.9.14)':
+    dependencies:
+      '@tanstack/query-persist-client-core': 5.102.8
+      '@tanstack/query-sync-storage-persister': 5.102.8
+      '@tanstack/solid-query': 5.102.8(solid-js@1.9.14)
+      '@tanstack/solid-query-devtools': 5.102.8(@tanstack/solid-query@5.102.8(solid-js@1.9.14))(solid-js@1.9.14)
+      graphql: 16.14.2
+      graphql-request: 7.4.0(graphql@16.14.2)
+      solid-js: 1.9.14
+
+  '@web-core/skin@0.4.0(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)':
+    dependencies:
+      '@tanstack/ai': 0.54.0(zod@4.4.3)
+      '@web-core/assembly': 0.4.0(solid-js@1.9.14)
+      '@web-core/io': 0.4.0
+      '@web-core/neurobox': 0.4.0(graphql@16.14.2)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
+      '@web-core/query': 0.4.0(graphql@16.14.2)(solid-js@1.9.14)
+      '@web-core/style': 0.4.0(solid-js@1.9.14)
+      '@web-core/trace': 0.4.0(solid-js@1.9.14)
+      '@zag-js/anatomy': 1.43.1
+    optionalDependencies:
+      postcss: 8.5.26
+      postcss-nested: 7.0.2(postcss@8.5.26)
+      solid-js: 1.9.14
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - '@opentelemetry/api'
+      - graphql
+      - supports-color
+      - zod
+
+  '@web-core/solid@0.4.0(solid-js@1.9.14)':
+    dependencies:
+      '@solid-primitives/keyed': 1.5.3(solid-js@1.9.14)
+      '@solid-primitives/rootless': 1.5.4(solid-js@1.9.14)
+      solid-js: 1.9.14
+
+  '@web-core/store@0.4.0(@xstate/solid@2.0.0(solid-js@1.9.14)(xstate@5.32.6))(solid-js@1.9.14)(xstate@5.32.6)':
+    dependencies:
+      '@web-core/solid': 0.4.0(solid-js@1.9.14)
+      '@xstate/store': 4.2.3
+      '@xstate/store-solid': 2.0.0(solid-js@1.9.14)
+      immer: 11.1.18
+      solid-js: 1.9.14
+    optionalDependencies:
+      '@xstate/solid': 2.0.0(solid-js@1.9.14)(xstate@5.32.6)
+      xstate: 5.32.6
+
+  '@web-core/style@0.4.0(solid-js@1.9.14)':
+    dependencies:
+      '@web-core/trace': 0.4.0(solid-js@1.9.14)
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      tailwind-merge: 3.6.0
+    optionalDependencies:
+      solid-js: 1.9.14
+
+  '@web-core/trace@0.4.0(solid-js@1.9.14)':
+    optionalDependencies:
+      solid-js: 1.9.14
+
+  '@web-core/ui@0.4.0(@ark-ui/solid@5.39.1(solid-js@1.9.14))(@internationalized/date@3.12.3)(@kobalte/core@0.13.13(solid-js@1.9.14))(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)':
+    dependencies:
+      '@ark-ui/solid': 5.39.1(solid-js@1.9.14)
+      '@kobalte/core': 0.13.13(solid-js@1.9.14)
+      '@tanstack/solid-table': 9.1.2(solid-js@1.9.14)
+      '@web-core/assembly': 0.4.0(solid-js@1.9.14)
+      '@web-core/form': 0.4.0(solid-js@1.9.14)
+      '@web-core/io': 0.4.0
+      '@web-core/skin': 0.4.0(@web-core/style@0.4.0(solid-js@1.9.14))(graphql@16.14.2)(postcss-nested@7.0.2(postcss@8.5.26))(postcss@8.5.26)(solid-js@1.9.14)(supports-color@8.1.1)(zod@4.4.3)
+      '@web-core/trace': 0.4.0(solid-js@1.9.14)
+      '@zag-js/accordion': 1.43.1
+      '@zag-js/avatar': 1.43.1
+      '@zag-js/carousel': 1.43.1
+      '@zag-js/checkbox': 1.43.1
+      '@zag-js/date-picker': 1.43.1(@internationalized/date@3.12.3)
+      '@zag-js/dialog': 1.43.1
+      '@zag-js/drawer': 1.43.1
+      '@zag-js/file-upload': 1.43.1
+      '@zag-js/listbox': 1.43.1
+      '@zag-js/menu': 1.43.1
+      '@zag-js/navigation-menu': 1.43.1
+      '@zag-js/popover': 1.43.1
+      '@zag-js/radio-group': 1.43.1
+      '@zag-js/scroll-area': 1.43.1
+      '@zag-js/select': 1.43.1
+      '@zag-js/slider': 1.43.1
+      '@zag-js/splitter': 1.43.1
+      '@zag-js/switch': 1.43.1
+      '@zag-js/tabs': 1.43.1
+      '@zag-js/timer': 1.43.1
+      '@zag-js/toast': 1.43.1
+      '@zag-js/toc': 1.43.1
+      '@zag-js/toggle': 1.43.1
+      '@zag-js/toggle-group': 1.43.1
+      '@zag-js/tree-view': 1.43.1
+      d3-scale: 4.0.2
+      d3-shape: 3.2.0
+      lucide-solid: 1.41.0(solid-js@1.9.14)
+      solid-js: 1.9.14
+    transitivePeerDependencies:
+      - '@cfworker/json-schema'
+      - '@internationalized/date'
+      - '@opentelemetry/api'
+      - '@web-core/style'
+      - graphql
+      - postcss
+      - postcss-nested
+      - supports-color
+      - zod
 
   '@xstate/solid@2.0.0(solid-js@1.9.14)(xstate@5.32.6)':
     dependencies:
