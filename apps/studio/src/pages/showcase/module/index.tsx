@@ -1,7 +1,7 @@
 import { createMemo, Show } from "@web-core/solid";
 import { spaceVar } from "@web-core/skin";
 import { Surface, Typography } from "@web-core/ui";
-import { MODULE_DATA, moduleTemplateOf } from "#/entities/module";
+import { moduleTemplateOf } from "#/entities/module";
 import { Renderer } from "#/shared/ui/renderer";
 
 // Раскладку корня модуля называет страница: наряд даёт сетке плитку автозаполнением, а показу
@@ -31,7 +31,7 @@ export function ModulePage(props: { name: string | undefined }) {
           <Surface>
             <Renderer
               composition={found().composition}
-              data={MODULE_DATA}
+              data={{}}
               rootProps={{ style: TWO_COLUMNS }}
             />
           </Surface>

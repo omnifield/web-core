@@ -1,20 +1,19 @@
 // Модули витрины лежат данными (JSON), значит типы их не держат: спеку проверяет только сборка.
-// Тест собирает КАЖДЫЙ шаблон настоящим реестром кита и сверяет, что путь каждого байндинга
-// находит секцию в выгрузке склада, — иначе модуль тихо рисуется пустым.
+// Тест собирает КАЖДЫЙ шаблон настоящим реестром кита и держит контракт входа: подписанный узел
+// адресуется своим именем и кормится по форме своего компонента.
 
 import { describe, expect, it } from "vitest";
 import {
   composeTree,
-  resolveDataBinding,
   type CompositionElement,
   type CompositionSpec,
 } from "@web-core/assembly";
 import { kitComponentRenderer } from "@web-core/ui/component-registry";
 import type { TreeItemData } from "@web-core/ui";
 import {
-  MODULE_DATA,
   MODULE_GROUPS,
   MODULE_TEMPLATES,
+  moduleIoOf,
   type ModuleGroup,
   type ModuleTemplate,
   modulesTree,
@@ -35,14 +34,21 @@ const shapeOf = (group: ModuleGroup): unknown => [
 const isElement = (spec: CompositionSpec): spec is CompositionElement =>
   !("genus" in spec) && !("module" in spec);
 
-function bindingsOf(spec: CompositionElement): readonly string[] {
-  const own = Object.values(spec.bind ?? {});
-  const inner = (spec.children ?? [])
-    .filter(isElement)
-    .flatMap((child) => bindingsOf(child));
+const childrenOf = (spec: CompositionElement): readonly CompositionElement[] =>
+  (spec.children ?? []).filter(isElement);
 
-  return [...own, ...inner];
+function boundNodesIn(
+  spec: CompositionElement,
+): readonly { id: string | undefined; paths: readonly string[] }[] {
+  const own =
+    spec.bind === undefined
+      ? []
+      : [{ id: spec.id, paths: Object.values(spec.bind) }];
+
+  return [...own, ...childrenOf(spec).flatMap(boundNodesIn)];
 }
+
+const ownerOf = (path: string): string | undefined => path.split("/")[1];
 
 describe("шаблоны модулей собираются настоящим реестром кита", () => {
   it.each([...TEMPLATES])("«$value» — ни одного отказа вложенности", (template: ModuleTemplate) => {
@@ -61,12 +67,26 @@ describe("шаблоны модулей собираются настоящим 
   });
 });
 
-describe("байндинги шаблонов адресуют настоящие секции склада", () => {
-  it.each([...TEMPLATES])("«$value» — каждый путь находит значение", (template: ModuleTemplate) => {
-    const missing = bindingsOf(template.composition).filter(
-      (path) => resolveDataBinding(MODULE_DATA, path) === undefined,
+describe("вход модуля виден снаружи и адресуется именем узла", () => {
+  it.each([...TEMPLATES])("«$value» — имена узлов уникальны", (template: ModuleTemplate) => {
+    const ids = moduleIoOf(template).map((input) => input.id);
+
+    expect(ids).toEqual([...new Set(ids)]);
+  });
+
+  it.each([...TEMPLATES])("«$value» — у подписанного узла компонент объявил форму", (template: ModuleTemplate) => {
+    const speechless = moduleIoOf(template)
+      .filter((input) => input.io?.input === undefined)
+      .map((input) => `${input.id} (${input.component})`);
+
+    expect(speechless).toEqual([]);
+  });
+
+  it.each([...TEMPLATES])("«$value» — байндинг адресует свой же узел", (template: ModuleTemplate) => {
+    const alien = boundNodesIn(template.composition).flatMap((node) =>
+      node.paths.filter((path) => ownerOf(path) !== node.id),
     );
 
-    expect(missing).toEqual([]);
+    expect(alien).toEqual([]);
   });
 });

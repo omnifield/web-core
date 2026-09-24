@@ -1,4 +1,4 @@
-import { Show } from "@web-core/solid";
+import { createEffect, Show } from "@web-core/solid";
 import { Outlet } from "@web-core/router";
 import { railVar } from "@web-core/skin";
 import {
@@ -7,6 +7,7 @@ import {
   WorkspaceRightbar,
   WorkspaceSidebar,
 } from "@web-core/ui";
+import { moduleIoOf, moduleTemplateOf } from "#/entities/module";
 import { UI_CATALOGS } from "#/features/catalogs";
 import { ComponentSettings } from "#/features/settings";
 import { CatalogTrees, useRouterCatalogTabs } from "#/widgets/catalogs";
@@ -15,11 +16,24 @@ import { PreviewControls } from "#/widgets/preview";
 import { RailPanel, RailSections } from "#/widgets/rail";
 
 const COMPONENTS = "components";
+const MODULES = "modules";
 
 export function ShowcasePage() {
   const catalog = useRouterCatalogTabs(UI_CATALOGS, {
     components: "/showcase/component/{-$component}",
     modules: "/showcase/module/{-$module}",
+  });
+
+  const selectedModule = () =>
+    catalog.groups.find((group) => group.value === MODULES)?.activeValue;
+
+  // Временно в консоль: панель входа модуля ещё не заведена.
+  createEffect(() => {
+    const name = selectedModule();
+    const template = name === undefined ? undefined : moduleTemplateOf(name);
+    if (template === undefined) return;
+
+    console.log(`вход модуля «${template.value}»`, moduleIoOf(template));
   });
 
   return (

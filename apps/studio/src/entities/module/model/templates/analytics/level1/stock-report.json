@@ -14,16 +14,19 @@
               "children": [
                 {
                   "type": "typography",
+                  "id": "title",
+                  "label": "Заголовок",
                   "props": { "data-variant": "heading" },
-                  "children": [{ "genus": "text", "value": "Ошибки по службам" }]
+                  "children": [{ "genus": "text", "value": "Остатки на складе" }]
                 },
                 {
-                  "type": "diagram",
-                  "props": { "shape": "bar-horizontal", "height": 260 },
+                  "type": "table",
+                  "id": "main-table",
+                  "label": "Таблица остатков",
                   "bind": {
-                    "data": "/diagram-errors-by-service/data",
-                    "series": "/diagram-errors-by-service/series",
-                    "insets": "/diagram-errors-by-service/insets"
+                    "data": "/main-table/data",
+                    "columns": "/main-table/columns",
+                    "defaultSorting": "/main-table/defaultSorting"
                   }
                 }
               ]
