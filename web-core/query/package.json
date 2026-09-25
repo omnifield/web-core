@@ -1,6 +1,6 @@
 {
   "name": "@web-core/query",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Данные из сети web-core поверх @tanstack/solid-query: одна точка входа вместо вендора, готовый QueryClient с дефолтами (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",

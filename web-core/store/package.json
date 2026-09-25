@@ -1,6 +1,6 @@
 {
   "name": "@web-core/store",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Стейт web-core поверх семьи XState: @xstate/store как zustand-подобное глобальное хранилище, xstate как опциональный слой полноценных стейт-машин (PROBEWEB-4).",
   "license": "UNLICENSED",
   "type": "module",
