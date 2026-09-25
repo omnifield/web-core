@@ -23,6 +23,7 @@
     "@web-core/router": "^0.5.1",
     "@web-core/skin": "^0.5.1",
     "@web-core/solid": "^0.5.1",
+    "@web-core/store": "^0.5.1",
     "@web-core/ui": "^0.5.1"
   },
   "devDependencies": {

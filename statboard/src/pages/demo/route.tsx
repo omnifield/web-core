@@ -4,4 +4,5 @@ import { Demo } from "./index";
 
 export const Route = createFileRoute("/")({
   component: Demo,
+  staticData: { title: "Демо" },
 });
