@@ -9,6 +9,7 @@ import {
 } from "@web-core/ui";
 import { moduleIoOf, moduleTemplateOf } from "#/entities/module";
 import { UI_CATALOGS } from "#/features/catalogs";
+import { Docs } from "#/features/preview";
 import { ComponentSettings } from "#/features/settings";
 import { CatalogTrees, useRouterCatalogTabs } from "#/widgets/catalogs";
 import { FeedPanel } from "#/widgets/feed";
@@ -69,6 +70,11 @@ export function ShowcasePage() {
                   label: "Данные",
                   open: true,
                   children: <FeedPanel />,
+                },
+                {
+                  value: "docs",
+                  label: "Документы",
+                  children: <Docs />,
                 },
               ]}
             />
