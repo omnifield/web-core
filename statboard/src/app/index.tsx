@@ -1,10 +1,11 @@
-import { Demo } from "../demo";
-import { Skin } from "../providers/skin";
+import { Query, Router, Skin } from "../providers";
 
 export function App() {
   return (
-    <Skin>
-      <Demo />
-    </Skin>
+    <Query>
+      <Skin>
+        <Router />
+      </Skin>
+    </Query>
   );
 }

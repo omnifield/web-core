@@ -18,6 +18,9 @@
     "test": "web-core-vitest run"
   },
   "dependencies": {
+    "@tanstack/solid-router": "^1.170.30",
+    "@web-core/query": "^0.5.1",
+    "@web-core/router": "^0.5.1",
     "@web-core/skin": "^0.5.1",
     "@web-core/solid": "^0.5.1",
     "@web-core/ui": "^0.5.1"

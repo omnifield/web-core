@@ -1,9 +1,16 @@
 import { render } from "@web-core/solid/web";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { App } from "../src/app";
+import { Demo } from "../src/pages/demo";
+import { Skin } from "../src/providers/skin";
 
 let dispose: (() => void) | undefined;
+
+const screen = () => (
+  <Skin>
+    <Demo />
+  </Skin>
+);
 
 afterEach(() => {
   dispose?.();
@@ -13,14 +20,14 @@ afterEach(() => {
 
 describe("экран статборда", () => {
   it("рисует заголовок и кнопку кита", () => {
-    dispose = render(() => <App />, document.body);
+    dispose = render(screen, document.body);
 
     expect(document.querySelector("h1")?.textContent).toBe("Statboard");
     expect(document.querySelector("button")).not.toBeNull();
   });
 
   it("считает нажатия", () => {
-    dispose = render(() => <App />, document.body);
+    dispose = render(screen, document.body);
 
     const button = document.querySelector("button");
     expect(button?.textContent).toContain("0");
