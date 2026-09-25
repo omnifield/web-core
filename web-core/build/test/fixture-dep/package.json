@@ -1,0 +1,25 @@
+{
+  "name": "@web-core/build-fixture-dep",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Сосед стенда зоны build: библиотека, тянущая ESM-зависимость с CommonJS внутри.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "pnpm run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "solid-markdown": "2.1.1"
+  },
+  "devDependencies": {
+    "@web-core/build": "workspace:*",
+    "typescript": "7.0.2"
+  }
+}

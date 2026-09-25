@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@web-core/build-fixture-dep": "workspace:*",
     "@web-core/solid": "workspace:*"
   },
   "devDependencies": {
