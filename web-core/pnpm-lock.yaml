@@ -128,9 +128,25 @@ importers:
 
   build/test/fixture:
     dependencies:
+      '@web-core/build-fixture-dep':
+        specifier: workspace:*
+        version: link:../fixture-dep
       '@web-core/solid':
         specifier: workspace:*
         version: link:../../../solid
+    devDependencies:
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../..
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  build/test/fixture-dep:
+    dependencies:
+      solid-markdown:
+        specifier: 2.1.1
+        version: 2.1.1(solid-js@1.9.14)(supports-color@7.2.0)
     devDependencies:
       '@web-core/build':
         specifier: workspace:*
@@ -843,6 +859,12 @@ importers:
       lucide-solid:
         specifier: 1.41.0
         version: 1.41.0(solid-js@1.9.14)
+      remark-gfm:
+        specifier: 4.0.1
+        version: 4.0.1(supports-color@7.2.0)
+      solid-markdown:
+        specifier: 2.1.1
+        version: 2.1.1(solid-js@1.9.14)(supports-color@7.2.0)
     devDependencies:
       '@types/d3-scale':
         specifier: 4.0.9

@@ -302,12 +302,24 @@ importers:
 
   statboard:
     dependencies:
+      '@tanstack/solid-router':
+        specifier: ^1.170.30
+        version: 1.170.30(solid-js@1.9.14)
+      '@web-core/query':
+        specifier: ^0.5.1
+        version: link:../web-core/query
+      '@web-core/router':
+        specifier: ^0.5.1
+        version: link:../web-core/router
       '@web-core/skin':
         specifier: ^0.5.1
         version: link:../web-core/skin
       '@web-core/solid':
         specifier: ^0.5.1
         version: link:../web-core/solid
+      '@web-core/store':
+        specifier: ^0.5.1
+        version: link:../web-core/store
       '@web-core/ui':
         specifier: ^0.5.1
         version: link:../web-core/ui
@@ -441,9 +453,25 @@ importers:
 
   web-core/build/test/fixture:
     dependencies:
+      '@web-core/build-fixture-dep':
+        specifier: workspace:*
+        version: link:../fixture-dep
       '@web-core/solid':
         specifier: workspace:*
         version: link:../../../solid
+    devDependencies:
+      '@web-core/build':
+        specifier: workspace:*
+        version: link:../..
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  web-core/build/test/fixture-dep:
+    dependencies:
+      solid-markdown:
+        specifier: 2.1.1
+        version: 2.1.1(solid-js@1.9.14)(supports-color@8.1.1)
     devDependencies:
       '@web-core/build':
         specifier: workspace:*
@@ -1156,6 +1184,12 @@ importers:
       lucide-solid:
         specifier: 1.41.0
         version: 1.41.0(solid-js@1.9.14)
+      remark-gfm:
+        specifier: 4.0.1
+        version: 4.0.1(supports-color@8.1.1)
+      solid-markdown:
+        specifier: 2.1.1
+        version: 2.1.1(solid-js@1.9.14)(supports-color@8.1.1)
     devDependencies:
       '@types/d3-scale':
         specifier: 4.0.9
