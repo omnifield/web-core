@@ -194,7 +194,9 @@
     "@zag-js/tree-view": "1.43.1",
     "d3-scale": "4.0.2",
     "d3-shape": "3.2.0",
-    "lucide-solid": "1.41.0"
+    "lucide-solid": "1.41.0",
+    "remark-gfm": "4.0.1",
+    "solid-markdown": "2.1.1"
   },
   "devDependencies": {
     "@types/d3-scale": "4.0.9",

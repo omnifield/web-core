@@ -35,6 +35,7 @@ export * from "./flow/index.js";
 export * from "./grid/index.js";
 export * from "./icon/index.js";
 export * from "./listbox/index.js";
+export * from "./markdown/index.js";
 export * from "./menu/index.js";
 export * from "./navigation-menu/index.js";
 export * from "./popover/index.js";
